@@ -17,6 +17,7 @@ for (const file of commandFiles) {
 	// with the key as the command name and the value as the exported module
 	client.commands.set(command.name, command);
 }
+const cooldowns = new Discord.Collection();
 
 //import variables from .env folder
 //const dotenv = require('dotenv');
@@ -39,6 +40,10 @@ client.on('message', message => {
 	if (!client.commands.has(commandName)) return;
 
 	const command = client.commands.get(commandName);
+	
+	if(command.guildOnly && message.channel.type === 'dm') {
+		return message.reply('I can\'t execute that command inside DMs!');
+	}
 
 	if (command.args && !args.length) {
 		let reply = `You didn't provide any arguments`;
@@ -47,8 +52,28 @@ client.on('message', message => {
 			reply += `\nThe proper usage would be: \`${prefix}${command.name} ${command.usage}\``;
 			}
 		return message.channel.send(reply);
-		}
+	}
 
+	///////////Setup Cooldown check for commands that require it///////////////////
+	if (cooldowns.has(command.name)) {
+		cooldowns.set(command.name, new Discord.Collection());
+	}
+
+	const now = Date.now();
+	const timestamps = cooldowns.get(command.name);
+	const cooldownAmount = (command.cooldown || 3) * 1000;
+
+	if (timestamps.has(message.author.id)) {
+		const expirationTime = timestamps.get(message.author.id) + cooldownAmount;
+
+		if (now < expirationTime) {
+			return message.reply(`Please wait ${timeLeft.toFixed(1)} more second(s) before reusing the \`${command.name}\` command.`);
+        }
+	}
+
+	timestamps.set(message.author.id, now);
+	setTimeout(() => timestamps.delete(message.author.id), cooldownAmount);
+	/////////////////////////////////////////////////////////
 	try {
 		command.execute(message, args);
 	}

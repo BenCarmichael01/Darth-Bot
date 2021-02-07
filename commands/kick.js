@@ -1,6 +1,9 @@
 module.exports = {
-    name: 'ping',
-    description: 'Ping!',
+    name: 'kick',
+	description: 'Kick a user from server',
+	args: true,
+	usage: '@User-to-kick',
+	guildOnly: true,
     execute(message, args) {
 		//check if user is mentioned
 		if (!message.mentions.users.size) {
