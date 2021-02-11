@@ -77,7 +77,7 @@ client.on('message', message => {
 	try {
 		command.execute(message, args);
 	}
-	///Catch any unexpected errors, print to console and notify usr ///ADD LOG FILE///
+	///Catch any unexpected errors, print to console and notify usr TODO ///ADD LOG FILE///
 	catch (error) {
 		console.error(error);
 		message.reply('There was an error trying to execute that command, please try again.')
