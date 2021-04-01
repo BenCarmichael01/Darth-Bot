@@ -3,6 +3,7 @@ const Discord = require('discord.js');
 //import prefix and bot token from config file
 const { prefix, token } = require('./config.json');
 const { error } = require('console');
+const ytdl = require('ytdl-core');
 
 const client = new Discord.Client();
 client.commands = new Discord.Collection();
