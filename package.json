@@ -17,8 +17,5 @@
     "soundcloud-downloader": "^1.0.0",
     "ytdl-core": "^4.5.0",
     "ytdl-core-discord": "^1.3.0"
-  },
-  "devDependencies": {
-    "eslint": "^7.19.0"
   }
 }
