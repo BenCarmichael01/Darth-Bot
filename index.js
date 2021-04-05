@@ -4,17 +4,86 @@ const Discord = require('discord.js');
 const { prefix, token } = require('./config.json');
 const { error } = require('console');
 const ytdl = require('ytdl-core');
+const i18n = require("i18n");
+const path = require("path");
 
 const client = new Discord.Client();
 client.queue = new Map();
 client.commands = new Discord.Collection();
 
-const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+//Create array of command names from commands directory
+
+// List all files in a directory in Node.js recursively in a synchronous fashion
+var walkSync = function (dir, filelist) {
+
+	if (dir[dir.length - 1] != '/') dir = dir.concat('/')
+
+	var fs = fs || require('fs'),
+		files = fs.readdirSync(dir);
+	filelist = filelist || [];
+	files.forEach(function (file) {
+		if (fs.statSync(dir + file).isDirectory()) {
+			filelist = walkSync(dir + file + '/', filelist);
+		}
+		else {
+			filelist.push(dir + file);
+		}
+	});
+	return filelist;
+};
+/*const getAllFiles = function (dirPath, arrayOfFiles) {
+	files = fs.readdirSync(dirPath)
+
+	arrayOfFiles = arrayOfFiles || []
+
+	files.forEach(function (file) {
+		if (fs.statSync(dirPath + '/' + file).isDirectory()) {
+			arrayOfFiles = getAllFiles(dirPath + '/' + file, arrayOfFiles)
+		} else {
+			arrayOfFiles.push(path.join(__dirname, dirPath, '/', file))
+		}
+	for (let i of arrayOfFiles) {
+		arrayOfFiles = path.basename(arrayOfFiles[i])
+       }
+		
+	})
+	return arrayOfFiles
+}
+*/
+const commandFiles = walkSync('./commands').filter(file => file.endsWith('.js'));
+//console.log(commandFiles);
+//const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+
+//i18n locale config
+i18n.configure({
+	locales: ["en", "es", "ko", "fr", "tr", "pt_br", "zh_cn", "zh_tw"],
+	directory: path.join(__dirname, "locales"),
+	defaultLocale: "en",
+	objectNotation: true,
+	register: global,
+
+	logWarnFn: function (msg) {
+		console.log("warn", msg);
+	},
+
+	logErrorFn: function (msg) {
+		console.log("error", msg);
+	},
+
+	missingKeyFn: function (locale, value) {
+		return value;
+	},
+
+	mustacheConfig: {
+		tags: ["{{", "}}"],
+		disable: false
+	}
+});
 
 
 for (const file of commandFiles) {
-	const command = require(`./commands/${file}`);
-
+	const command = require(`${file}`);
+	//console.log(command)
 	// set a new item in the Collection
 	// with the key as the command name and the value as the exported module
 	client.commands.set(command.name, command);
