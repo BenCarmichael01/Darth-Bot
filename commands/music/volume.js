@@ -7,6 +7,7 @@ module.exports = {
   name: "volume",
   aliases: ["v"],
   description: i18n.__("volume.description"),
+  isMusic: true,
   execute(message, args) {
     const queue = message.client.queue.get(message.guild.id);
 

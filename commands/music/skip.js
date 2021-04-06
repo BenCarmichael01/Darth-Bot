@@ -7,6 +7,7 @@ module.exports = {
   name: "skip",
   aliases: ["s"],
   description: i18n.__("skip.description"),
+  isMusic: true,
   execute(message) {
     const queue = message.client.queue.get(message.guild.id);
     if (!queue) return message.reply(i18n.__("skip.errorNotQueue")).catch(console.error);

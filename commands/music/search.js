@@ -9,6 +9,7 @@ i18n.setLocale(LOCALE);
 module.exports = {
   name: "search",
   description: i18n.__("search.description"),
+  isMusic: true,
   async execute(message, args) {
     if (!args.length)
       return message

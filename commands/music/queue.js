@@ -8,7 +8,8 @@ module.exports = {
   name: "queue",
   cooldown: 5,
   aliases: ["q"],
-  description: i18n.__("queue.description"),
+    description: i18n.__("queue.description"),
+    isMusic: true,
   async execute(message) {
     const permissions = message.channel.permissionsFor(message.client.user);
     if (!permissions.has(["MANAGE_MESSAGES", "ADD_REACTIONS"]))

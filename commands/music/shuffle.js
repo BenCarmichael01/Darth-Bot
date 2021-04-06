@@ -6,6 +6,7 @@ i18n.setLocale(LOCALE);
 module.exports = {
   name: "shuffle",
   description: i18n.__('shuffle.description'),
+  isMusic: true,
   execute(message) {
     const queue = message.client.queue.get(message.guild.id);
     if (!queue) return message.channel.send(i18n.__("shuffle.errorNotQueue")).catch(console.error);

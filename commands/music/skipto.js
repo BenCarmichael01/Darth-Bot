@@ -6,7 +6,8 @@ i18n.setLocale(LOCALE);
 module.exports = {
   name: "skipto",
   aliases: ["st"],
-  description: i18n.__("skipto.description"),
+  description: i18n.__("skipto.description"), 
+  isMusic: true,
   execute(message, args) {
     if (!args.length || isNaN(args[0]))
       return message

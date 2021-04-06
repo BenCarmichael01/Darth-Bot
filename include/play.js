@@ -3,7 +3,7 @@ const scdl = require("soundcloud-downloader").default;
 const { canModifyQueue, STAY_TIME, LOCALE } = require("../util/utils");
 const i18n = require("i18n");
 i18n.setLocale(LOCALE);
-
+const np = require("../commands/music/nowplaying")
 module.exports = {
   async play(song, message) {
     const { SOUNDCLOUD_CLIENT_ID } = require("../util/utils");
@@ -47,9 +47,10 @@ module.exports = {
     } catch (error) {
       if (queue) {
         queue.songs.shift();
-        module.exports.play(queue.songs[0], message);
+          module.exports.play(queue.songs[0], message);
+         
       }
-
+       
       console.error(error);
       return message.channel.send(
         i18n.__mf("play.queueError", { error: error.message ? error.message : error })
@@ -83,6 +84,7 @@ module.exports = {
     dispatcher.setVolumeLogarithmic(queue.volume / 100);
 
     try {
+        message.channel.remove
       var playingMessage = await queue.textChannel.send(
         i18n.__mf("play.startedPlaying", { title: song.title, url: song.url })
       );

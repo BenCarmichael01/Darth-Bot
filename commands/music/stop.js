@@ -6,6 +6,7 @@ i18n.setLocale(LOCALE);
 module.exports = {
   name: "stop",
   description: i18n.__('stop.description'),
+  isMusic: true,
   execute(message) {
     const queue = message.client.queue.get(message.guild.id);
 

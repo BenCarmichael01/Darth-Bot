@@ -7,6 +7,7 @@ module.exports = {
   name: "resume",
   aliases: ["r"],
   description: i18n.__('resume.description'),
+    isMusic: true,
   execute(message) {
     const queue = message.client.queue.get(message.guild.id);
     if (!queue) return message.reply(i18n.__("resume.errorNotQueue")).catch(console.error);

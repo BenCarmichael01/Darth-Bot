@@ -6,7 +6,8 @@ i18n.setLocale(LOCALE);
 module.exports = {
   name: "loop",
   aliases: ["l"],
-  description: i18n.__("loop.description"),
+    description: i18n.__("loop.description"),
+    isMusic: true,
   execute(message) {
     const queue = message.client.queue.get(message.guild.id);
     if (!queue) return message.reply(i18n.__("loop.errorNotQueue")).catch(console.error);

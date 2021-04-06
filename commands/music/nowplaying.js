@@ -8,7 +8,8 @@ i18n.setLocale(LOCALE);
 
 module.exports = {
   name: "np",
-  description: i18n.__("nowplaying.description"),
+    description: i18n.__("nowplaying.description"),
+    isMusic: true,
   execute(message) {
     const queue = message.client.queue.get(message.guild.id);
     if (!queue) return message.reply(i18n.__("nowplaying.errorNotQueue")).catch(console.error);

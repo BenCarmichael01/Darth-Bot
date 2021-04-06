@@ -6,7 +6,8 @@ const https = require("https");
 const { YOUTUBE_API_KEY, SOUNDCLOUD_CLIENT_ID, LOCALE, DEFAULT_VOLUME } = require("../../util/utils");
 const youtube = new YouTubeAPI(YOUTUBE_API_KEY);
 const i18n = require("i18n");
-
+const config = require("../../config.json");
+const np = require("./nowplaying")
 i18n.setLocale(LOCALE);
 
 module.exports = {
@@ -14,6 +15,7 @@ module.exports = {
   cooldown: 3,
   aliases: ["p"],
   description: i18n.__("play.description"),
+  isMusic: true,
   async execute(message, args) {
     const { channel } = message.member.voice;
 
@@ -125,7 +127,7 @@ module.exports = {
 
     queueConstruct.songs.push(song);
     message.client.queue.set(message.guild.id, queueConstruct);
-
+    console.log("MARK")
     try {
       queueConstruct.connection = await channel.join();
       await queueConstruct.connection.voice.setSelfDeaf(true);
@@ -135,6 +137,7 @@ module.exports = {
       message.client.queue.delete(message.guild.id);
       await channel.leave();
       return message.channel.send(i18n.__('play.cantJoinChannel', {error: error})).catch(console.error);
-    }
+      }
+      
   }
 };

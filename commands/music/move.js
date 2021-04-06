@@ -7,7 +7,8 @@ i18n.setLocale(LOCALE);
 module.exports = {
   name: "move",
   aliases: ["mv"],
-  description: i18n.__("move.description"),
+    description: i18n.__("move.description"),
+    isMusic: true,
   execute(message, args) {
     const queue = message.client.queue.get(message.guild.id);
     if (!queue) return message.channel.send(i18n.__("move.errorNotQueue")).catch(console.error);
