@@ -97,13 +97,13 @@ client.on('message', message => {
     }
     //Is the command music channel only?//
     if (command.isMusic && (message.channel.id != MUSIC_CHANNEL_ID)) {
-        return message.reply(`This command can only be run in ${musicChannelName}`);
+        return message.reply(i18n.__mf("common.musicOnly", { channel: musicChannelName }));
     }
     ///Usr has perms?///
     if (command.permissions) {
         const authorPerms = message.channel.permissionsFor(message.author);
         if (!authorPerms || !authorPerms.has(command.permissions)) {
-            return message.reply('You can\'t do this!');
+            return message.reply(i18n.__mf("common.musicOnly"));
         }
     }
     ///Does cmd require args, if yes then check they are provided///
