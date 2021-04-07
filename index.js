@@ -6,11 +6,12 @@ const { error } = require('console');
 const ytdl = require('ytdl-core');
 const i18n = require("i18n");
 const path = require("path");
+require('dotenv').config();
 
 
 //TODO Delete previous message when next song in queue plays or edit the same embed 
 const client = new Discord.Client();
-client.login(token);
+client.login();
 client.queue = new Map();
 client.commands = new Discord.Collection();
 //client.on('debug', console.log)
