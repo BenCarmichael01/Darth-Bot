@@ -4,6 +4,7 @@ const { canModifyQueue, STAY_TIME, LOCALE } = require("../util/utils");
 const i18n = require("i18n");
 i18n.setLocale(LOCALE);
 const np = require("../commands/music/nowplaying")
+const {MUSIC_CHANNEL_ID} = require("../config")
 module.exports = {
   async play(song, message) {
     const { SOUNDCLOUD_CLIENT_ID } = require("../util/utils");
@@ -18,7 +19,7 @@ module.exports = {
 
     const PRUNING = config ? config.PRUNING : process.env.PRUNING;
 
-    const queue = message.client.queue.get(message.guild.id);
+        const queue = message.client.queue.get(message.guild.id);
 
     if (!song) {
       setTimeout(function () {
@@ -47,8 +48,16 @@ module.exports = {
     } catch (error) {
       if (queue) {
         queue.songs.shift();
+         /*
+          channel = MUSIC_CHANNEL_ID
+          channel.messages.fetch({ limit: 1 }).then(messages => {
+              var lastBotMessage = messages.find(element => element.author.bot())
+              console.log(lastBotMessage);
+          })
+              .catch(console.error);
+          */
           module.exports.play(queue.songs[0], message);
-         
+
       }
        
       console.error(error);
