@@ -6,14 +6,15 @@ const { error } = require('console');
 const ytdl = require('ytdl-core');
 const i18n = require("i18n");
 const path = require("path");
+require('dotenv').config();
 
 
 //TODO Delete previous message when next song in queue plays or edit the same embed 
 const client = new Discord.Client();
-client.login(token);
+client.login();
 client.queue = new Map();
 client.commands = new Discord.Collection();
-client.on('debug', console.log)
+//client.on('debug', console.log)
 client.on("warn", (info) => console.log(info));
 client.on("error", console.error);
 
@@ -97,13 +98,13 @@ client.on('message', message => {
     }
     //Is the command music channel only?//
     if (command.isMusic && (message.channel.id != MUSIC_CHANNEL_ID)) {
-        return message.reply(`This command can only be run in ${musicChannelName}`);
+        return message.reply(i18n.__mf("common.musicOnly", { channel: musicChannelName }));
     }
     ///Usr has perms?///
     if (command.permissions) {
         const authorPerms = message.channel.permissionsFor(message.author);
         if (!authorPerms || !authorPerms.has(command.permissions)) {
-            return message.reply('You can\'t do this!');
+            return message.reply(i18n.__mf("common.musicOnly"));
         }
     }
     ///Does cmd require args, if yes then check they are provided///
