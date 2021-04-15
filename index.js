@@ -1,7 +1,11 @@
 const fs = require('fs');
 const Discord = require('discord.js');
 //import prefix and bot token from config file
-const { prefix, token, MUSIC_CHANNEL_ID } = require('./config.json');
+let rawConfig = fs.readFileSync('./config.json');
+let config = JSON.parse(rawConfig);
+const prefix = config.prefix;
+const MUSIC_CHANNEL_ID = config.MUSIC_CHANNEL_ID;
+//const { prefix, MUSIC_CHANNEL_ID } = require("./config.json");
 const { error } = require('console');
 const ytdl = require('ytdl-core');
 const i18n = require("i18n");
