@@ -91,7 +91,7 @@ module.exports = {
         module.exports.play(queue.songs[0], message);
       });
     dispatcher.setVolumeLogarithmic(queue.volume / 100);
-
+        //TODO change started playing to simply run the nowplaying command without breaking reactions
     try {
         message.channel.remove
       var playingMessage = await queue.textChannel.send(

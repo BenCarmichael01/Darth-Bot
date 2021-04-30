@@ -81,6 +81,7 @@ for (const file of commandFiles) {
 const cooldowns = new Discord.Collection();
 
 client.on('message', message => {
+    console.log(message);
     //If message doesn't start with prefix or is written by a bot, ignore
     if (!message.content.startsWith(prefix) || message.author.bot) return;
 
@@ -103,6 +104,7 @@ client.on('message', message => {
     //Is the command music channel only?//
     if (command.isMusic && (message.channel.id != MUSIC_CHANNEL_ID)) {
         return message.reply(i18n.__mf("common.musicOnly", { channel: musicChannelName }));
+
     }
     ///Usr has perms?///
     if (command.permissions) {

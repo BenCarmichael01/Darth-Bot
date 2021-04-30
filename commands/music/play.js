@@ -117,7 +117,8 @@ module.exports = {
                 return message.reply(error.message).catch(console.error);
             }
         }
-
+        //DEBUG
+        console.log(serverQueue);
         if (serverQueue) {
             serverQueue.songs.push(song);
             return serverQueue.textChannel
@@ -127,11 +128,12 @@ module.exports = {
 
         queueConstruct.songs.push(song);
         message.client.queue.set(message.guild.id, queueConstruct);
-        console.log("MARK")
         try {
             queueConstruct.connection = await channel.join();
             await queueConstruct.connection.voice.setSelfDeaf(true);
             play(queueConstruct.songs[0], message);
+            message.channel.send("DELETING MESSAGE NOW");
+            message.delete();
         } catch (error) {
             console.error(error);
             message.client.queue.delete(message.guild.id);
