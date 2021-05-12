@@ -1,19 +1,20 @@
 const fs = require('fs');
 const Discord = require('discord.js');
 //import prefix and bot token from config file
-var { prefix, token, MUSIC_CHANNEL_ID } = require('./config.json');
+const { prefix, token, MUSIC_CHANNEL_ID } = require('./config.json');
 const { error } = require('console');
 const ytdl = require('ytdl-core');
 const i18n = require("i18n");
 const path = require("path");
+require('dotenv').config();
 
 
 //TODO Delete previous message when next song in queue plays or edit the same embed 
 const client = new Discord.Client();
-client.login(token);
+client.login();
 client.queue = new Map();
 client.commands = new Discord.Collection();
-client.on('debug', console.log)
+//client.on('debug', console.log)
 client.on("warn", (info) => console.log(info));
 client.on("error", console.error);
 
@@ -76,6 +77,7 @@ for (const file of commandFiles) {
 const cooldowns = new Discord.Collection();
 
 client.on('message', message => {
+    console.log(message);
     //If message doesn't start with prefix or is written by a bot, ignore
     if (!message.content.startsWith(prefix) || message.author.bot) {
         if (message.author.id !== client.user.id) return;
@@ -103,6 +105,7 @@ client.on('message', message => {
     //Is the command music channel only?//
     if (command.isMusic && (message.channel.id != MUSIC_CHANNEL_ID)) {
         return message.reply(i18n.__mf("common.musicOnly", { channel: musicChannelName }));
+
     }
     ///Usr has perms?///
     if (command.permissions) {
