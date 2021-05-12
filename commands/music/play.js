@@ -18,7 +18,7 @@ module.exports = {
   isMusic: true,
   async execute(message, args) {
     const { channel } = message.member.voice;
-
+      message.delete();
     const serverQueue = message.client.queue.get(message.guild.id);
     if (!channel) return message.reply(i18n.__("play.errorNotChannel")).catch(console.error);
     if (serverQueue && channel !== message.guild.me.voice.channel)

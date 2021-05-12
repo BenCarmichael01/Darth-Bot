@@ -1,7 +1,7 @@
 const fs = require('fs');
 const Discord = require('discord.js');
 //import prefix and bot token from config file
-const { prefix, token, MUSIC_CHANNEL_ID } = require('./config.json');
+var { prefix, token, MUSIC_CHANNEL_ID } = require('./config.json');
 const { error } = require('console');
 const ytdl = require('ytdl-core');
 const i18n = require("i18n");
@@ -65,7 +65,7 @@ var fileSync = function (dir, filelist) {
 };
 
 const commandFiles = fileSync('./commands').filter(file => file.endsWith('.js'));
-
+console.log(commandFiles);
 for (const file of commandFiles) {
     const command = require(`${file}`);
     // set a new item in the Collection
@@ -77,8 +77,13 @@ const cooldowns = new Discord.Collection();
 
 client.on('message', message => {
     //If message doesn't start with prefix or is written by a bot, ignore
-    if (!message.content.startsWith(prefix) || message.author.bot) return;
-
+    if (!message.content.startsWith(prefix) || message.author.bot) {
+        if (message.author.id !== client.user.id) return;
+    };
+    console.log("Message content:" + message.content);
+    if (message.author.id === client.user.id) {
+        
+    };
     //Get music channel name from id in config
     const musicChannelName = client.channels.cache.get(MUSIC_CHANNEL_ID)
 

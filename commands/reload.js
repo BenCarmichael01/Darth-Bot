@@ -13,9 +13,21 @@ module.exports = {
         ///Check that command exists///
         if (!command) return message.channel.send(`There is no command with name or alias \`${commandName}\`, ${message.author}!`);
         ///Delete specified command from cache then reload it///
-        delete require.cache[require.resolve(`./${command.name}.js`)];
+        /*if (command.isMusic) {
+            delete require.cache[require.resolve(`./music/${command.name}.js`)];
+        }
+        if (!command.isMusic) {
+            delete require.cache[require.resolve(`./${command.name}.js`)];
+        }*/
         try {
-            const newCommand = require(`./${command.name}.js`);
+            if (command.isMusic) {
+                delete require.cache[require.resolve(`./music/${command.name}.js`)];
+                var newCommand = require(`./music/${command.name}.js`);
+            };
+            if (!command.isMusic) {
+                delete require.cache[require.resolve(`./${command.name}.js`)];
+                var newCommand = require(`./${command.name}.js`);
+            };
             message.client.commands.set(newCommand.name, newCommand);
         } catch (error) {
             console.error(error);
