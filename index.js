@@ -66,7 +66,7 @@ var fileSync = function (dir, filelist) {
 };
 
 const commandFiles = fileSync('./commands').filter(file => file.endsWith('.js'));
-console.log(commandFiles);
+//console.log(commandFiles);
 for (const file of commandFiles) {
     const command = require(`${file}`);
     // set a new item in the Collection
@@ -76,13 +76,14 @@ for (const file of commandFiles) {
 //Create cooldown collection
 const cooldowns = new Discord.Collection();
 
+
 client.on('message', message => {
-    console.log(message);
+    //console.log(message);
     //If message doesn't start with prefix or is written by a bot, ignore
     if (!message.content.startsWith(prefix) || message.author.bot) {
         if (message.author.id !== client.user.id) return;
     };
-    console.log("Message content:" + message.content);
+    //console.log("Message content:" + message.content);
     if (message.author.id === client.user.id) {
         
     };
@@ -156,7 +157,7 @@ client.on('message', message => {
 
 ///Print when bot ready to console
 client.once('ready', () => {
-    console.log('Ready!');
+    console.log(`Logged in as ${client.user.username} (${client.user.id})`);
 });
 
 

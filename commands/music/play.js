@@ -7,7 +7,8 @@ const { YOUTUBE_API_KEY, SOUNDCLOUD_CLIENT_ID, LOCALE, DEFAULT_VOLUME } = requir
 const youtube = new YouTubeAPI(YOUTUBE_API_KEY);
 const i18n = require("i18n");
 const config = require("../../config.json");
-const np = require("./nowplaying")
+const np = require("./nowplaying");
+const { Server } = require("tls");
 i18n.setLocale(LOCALE);
 
 module.exports = {
@@ -18,8 +19,9 @@ module.exports = {
   isMusic: true,
   async execute(message, args) {
     const { channel } = message.member.voice;
-      message.delete();
-    const serverQueue = message.client.queue.get(message.guild.id);
+      //message.delete();
+      const serverQueue = message.client.queue.get(message.guild.id);
+      //console.log(serverQueue);
     if (!channel) return message.reply(i18n.__("play.errorNotChannel")).catch(console.error);
     if (serverQueue && channel !== message.guild.me.voice.channel)
       return message
@@ -118,7 +120,7 @@ module.exports = {
             }
         }
         //DEBUG
-        console.log(serverQueue);
+        //console.log(`ServerQueue: ${serverQueue}`);
         if (serverQueue) {
             serverQueue.songs.push(song);
             return serverQueue.textChannel
@@ -132,8 +134,8 @@ module.exports = {
             queueConstruct.connection = await channel.join();
             await queueConstruct.connection.voice.setSelfDeaf(true);
             play(queueConstruct.songs[0], message);
-            message.channel.send("DELETING MESSAGE NOW");
-            message.delete();
+            //message.channel.send("DELETING MESSAGE NOW");
+            //message.delete();
         } catch (error) {
             console.error(error);
             message.client.queue.delete(message.guild.id);
