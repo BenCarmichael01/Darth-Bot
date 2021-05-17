@@ -9,24 +9,25 @@ const i18n = require("i18n");
 const config = require("../../config.json");
 const np = require("./nowplaying");
 const { Server } = require("tls");
+var XMLHttpRequest = require('xhr2');
 i18n.setLocale(LOCALE);
 
 module.exports = {
-  name: "play",
-  cooldown: 3,
-  aliases: ["p"],
-  description: i18n.__("play.description"),
-  isMusic: true,
-  async execute(message, args) {
-    const { channel } = message.member.voice;
-      //message.delete();
-      const serverQueue = message.client.queue.get(message.guild.id);
-      //console.log(serverQueue);
-    if (!channel) return message.reply(i18n.__("play.errorNotChannel")).catch(console.error);
-    if (serverQueue && channel !== message.guild.me.voice.channel)
-      return message
-        .reply(i18n.__mf("play.errorNotInSameChannel", { user: message.client.user }))
-        .catch(console.error);
+    name: "play",
+    cooldown: 3,
+    aliases: ["p"],
+    description: i18n.__("play.description"),
+    isMusic: true,
+    async execute(message, args) {
+        const { channel } = message.member.voice;
+        message.delete();
+        const serverQueue = message.client.queue.get(message.guild.id);
+        //console.log(serverQueue);
+        if (!channel) return message.reply(i18n.__("play.errorNotChannel")).catch(console.error);
+        if (serverQueue && channel !== message.guild.me.voice.channel)
+            return message
+                .reply(i18n.__mf("play.errorNotInSameChannel", { user: message.client.user }))
+                .catch(console.error);
 
         if (!args.length)
             return message
@@ -80,15 +81,48 @@ module.exports = {
 
         let songInfo = null;
         let song = null;
+        //TODO this functions always seems to return false so the default thumbnail is used everytime
+        function checkImage(url1) {
+            var request = new XMLHttpRequest();
+            request.open("GET", url1, true);
+            request.send();
+            request.onload = function () {
+                status = request.status;
+                if (request.status == 200) //if(statusText == OK)
+                {
+                    return true
+                } else {
+                    return false
+                }
+            }
+        }
 
         if (urlValid) {
             try {
                 songInfo = await ytdl.getInfo(url);
+                songId = await ytdl.getURLVideoID(url)
+
+
+                if (checkImage(`https://i3.ytimg.com/vi/${songId}/maxresdefault.jpg`)) {
+                    var songThumb = `https://i3.ytimg.com/vi/${songId}/maxresdefault.jpg`
+                }
+                else if (checkImage(`https://i3.ytimg.com/vi/${songId}/hqdefault.jpg`)) {
+                    var songThumb = `https://i3.ytimg.com/vi/${songId}/hqdefault.jpg`
+                }
+                else {
+                    var songThumb = 'https://i.imgur.com/TObp4E6.jpg'
+                    console.log("No thumb")
+                };
+
+                console.log(songThumb);
+
                 song = {
                     title: songInfo.videoDetails.title,
                     url: songInfo.videoDetails.video_url,
+                    thumbUrl: songThumb,
                     duration: songInfo.videoDetails.lengthSeconds
                 };
+                //console.log(song);
             } catch (error) {
                 console.error(error);
                 return message.reply(error.message).catch(console.error);
@@ -109,9 +143,24 @@ module.exports = {
             try {
                 const results = await youtube.searchVideos(search, 1, { part: "snippet" });
                 songInfo = await ytdl.getInfo(results[0].url);
+                songId = await ytdl.getURLVideoID(results[0].url)
+
+                test = checkImage(`https://i3.ytimg.com/vi/${songId}/maxresdefault.jpg`);
+                console.log(test);
+                if (checkImage(`https://i3.ytimg.com/vi/${songId}/maxresdefault.jpg`)) {
+                    var songThumb = `https://i3.ytimg.com/vi/${songId}/maxresdefault.jpg`
+                }
+                else if (checkImage(`https://i3.ytimg.com/vi/${songId}/hqdefault.jpg`)) {
+                    var songThumb = `https://i3.ytimg.com/vi/${songId}/hqdefault.jpg`
+                }
+                else {
+                    var songThumb = 'https://i.imgur.com/TObp4E6.jpg'
+                    console.log("No thumb")
+                };
                 song = {
                     title: songInfo.videoDetails.title,
                     url: songInfo.videoDetails.video_url,
+                    thumbUrl: songThumb,
                     duration: songInfo.videoDetails.lengthSeconds
                 };
             } catch (error) {
@@ -120,7 +169,7 @@ module.exports = {
             }
         }
         //DEBUG
-        //console.log(`ServerQueue: ${serverQueue}`);
+        //console.log(`ServerQueue: ${serverQueue}`); TODO message timeout
         if (serverQueue) {
             serverQueue.songs.push(song);
             return serverQueue.textChannel

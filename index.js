@@ -1,7 +1,7 @@
 const fs = require('fs');
 const Discord = require('discord.js');
 //import prefix and bot token from config file
-const { prefix, token, MUSIC_CHANNEL_ID } = require('./config.json');
+var { prefix, token, MUSIC_CHANNEL_ID } = require('./config.json');
 const { error } = require('console');
 const ytdl = require('ytdl-core');
 const i18n = require("i18n");
@@ -87,8 +87,7 @@ client.on('message', message => {
     if (message.author.id === client.user.id) {
         
     };
-    //Get music channel name from id in config
-    const musicChannelName = client.channels.cache.get(MUSIC_CHANNEL_ID)
+
 
     //splice off arguments from command and place into an array by spaces
     const args = message.content.slice(prefix.length).trim().split(/ +/);
@@ -104,6 +103,7 @@ client.on('message', message => {
         return message.reply('I can\'t execute that command inside DMs!');
     }
     //Is the command music channel only?//
+    const musicChannelName = message.guild.channels.cache.get(MUSIC_CHANNEL_ID).id
     if (command.isMusic && (message.channel.id != MUSIC_CHANNEL_ID)) {
         return message.reply(i18n.__mf("common.musicOnly", { channel: musicChannelName }));
 

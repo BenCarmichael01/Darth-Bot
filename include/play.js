@@ -1,14 +1,16 @@
 const ytdl = require("ytdl-core-discord");
 const scdl = require("soundcloud-downloader").default;
-const { canModifyQueue, STAY_TIME, LOCALE } = require("../util/utils");
+const { canModifyQueue, STAY_TIME, LOCALE, PRUNING, MSGTIMEOUT } = require("../util/utils");
 const i18n = require("i18n");
 i18n.setLocale(LOCALE);
 const np = require("../commands/music/nowplaying");
-const messageTimeout = 10000;
-const { MUSIC_CHANNEL_ID, playingMessageId } = require("../config");
+var { MUSIC_CHANNEL_ID, playingMessageId } = require("../util/utils");
+const { npMessage } = require("./npmessage");
+
 module.exports = {
     async play(song, message) {
         const { SOUNDCLOUD_CLIENT_ID } = require("../util/utils");
+        //TODO is this const needed?:
         const musicChannel = message.guild.channels.cache.get(MUSIC_CHANNEL_ID);
         let config;
 
@@ -18,9 +20,14 @@ module.exports = {
             config = null;
         }
 
-        const PRUNING = config ? config.PRUNING : process.env.PRUNING;
 
         const queue = message.client.queue.get(message.guild.id);
+
+        //May need to check that songs exist instead of queue as current song may be removed from queue after it starts
+        if (queue) {
+            var npSong = queue.songs[0]
+            npMessage(message, npSong);
+        }
         //console.log("queue:")
         //console.log(message.client.queue.get(message.guild.id));
         if (!song) {
@@ -28,9 +35,16 @@ module.exports = {
                 if (queue.connection.dispatcher && message.guild.me.voice.channel)
                     return;
                 queue.channel.leave();
-                queue.textChannel.send(i18n.__("play.leaveChannel"));
+                queue.textChannel.send(i18n.__("play.leaveChannel"))
+                    .then(msg => {
+                        msg.delete({ timeout: MSGTIMEOUT })
+                    }).catch(console.error);
             }, STAY_TIME * 1000);
-            queue.textChannel.send(i18n.__("play.queueEnded")).catch(console.error);
+            queue.textChannel.send(i18n.__("play.queueEnded"))
+                .then(msg => {
+                    msg.delete({ timeout: MSGTIMEOUT })
+                })
+                .catch(console.error);
             return message.client.queue.delete(message.guild.id);
         }
 
@@ -106,7 +120,7 @@ module.exports = {
             });
         dispatcher.setVolumeLogarithmic(queue.volume / 100);
         //TODO 
-        
+        /*
         async function npMessage() {
            output1 = await musicChannel.messages.fetch({ limit: 10 })
                 .then(async messages => {
@@ -126,13 +140,13 @@ module.exports = {
            // console.log(output1);
             return output1
 
-        }
-        var outputArray = await npMessage();
+        }*/
+        var outputArray = await npMessage(message, song);
         //console.log("outputArray:", outputArray);
         var [playingMessage, collector] = outputArray
         //var playingMessage = musicChannel.messages.cache.get(playingMessageId)
-        console.log(playingMessage);
-        console.log(collector);
+        //console.log(playingMessage);
+        //console.log(collector);
 
         /*var playingMessage = await queue.textChannel.send(
           i18n.__mf("play.startedPlaying", { title: song.title, url: song.url })
@@ -147,7 +161,7 @@ module.exports = {
 
         //console.log(playingMessage);
 
-
+        console.log(queue.playing);
         collector.on("collect", (reaction, user) => {
             if (!queue) return;
             const member = message.guild.member(user);
@@ -156,10 +170,18 @@ module.exports = {
                 case "⏭":
                     queue.playing = true;
                     reaction.users.remove(user).catch(console.error);
-                    if (!canModifyQueue(member)) return i18n.__("common.errorNotChannel");
+                    if (!canModifyQueue(member)) return queue.textChannel
+                        .send(i18n.__("common.errorNotChannel"))
+                        .then(msg => {
+                            msg.delete({ timeout: MSGTIMEOUT })
+                        })
+                        .catch(console.error);;
                     queue.connection.dispatcher.end();
                     queue.textChannel
                         .send(i18n.__mf("play.skipSong", { author: user }))
+                        .then(msg => {
+                            msg.delete({ timeout: MSGTIMEOUT })
+                        })
                         .catch(console.error);
                     collector.stop();
                     break;
@@ -169,15 +191,23 @@ module.exports = {
                     if (!canModifyQueue(member)) return i18n.__("common.errorNotChannel");
                     if (queue.playing) {
                         queue.playing = !queue.playing;
+                        console.log(queue.playing);
                         queue.connection.dispatcher.pause(true);
                         queue.textChannel
                             .send(i18n.__mf("play.pauseSong", { author: user }))
+                            .then(msg => {
+                                msg.delete({ timeout: MSGTIMEOUT })
+                            })
                             .catch(console.error);
                     } else {
                         queue.playing = !queue.playing;
+                        console.log(queue.playing);
                         queue.connection.dispatcher.resume();
                         queue.textChannel
                             .send(i18n.__mf("play.resumeSong", { author: user }))
+                            .then(msg => {
+                                msg.delete({ timeout: MSGTIMEOUT })
+                            })
                             .catch(console.error);
                     }
                     break;
@@ -190,12 +220,18 @@ module.exports = {
                         queue.connection.dispatcher.setVolumeLogarithmic(100 / 100);
                         queue.textChannel
                             .send(i18n.__mf("play.unmutedSong", { author: user }))
+                            .then(msg => {
+                                msg.delete({ timeout: MSGTIMEOUT })
+                            })
                             .catch(console.error);
                     } else {
                         queue.volume = 0;
                         queue.connection.dispatcher.setVolumeLogarithmic(0);
                         queue.textChannel
                             .send(i18n.__mf("play.mutedSong", { author: user }))
+                            .then(msg => {
+                                msg.delete({ timeout: MSGTIMEOUT })
+                            })
                             .catch(console.error);
                     }
                     break;
@@ -213,7 +249,9 @@ module.exports = {
                                 author: user,
                                 volume: queue.volume
                             })
-                        )
+                        ).then(msg => {
+                            msg.delete({ timeout: MSGTIMEOUT })
+                        })
                         .catch(console.error);
                     break;
 
@@ -230,7 +268,9 @@ module.exports = {
                                 author: user,
                                 volume: queue.volume
                             })
-                        )
+                        ).then(msg => {
+                            msg.delete({ timeout: MSGTIMEOUT })
+                        })
                         .catch(console.error);
                     break;
 
@@ -244,7 +284,9 @@ module.exports = {
                                 author: user,
                                 loop: queue.loop ? i18n.__("common.on") : i18n.__("common.off")
                             })
-                        )
+                        ).then(msg => {
+                            msg.delete({ timeout: MSGTIMEOUT })
+                        })
                         .catch(console.error);
                     break;
 
@@ -254,6 +296,9 @@ module.exports = {
                     queue.songs = [];
                     queue.textChannel
                         .send(i18n.__mf("play.stopSong", { author: user }))
+                        .then(msg => {
+                            msg.delete({ timeout: MSGTIMEOUT })
+                        })
                         .catch(console.error);
                     try {
                         queue.connection.dispatcher.end();
@@ -261,20 +306,20 @@ module.exports = {
                         console.error(error);
                         queue.connection.disconnect();
                     }
-                    collector.stop();
+                    //collector.stop();
                     break;
 
                 default:
-                    reaction.users.remove(user).catch(console.error);
+                    //reaction.users.remove(user).catch(console.error);
                     break;
             }
         });
 
         collector.on("end", () => {
-            playingMessage.reactions.removeAll().catch(console.error);
+            /*playingMessage.reactions.removeAll().catch(console.error);
             if (PRUNING && playingMessage && !playingMessage.deleted) {
                 playingMessage.delete({ timeout: 3000 }).catch(console.error);
-            }
+            }*/
         });
 
     }

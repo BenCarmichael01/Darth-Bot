@@ -1,0 +1,39 @@
+{
+  "version": 7,
+  "backups": [
+    {
+      "name": "backup1",
+      "messages": [
+        {
+          "data": {
+            "content": "Welcome to <:empire:832710360158830592> Not The Empire! <:empire:832710360158830592>\n_ _\n>>> <#718928540460122245> is where we have general discussions and lots of shitposting.\n\n<#758337227121754182> is used to play music in a voice channel. Simply type the name of a song or paste in a YouTube or Spotify link.\n\nWe use <#718928540460122244> and <#814990080384958495> for voice chat in games, join one and start playing!\n_ _",
+            "embeds": [
+              {
+                "title": "Some Rules",
+                "description": ":one: Don't be a bitch",
+                "color": 1447446,
+                "footer": {
+                  "text": "u already a bitch aren't you"
+                },
+                "image": {
+                  "url": "https://i.pinimg.com/originals/db/10/35/db10355315d52d49800e68813db585f0.jpg"
+                }
+              }
+            ],
+            "username": "Count Dooku",
+            "avatar_url": "https://assets.vg247.com/current//2019/01/count_dooku_ep2_capture_2-600x330.jpg"
+          },
+          "reference": ""
+        }
+      ],
+      "targets": [
+        {
+          "url": "https://discord.com/api/webhooks/832355563730894868/eh2_gn4g6-xoko4PmrCyJuu6OOddN-oF2u26dQSrsUhQTXu9OFPGPl0YwvabqDNwS_JS"
+        },
+        {
+          "url": "https://discord.com/api/webhooks/832719675170226300/GN7Xgoh-8caiQ6a6zV3LeXLev_MCCUuB5maCXC0Lp3tpXzrdZ_6nXCo18A0Xve2iRUvf"
+        }
+      ]
+    }
+  ]
+}
