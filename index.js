@@ -2,11 +2,14 @@ const fs = require('fs');
 const Discord = require('discord.js');
 //import prefix and bot token from config file
 var { prefix, token, MUSIC_CHANNEL_ID } = require('./config.json');
+const { MSGTIMEOUT } = require("./util/utils");
 const { error } = require('console');
 const ytdl = require('ytdl-core');
 const i18n = require("i18n");
 const path = require("path");
 require('dotenv').config();
+const { npMessage } = require("./include/npmessage");
+
 
 
 //TODO Delete previous message when next song in queue plays or edit the same embed 
@@ -46,7 +49,6 @@ i18n.configure({
 
 //Create array of command names from commands directory
 
-
 var fileSync = function (dir, filelist) {
 
     if (dir[dir.length - 1] != '/') dir = dir.concat('/')
@@ -66,7 +68,7 @@ var fileSync = function (dir, filelist) {
 };
 
 const commandFiles = fileSync('./commands').filter(file => file.endsWith('.js'));
-//console.log(commandFiles);
+
 for (const file of commandFiles) {
     const command = require(`${file}`);
     // set a new item in the Collection
@@ -76,88 +78,149 @@ for (const file of commandFiles) {
 //Create cooldown collection
 const cooldowns = new Discord.Collection();
 
+//doing this here fails as there is no message to pass it 
+
+
+//console.log(client.guilds.cac);
 
 client.on('message', message => {
     //console.log(message);
     //If message doesn't start with prefix or is written by a bot, ignore
-    if (!message.content.startsWith(prefix) || message.author.bot) {
-        if (message.author.id !== client.user.id) return;
-    };
+    if (message.author.bot) return;
+    if (!message.content.startsWith(prefix)) {
+        if (message.channel.id !== MUSIC_CHANNEL_ID) {
+            return
+        }
+        else if (message.channel.id === MUSIC_CHANNEL_ID) {
+            const args = message.content.trim().split(/ +/);
+            
+            try {
+                client.commands.get("play").execute(message, args);
+                return
+
+            }
+            ///Catch any unexpected errors, print to console and notify usr ///ADD LOG FILE///
+            catch (error) {
+                console.error(error);
+                message.reply('There was an error trying to execute that command, please try again.').then(msg => {
+                    msg.delete({ timeout: MSGTIMEOUT })
+                })
+                    .catch(console.error);
+            } 
+        }
+    }
+
+    /*if (!message.content.startsWith(prefix) || message.author.bot) {
+        if (message.author.id !== client.user.id) {
+            if (message.channel.id === MUSIC_CHANNEL_ID) {
+                message.delete();
+            };
+            return;
+        };
+    };*/
     //console.log("Message content:" + message.content);
-    if (message.author.id === client.user.id) {
+   /* if (message.author.id === client.user.id) {
         
-    };
+    };*/
 
-
-    //splice off arguments from command and place into an array by spaces
-    const args = message.content.slice(prefix.length).trim().split(/ +/);
-    //remove first element from array, set to commandName
-    const commandName = args.shift().toLowerCase();
-    //if command or alias doesnt exist then function exits
-    const command = client.commands.get(commandName)
-        || client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
-    if (!command) return;
-
-    ///Guild Only?///
-    if (command.guildOnly && message.channel.type === 'dm') {
-        return message.reply('I can\'t execute that command inside DMs!');
-    }
-    //Is the command music channel only?//
-    const musicChannelName = message.guild.channels.cache.get(MUSIC_CHANNEL_ID).id
-    if (command.isMusic && (message.channel.id != MUSIC_CHANNEL_ID)) {
-        return message.reply(i18n.__mf("common.musicOnly", { channel: musicChannelName }));
-
-    }
-    ///Usr has perms?///
-    if (command.permissions) {
-        const authorPerms = message.channel.permissionsFor(message.author);
-        if (!authorPerms || !authorPerms.has(command.permissions)) {
-            return message.reply(i18n.__mf("common.musicOnly"));
+        //splice off arguments from command and place into an array by spaces
+        const args = message.content.slice(prefix.length).trim().split(/ +/);
+        //remove first element from array, set to commandName
+        const commandName = args.shift().toLowerCase();
+        //if command or alias doesnt exist then function exits
+        const command = client.commands.get(commandName)
+            || client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
+        if (!command) {
+            //TODO localise//
+            message.reply(`That isn't a command! \n Use ${prefix}help to see a list of my commands`).then(msg => {
+                msg.delete({ timeout: MSGTIMEOUT })
+            })
+                .catch(console.error);
+            return;
         }
-    }
-    ///Does cmd require args, if yes then check they are provided///
-    if (command.args && !args.length) {
-        let reply = `You didn't provide any arguments`;
-
-        if (command.usage) {
-            reply += `\nThe proper usage would be: \`${prefix}${command.name} ${command.usage}\``;
+        ///Guild Only?///
+        if (command.guildOnly && message.channel.type === 'dm') {
+            //TODO localise//
+            return message.reply('I can\'t execute that command inside DMs!').then(msg => {
+                msg.delete({ timeout: MSGTIMEOUT })
+            })
+                .catch(console.error);
         }
-        return message.channel.send(reply);
-    }
-    ///////////Setup Cooldown check for commands that require it///////////////////
-    if (!cooldowns.has(command.name)) {
-        cooldowns.set(command.name, new Discord.Collection());
-    }
+        //Is the command music channel only?//
+        const musicChannelName = message.guild.channels.cache.get(MUSIC_CHANNEL_ID).id
+        if (command.isMusic && (message.channel.id != MUSIC_CHANNEL_ID)) {
+            return message.reply(i18n.__mf("common.musicOnly", { channel: musicChannelName })).then(msg => {
+                msg.delete({ timeout: MSGTIMEOUT })
+            })
+                .catch(console.error);;
 
-    const now = Date.now();
-    const timestamps = cooldowns.get(command.name);
-    const cooldownAmount = (command.cooldown || 3) * 1000;
-
-    if (timestamps.has(message.author.id)) {
-        const expirationTime = timestamps.get(message.author.id) + cooldownAmount;
-
-        if (now < expirationTime) {
-            const timeLeft = (expirationTime - now) / 1000;
-            return message.reply(`Please wait ${timeLeft.toFixed(1)} more second(s) before reusing the \`${command.name}\` command.`);
         }
-    }
+        ///Usr has perms?///
+        if (command.permissions) {
+            const authorPerms = message.channel.permissionsFor(message.author);
+            if (!authorPerms || !authorPerms.has(command.permissions)) {
+                return message.reply(i18n.__mf("common.musicOnly")).then(msg => {
+                    msg.delete({ timeout: MSGTIMEOUT })
+                })
+                    .catch(console.error);
+            }
+        }
+        ///Does cmd require args, if yes then check they are provided///
+        if (command.args && !args.length) {
+            let reply = `You didn't provide any arguments`;
 
-    timestamps.set(message.author.id, now);
-    setTimeout(() => timestamps.delete(message.author.id), cooldownAmount);
-    ///Execute command///
-    try {
-        command.execute(message, args);
-    }
-    ///Catch any unexpected errors, print to console and notify usr ///ADD LOG FILE///
-    catch (error) {
-        console.error(error);
-        message.reply('There was an error trying to execute that command, please try again.')
-    }
+            if (command.usage) {
+                reply += `\nThe proper usage would be: \`${prefix}${command.name} ${command.usage}\``;
+            }
+            return message.channel.send(reply).then(msg => {
+                msg.delete({ timeout: (MSGTIMEOUT + 5000)})
+            })
+                .catch(console.error);;
+        }
+        ///////////Setup Cooldown check for commands that require it///////////////////
+        if (!cooldowns.has(command.name)) {
+            cooldowns.set(command.name, new Discord.Collection());
+        }
+
+        const now = Date.now();
+        const timestamps = cooldowns.get(command.name);
+        const cooldownAmount = (command.cooldown || 3) * 1000;
+
+        if (timestamps.has(message.author.id)) {
+            const expirationTime = timestamps.get(message.author.id) + cooldownAmount;
+
+            if (now < expirationTime) {
+                const timeLeft = (expirationTime - now) / 1000;
+                return message.reply(`Please wait ${timeLeft.toFixed(1)} more second(s) before reusing the \`${command.name}\` command.`).then(msg => {
+                    msg.delete({ timeout: MSGTIMEOUT })
+                })
+                    .catch(console.error);
+            }
+        }
+
+        timestamps.set(message.author.id, now);
+        setTimeout(() => timestamps.delete(message.author.id), cooldownAmount);
+
+        ///Execute command///
+        try {
+            command.execute(message, args);
+            return;
+        }
+        ///Catch any unexpected errors, print to console and notify usr ///ADD LOG FILE///
+        catch (error) {
+            console.error(error);
+            message.reply('There was an error trying to execute that command, please try again.').then(msg => {
+                msg.delete({ timeout: MSGTIMEOUT })
+            })
+                .catch(console.error);
+        }
+   
 });
 
 ///Print when bot ready to console
 client.once('ready', () => {
     console.log(`Logged in as ${client.user.username} (${client.user.id})`);
+    npMessage(undefined, undefined, undefined, client);
 });
 
 

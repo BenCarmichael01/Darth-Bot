@@ -81,21 +81,15 @@ module.exports = {
 
         let songInfo = null;
         let song = null;
-        //TODO this functions always seems to return false so the default thumbnail is used everytime
-        function checkImage(url1) {
-            var request = new XMLHttpRequest();
-            request.open("GET", url1, true);
-            request.send();
-            request.onload = function () {
-                status = request.status;
-                if (request.status == 200) //if(statusText == OK)
-                {
-                    return true
-                } else {
-                    return false
-                }
-            }
+        //TODO this functions always seems to return undefined so the default thumbnail is used everytime
+        async function checkImage(url1) {
+            var req = new XMLHttpRequest();
+            req.open('HEAD', url1, true);
+            await req.send();
+            return req.status == 200;
+         
         }
+            
 
         if (urlValid) {
             try {
@@ -114,7 +108,7 @@ module.exports = {
                     console.log("No thumb")
                 };
 
-                console.log(songThumb);
+                //console.log(songThumb);
 
                 song = {
                     title: songInfo.videoDetails.title,
@@ -145,8 +139,8 @@ module.exports = {
                 songInfo = await ytdl.getInfo(results[0].url);
                 songId = await ytdl.getURLVideoID(results[0].url)
 
-                test = checkImage(`https://i3.ytimg.com/vi/${songId}/maxresdefault.jpg`);
-                console.log(test);
+                //test = checkImage(`https://i3.ytimg.com/vi/${songId}/maxresdefault.jpg`);
+                //console.log(test);
                 if (checkImage(`https://i3.ytimg.com/vi/${songId}/maxresdefault.jpg`)) {
                     var songThumb = `https://i3.ytimg.com/vi/${songId}/maxresdefault.jpg`
                 }

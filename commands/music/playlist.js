@@ -1,9 +1,11 @@
 const { MessageEmbed } = require("discord.js");
 const { play } = require("../../include/play");
+const ytdl = require("ytdl-core");
 const YouTubeAPI = require("simple-youtube-api");
 const scdl = require("soundcloud-downloader").default;
 var { MUSIC_CHANNEL_ID, playingMessageId } = require("../../config");
 const { npMessage } = require("../../include/npmessage");
+var XMLHttpRequest = require('xhr2');
 
 const {
     YOUTUBE_API_KEY,
@@ -90,23 +92,43 @@ module.exports = {
             }
         }
 
+        async function checkImage(url1) {
+            var req = new XMLHttpRequest();
+            req.open('HEAD', url1, true);
+            await req.send();
+            return req.status == 200;
+
+        }
         const newSongs = videos
-            .filter((video) => video.title != "Private video" && video.title != "Deleted video")
-            .map((video) => {
+            .filter( (video) => video.title != "Private video" && video.title != "Deleted video")
+            .map( (video) => {
+                songId =  ytdl.getURLVideoID(video.url)
+                if (checkImage(`https://i3.ytimg.com/vi/${songId}/maxresdefault.jpg`)) {
+                    var songThumb = `https://i3.ytimg.com/vi/${songId}/maxresdefault.jpg`
+                }
+                else if (checkImage(`https://i3.ytimg.com/vi/${songId}/hqdefault.jpg`)) {
+                    var songThumb = `https://i3.ytimg.com/vi/${songId}/hqdefault.jpg`
+                }
+                else {
+                    var songThumb = 'https://i.imgur.com/TObp4E6.jpg'
+                    console.log("No thumb")
+                };
                 return (song = {
                     title: video.title,
                     url: video.url,
+                    thumbUrl: songThumb,
                     duration: video.durationSeconds
                 });
             });
-
+        //console.log(newSongs);
         serverQueue ? serverQueue.songs.push(...newSongs) : queueConstruct.songs.push(...newSongs);
+
         //outputArray returns playingMessage in item 1 and reaction colllector in item 2
-        var outputArray = await npMessage(message, song);
+        //var outputArray = await npMessage(message, song);
         
-        var [playingMessage, collector] = outputArray
-        console.log(playingMessage);
-        let playlistEmbed = new MessageEmbed()
+        //var [playingMessage, collector] = outputArray
+        //console.log(playingMessage);
+        /*let playlistEmbed = new MessageEmbed()
             .setTitle(`${playlist.title}`)
             .setDescription(newSongs.map((song, index) => `${index + 1}. ${song.title}`))
             .setURL(playlist.url)
@@ -117,7 +139,7 @@ module.exports = {
         if (playlistEmbed.description.length >= 2048)
             playlistEmbed.description =
                 playlistEmbed.description.substr(0, 2007) + i18n.__("playlist.playlistCharLimit");
-
+                */
         //message.channel.send(i18n.__mf("playlist.startedPlaylist", { author: message.author }), playlistEmbed);
 
         if (!serverQueue) {
@@ -126,7 +148,7 @@ module.exports = {
             try {
                 queueConstruct.connection = await channel.join();
                 await queueConstruct.connection.voice.setSelfDeaf(true);
-                play(queueConstruct.songs[0], message);
+                play(queueConstruct.songs[0], message, newSongs);
             } catch (error) {
                 console.error(error);
                 message.client.queue.delete(message.guild.id);

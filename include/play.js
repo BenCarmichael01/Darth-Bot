@@ -8,7 +8,7 @@ var { MUSIC_CHANNEL_ID, playingMessageId } = require("../util/utils");
 const { npMessage } = require("./npmessage");
 
 module.exports = {
-    async play(song, message) {
+    async play(song, message, newSongs) {
         const { SOUNDCLOUD_CLIENT_ID } = require("../util/utils");
         //TODO is this const needed?:
         const musicChannel = message.guild.channels.cache.get(MUSIC_CHANNEL_ID);
@@ -141,7 +141,7 @@ module.exports = {
             return output1
 
         }*/
-        var outputArray = await npMessage(message, song);
+        var outputArray = await npMessage(message, song, newSongs);
         //console.log("outputArray:", outputArray);
         var [playingMessage, collector] = outputArray
         //var playingMessage = musicChannel.messages.cache.get(playingMessageId)
@@ -161,7 +161,7 @@ module.exports = {
 
         //console.log(playingMessage);
 
-        console.log(queue.playing);
+        
         collector.on("collect", (reaction, user) => {
             if (!queue) return;
             const member = message.guild.member(user);
@@ -175,7 +175,7 @@ module.exports = {
                         .then(msg => {
                             msg.delete({ timeout: MSGTIMEOUT })
                         })
-                        .catch(console.error);;
+                        .catch(console.error);
                     queue.connection.dispatcher.end();
                     queue.textChannel
                         .send(i18n.__mf("play.skipSong", { author: user }))
