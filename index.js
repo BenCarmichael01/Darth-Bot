@@ -218,9 +218,24 @@ client.on('message', message => {
 });
 
 ///Print when bot ready to console
-client.once('ready', () => {
+client.once('ready', async () => {
     console.log(`Logged in as ${client.user.username} (${client.user.id})`);
-    npMessage(undefined, undefined, undefined, client);
+   
+    var [npMessageObj, collector] = await npMessage(undefined, undefined, client);
+
+   
+   
+    collector.on("collect", (reaction, user) => {
+        var queue = npMessageObj.client.queue.get(npMessageObj.guild.id)//.songs
+        if (!queue) {
+            reaction.users.remove(user).catch(console.error)
+            npMessageObj.channel.send(i18n.__mf("nowplaying.errorNotQueue"))
+                .then(msg => {
+                    msg.delete({ timeout: MSGTIMEOUT })
+                }).catch(console.error);   
+        };
+    })
+
 });
 
 

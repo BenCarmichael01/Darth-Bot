@@ -5,17 +5,20 @@ const i18n = require("i18n");
 const Discord = require('discord.js');
 i18n.setLocale(LOCALE);
 module.exports = {
-    async npMessage(message, npSong, newSongs, client) {
+    async npMessage(message, npSong, client) {
+        //What did i use newSongs for? which module is it in as its not used in this one
         //TODO this searches all channels bot can see, must fix if to be added to more servers. Must be like this so np message can be
         //reset everytime the bot launches also i broke the whole thing trying to reset np message at startup
-        if (!message) {
+        //var guilds = client.guilds.cache
+        //console.log(guilds);
+        if (message === undefined) {
             var musicChannel = await client.channels.cache.get(MUSIC_CHANNEL_ID);
         }
-        else if (message) {
+        else {
             var musicChannel = await message.client.channels.cache.get(MUSIC_CHANNEL_ID);
         }
-        if (message !== undefined) {
-            var queue = client.queue.get(message.guild.id).songs;
+        if (message !== undefined && npSong !== undefined) {
+            var queue = message.client.queue.get(message.guild.id).songs;
         }
        
 
@@ -51,7 +54,7 @@ module.exports = {
 
         if (npSong === undefined) {
             outputQueue = "There is nothing in the queue right now"
-            var newMessage = new MessageEmbed()
+            var newEmbed = new MessageEmbed()
                 .setColor('#5865F2')
                 .setTitle("🎶Nothing is playing right now")
                 .setURL("")
@@ -66,9 +69,9 @@ module.exports = {
             
             for (let i = 0; i < currentQueue.length; i++) {
                 index = i + 1
-                outputQueue = index + "." + currentQueue[i].title + "\n" + outputQueue
+                outputQueue = index + ". " + currentQueue[i].title + "\n" + outputQueue
             };
-            var newMessage = new MessageEmbed()
+            var newEmbed = new MessageEmbed()
                 .setColor('#5865F2')
                 .setTitle(`🎶 Now playing: ${npSong.title}`)
                 .setURL(npSong.url)
@@ -78,27 +81,38 @@ module.exports = {
                 .setFooter(`The prefix for this server is ${prefix}`);
         };
 
-        
+       
         output1 = await musicChannel.messages.fetch({ limit: 10 })
             .then(async messages => {
                 var outputVar = [];
                 outputVar[0] = await messages.get(playingMessageId);
                 //console.log(outputVar[0]);
                 //Change now playing message to match current song
-                outputVar[0].edit(outputQueue, newMessage)
+                outputVar[0].edit(outputQueue, newEmbed)
                 return outputVar
             })
             .then(async outputVar => {
-                const filter = (reaction, user) => user.id !== message.client.user.id;
+                //console.log(client.user.id)
+                const filter = (reaction, user) => user.id !== (message ? message.client : client).user.id;
+                
+                /*if (message) { var filter = (reaction, user) => user.id !== message.client.user.id; }
+                else if (client) { var filter = (reaction, user) => user.id !== client.user.id;}*/
+                /*if (npSong !== undefined) { var timeSet = npSong.duration * 1000 }
+                else { var timeSet = 600000 }*/
+
                 outputVar[1] = outputVar[0].createReactionCollector(filter, {
-                    time: npSong.duration > 0 ? npSong.duration * 1000 : 600000
+                    time: npSong === undefined || npSong.duration < 0 ? 600000 : npSong.duration * 1000
                 });
+                
                 return outputVar;
             }).catch(console.error);
-        // console.log(output1);
+
+
+      
+
         return output1
         //outputs an arrray with the first item being the playingMessage and the second being the reaction collector
     }
 };
-
+//npSong.duration > 0 ? npSong.duration * 1000 : 600000
 //check if playlist has been added by checking if songs is true or falsey

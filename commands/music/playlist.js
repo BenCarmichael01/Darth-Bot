@@ -1,6 +1,6 @@
 const { MessageEmbed } = require("discord.js");
 const { play } = require("../../include/play");
-const ytdl = require("ytdl-core");
+const ytdl = require("ytdl-core-discord");
 const YouTubeAPI = require("simple-youtube-api");
 const scdl = require("soundcloud-downloader").default;
 var { MUSIC_CHANNEL_ID, playingMessageId } = require("../../config");
@@ -99,7 +99,7 @@ module.exports = {
             return req.status == 200;
 
         }
-        const newSongs = videos
+        const newSongs =  videos
             .filter( (video) => video.title != "Private video" && video.title != "Deleted video")
             .map( (video) => {
                 songId =  ytdl.getURLVideoID(video.url)
@@ -121,7 +121,7 @@ module.exports = {
                 });
             });
         //console.log(newSongs);
-        serverQueue ? serverQueue.songs.push(...newSongs) : queueConstruct.songs.push(...newSongs);
+        serverQueue ?  serverQueue.songs.push(...newSongs) :  queueConstruct.songs.push(...newSongs);
 
         //outputArray returns playingMessage in item 1 and reaction colllector in item 2
         //var outputArray = await npMessage(message, song);
@@ -149,6 +149,7 @@ module.exports = {
                 queueConstruct.connection = await channel.join();
                 await queueConstruct.connection.voice.setSelfDeaf(true);
                 play(queueConstruct.songs[0], message, newSongs);
+                //console.log(queueConstruct.songs[0]);
             } catch (error) {
                 console.error(error);
                 message.client.queue.delete(message.guild.id);

@@ -141,7 +141,7 @@ module.exports = {
             return output1
 
         }*/
-        var outputArray = await npMessage(message, song, newSongs);
+        var outputArray = await npMessage(message, song);
         //console.log("outputArray:", outputArray);
         var [playingMessage, collector] = outputArray
         //var playingMessage = musicChannel.messages.cache.get(playingMessageId)
@@ -161,7 +161,6 @@ module.exports = {
 
         //console.log(playingMessage);
 
-        
         collector.on("collect", (reaction, user) => {
             if (!queue) return;
             const member = message.guild.member(user);
@@ -191,7 +190,7 @@ module.exports = {
                     if (!canModifyQueue(member)) return i18n.__("common.errorNotChannel");
                     if (queue.playing) {
                         queue.playing = !queue.playing;
-                        console.log(queue.playing);
+                        //console.log(queue.playing);
                         queue.connection.dispatcher.pause(true);
                         queue.textChannel
                             .send(i18n.__mf("play.pauseSong", { author: user }))
@@ -201,7 +200,7 @@ module.exports = {
                             .catch(console.error);
                     } else {
                         queue.playing = !queue.playing;
-                        console.log(queue.playing);
+                        //console.log(queue.playing);
                         queue.connection.dispatcher.resume();
                         queue.textChannel
                             .send(i18n.__mf("play.resumeSong", { author: user }))
@@ -302,6 +301,7 @@ module.exports = {
                         .catch(console.error);
                     try {
                         queue.connection.dispatcher.end();
+                        npMessage(message);
                     } catch (error) {
                         console.error(error);
                         queue.connection.disconnect();
@@ -314,12 +314,15 @@ module.exports = {
                     break;
             }
         });
+        
+
 
         collector.on("end", () => {
             /*playingMessage.reactions.removeAll().catch(console.error);
             if (PRUNING && playingMessage && !playingMessage.deleted) {
                 playingMessage.delete({ timeout: 3000 }).catch(console.error);
             }*/
+            //
         });
 
     }
