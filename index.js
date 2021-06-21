@@ -1,14 +1,15 @@
 const fs = require('fs');
 const Discord = require('discord.js');
 //import prefix and bot token from config file
-var { prefix, token, MUSIC_CHANNEL_ID } = require('./config.json');
-const { MSGTIMEOUT } = require("./util/utils");
+var { prefix, token } = require('./config.json');
+const { MSGTIMEOUT, MUSIC_CHANNEL_ID } = require("./util/utils");
 const { error } = require('console');
 const ytdl = require('ytdl-core');
 const i18n = require("i18n");
 const path = require("path");
 require('dotenv').config();
 const { npMessage } = require("./include/npmessage");
+const mysql = require('mysql');
 
 
 
@@ -83,10 +84,35 @@ const cooldowns = new Discord.Collection();
 
 //console.log(client.guilds.cac);
 
+const con = mysql.createConnection({
+    host: 'localhost',
+    user: 'jacques',
+    password: 'Kotl!n@84',
+    database: 'channels'
+});
+
+client.musicChannels = new Discord.Collection();
+
+con.query(`SELECT * FROM musicChannels`, (err, rows) => {
+    if (err) throw err;
+    console.log('Data received from Db:');
+    console.log(rows);
+
+    for (let i = 0; i < rows.length; i++) {
+        client.musicChannels.set(rows[i].guildId, rows[i].channelId, rows[i].playingMessageId);
+    }
+    con.pause();
+})
+
 client.on('message', message => {
-    //console.log(message);
-    //If message doesn't start with prefix or is written by a bot, ignore
     if (message.author.bot) return;
+    console.log(client.musicChannels);
+
+    var MUSIC_CHANNEL_ID = client.musicChannels.get(message.guild.id);
+    console.log(MUSIC_CHANNEL_ID);
+
+    //If message doesn't start with prefix or is written by a bot, ignore
+    
     if (!message.content.startsWith(prefix)) {
         if (message.channel.id !== MUSIC_CHANNEL_ID) {
             return

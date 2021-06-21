@@ -5,6 +5,9 @@ const client = new Discord.Client();
 const editJsonFile = require("edit-json-file");
 const fs = require("fs");
 const i18n = require("i18n");
+const mysql = require('mysql');
+
+
 module.exports = {
     name: "setup",
     aliases: [],
@@ -13,12 +16,27 @@ module.exports = {
     usage: "#<music_channel>",
     guildOnly: true,
     async execute(message, args) {
+        const con = mysql.createConnection({
+            host: 'localhost',
+            user: 'jacques',
+            password: 'Kotl!n@84',
+            database: 'channels'
+        });
+
+       
+      
         var channelTag = args[0];
         channelTag = JSON.stringify(channelTag).replace(/[""#<>]/g, "");
+
+        if (message.client.musicChannels.get(channelTag)) {
+            return //since channelId has already been added to db
+        }
+
+
         if (message.guild.channels.cache.get(channelTag)) {
             try {
 
-                //console.log(channelTag);
+                //TODO change this to edit the sql db instead of config
                 config = editJsonFile(`./config.json`);
                 config.set("MUSIC_CHANNEL_ID", channelTag);
                 config.save()
