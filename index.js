@@ -95,13 +95,13 @@ client.musicChannels = new Discord.Collection();
 
 con.query(`SELECT * FROM musicChannels`, (err, rows) => {
     if (err) throw err;
-    console.log('Data received from Db:');
-    console.log(rows);
+    //console.log('Data received from Db:');
+    //console.log(rows);
 
     for (let i = 0; i < rows.length; i++) {
-        client.musicChannels.set(rows[i].guildId, rows[i].channelId, rows[i].playingMessageId);
+        client.musicChannels.set(rows[i].guildId, rows[i].channelId);
     }
-    con.pause();
+    con.end();
 })
 
 client.on('message', message => {
@@ -109,8 +109,10 @@ client.on('message', message => {
     console.log(client.musicChannels);
 
     var MUSIC_CHANNEL_ID = client.musicChannels.get(message.guild.id);
-    console.log(MUSIC_CHANNEL_ID);
-
+    //console.log(MUSIC_CHANNEL_ID);
+   /* if (MUSIC_CHANNEL_ID === undefined) {
+        client.commands.get("setup").execute(message, args);
+    }*/
     //If message doesn't start with prefix or is written by a bot, ignore
     
     if (!message.content.startsWith(prefix)) {
@@ -125,7 +127,7 @@ client.on('message', message => {
                 return
 
             }
-            ///Catch any unexpected errors, print to console and notify usr ///ADD LOG FILE///
+            ///Catch any unexpected errors, print to console and notify usr ///TODO ADD LOG FILE///
             catch (error) {
                 console.error(error);
                 message.reply('There was an error trying to execute that command, please try again.').then(msg => {
@@ -163,7 +165,9 @@ client.on('message', message => {
             })
                 .catch(console.error);
             return;
-        }
+    }
+   
+
         ///Guild Only?///
         if (command.guildOnly && message.channel.type === 'dm') {
             //TODO localise//
@@ -172,15 +176,7 @@ client.on('message', message => {
             })
                 .catch(console.error);
         }
-        //Is the command music channel only?//
-        const musicChannelName = message.guild.channels.cache.get(MUSIC_CHANNEL_ID).id
-        if (command.isMusic && (message.channel.id != MUSIC_CHANNEL_ID)) {
-            return message.reply(i18n.__mf("common.musicOnly", { channel: musicChannelName })).then(msg => {
-                msg.delete({ timeout: MSGTIMEOUT })
-            })
-                .catch(console.error);;
 
-        }
         ///Usr has perms?///
         if (command.permissions) {
             const authorPerms = message.channel.permissionsFor(message.author);
@@ -202,7 +198,20 @@ client.on('message', message => {
                 msg.delete({ timeout: (MSGTIMEOUT + 5000)})
             })
                 .catch(console.error);;
+    }
+
+    //Is the command music channel only?//
+    if (MUSIC_CHANNEL_ID) {
+        const musicChannelName = message.guild.channels.cache.get(MUSIC_CHANNEL_ID).id
+        if (command.isMusic && (message.channel.id != MUSIC_CHANNEL_ID)) {
+            return message.reply(i18n.__mf("common.musicOnly", { channel: musicChannelName })).then(msg => {
+                msg.delete({ timeout: MSGTIMEOUT })
+            })
+                .catch(console.error);;
+
         }
+    };
+   
         ///////////Setup Cooldown check for commands that require it///////////////////
         if (!cooldowns.has(command.name)) {
             cooldowns.set(command.name, new Discord.Collection());

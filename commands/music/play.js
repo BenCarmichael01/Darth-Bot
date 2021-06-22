@@ -135,10 +135,13 @@ module.exports = {
             }
         } else {
             try {
+                
                 const results = await youtube.searchVideos(search, 1, { part: "snippet" });
+                console.log("start getinfo");
                 songInfo = await ytdl.getInfo(results[0].url);
-                songId = await ytdl.getURLVideoID(results[0].url)
-
+                console.log("end get info");
+                songId = await ytdl.getURLVideoID(results[0].url);
+                
                 //test = checkImage(`https://i3.ytimg.com/vi/${songId}/maxresdefault.jpg`);
                 //console.log(test);
                 if (checkImage(`https://i3.ytimg.com/vi/${songId}/maxresdefault.jpg`)) {

@@ -6,7 +6,7 @@ const editJsonFile = require("edit-json-file");
 const fs = require("fs");
 const i18n = require("i18n");
 const mysql = require('mysql');
-
+var { prefix, MSGTIMEOUT } = require(`../config.json`);
 
 module.exports = {
     name: "setup",
@@ -16,6 +16,7 @@ module.exports = {
     usage: "#<music_channel>",
     guildOnly: true,
     async execute(message, args) {
+        message.delete();
         const con = mysql.createConnection({
             host: 'localhost',
             user: 'jacques',
@@ -28,8 +29,21 @@ module.exports = {
         var channelTag = args[0];
         channelTag = JSON.stringify(channelTag).replace(/[""#<>]/g, "");
 
-        if (message.client.musicChannels.get(channelTag)) {
-            return //since channelId has already been added to db
+
+        if (message.client.musicChannels.get(message.guild.id)) {
+            con.query(`DELETE FROM musicChannels WHERE guildId=${message.guild.id}`)
+            con.query(`SELECT * FROM musicChannels`, (err, rows) => {
+                if (err) throw err;
+                //console.log('Data received from Db:');
+                //console.log(rows);
+
+                for (let i = 0; i < rows.length; i++) {
+                    message.client.musicChannels.set(rows[i].guildId, rows[i].channelId);
+                }
+                //con.pause();
+            })
+            console.log("DB entry deleted");
+             //since channelId has already been added to db
         }
 
 
@@ -37,31 +51,47 @@ module.exports = {
             try {
 
                 //TODO change this to edit the sql db instead of config
-                config = editJsonFile(`./config.json`);
-                config.set("MUSIC_CHANNEL_ID", channelTag);
-                config.save()
+                con.query(`INSERT INTO musicChannels (guildId, channelId) VALUES (${message.guild.id}, ${channelTag})`, (err) => {
+                    if (err) throw err;
+                    message.channel.send(`The music channel has been set to <#${channelTag}>`).then(msg => {
+                        msg.delete({ timeout: MSGTIMEOUT })
+                    })
+                        .catch(console.error);
+
+                });
+
+                //config = editJsonFile(`./config.json`);
+                //config.set("MUSIC_CHANNEL_ID", channelTag);
+                //config.save();
                 //console.log(config.toObject());
 
-                delete require.cache[require.resolve(`../config.json`)];
+                //delete require.cache[require.resolve(`../config.json`)];
 
-                var { prefix, token, MUSIC_CHANNEL_ID } = require(`../config.json`);
-                if (MUSIC_CHANNEL_ID == channelTag) {
+                //var { prefix, token, MUSIC_CHANNEL_ID } = require(`../config.json`);
+                /*if (MUSIC_CHANNEL_ID == channelTag) {
                     message.channel.send(`The music channel has been set to <#${MUSIC_CHANNEL_ID}>`)
-                }
+                }*/
             }
             catch (error) {
                 console.error(error)
-                message.channel.send("Sorry there has been an error.")
+                message.channel.send("Sorry there has been an error.").then(msg => {
+                    msg.delete({ timeout: MSGTIMEOUT })
+                })
+                    .catch(console.error);
             }
         }
         else {
-            message.channel.send("Sorry, that is not a valid channel. Please tag the channel: #<music_channel>")
+            message.channel.send("Sorry, that is not a valid channel. Please tag the channel: #<music_channel>").then(msg => {
+                msg.delete({ timeout: MSGTIMEOUT })
+            })
+                .catch(console.error);
             return
         }
         //config = editJsonFile(`./config.json`, { autosave: true });
 
 
-        var musicChannel = message.guild.channels.cache.get(MUSIC_CHANNEL_ID);
+        var musicChannelId = message.client.musicChannels.get(message.guild.id);
+        var musicChannel = message.guild.channels.cache.get(musicChannelId);
         //Create base now playing message. TODO change to embed and check scope of playingMessage so it can be edited in the play.js file
         try {
             var npMessage = new Discord.MessageEmbed()
@@ -92,9 +122,15 @@ module.exports = {
             await playingMessage.react("🔁");
             await playingMessage.react("⏹");
 
-            config = editJsonFile(`./config.json`);
-            config.set("playingMessageId", playingMessage.id);
-            config.save();
+            con.query(`UPDATE musicChannels SET playingMessageId = ${playingMessage.id} WHERE guildId = ${message.guild.id} AND channelId = ${message.client.musicChannels.get(message.guild.id)}`,
+                (err) => {
+                    if (err) throw err;
+                    console.log("playing message added to db")
+                    con.end()
+                })
+            //config = editJsonFile(`./config.json`);
+           // config.set("playingMessageId", playingMessage.id);
+            //config.save();
         } catch (error) {
             console.error(error);
         }
