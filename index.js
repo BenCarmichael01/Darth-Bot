@@ -1,7 +1,7 @@
 const fs = require('fs');
 const Discord = require('discord.js');
 //import prefix and bot token from config file
-var { prefix, token, MUSIC_CHANNEL_ID } = require('./config.json');
+var { prefix, token} = require('./config.json');
 const { MSGTIMEOUT } = require("./util/utils");
 const { error } = require('console');
 const ytdl = require('ytdl-core');
@@ -9,6 +9,8 @@ const i18n = require("i18n");
 const path = require("path");
 require('dotenv').config();
 const { npMessage } = require("./include/npmessage");
+const { openDb } = require("./include/opendb");
+
 
 
 
@@ -21,6 +23,9 @@ client.commands = new Discord.Collection();
 client.on("warn", (info) => console.log(info));
 client.on("error", console.error);
 
+
+
+//sql.open('/data/serverData.sqlite');
 //i18n locale config
 i18n.configure({
     locales: ["en", "es", "ko", "fr", "tr", "pt_br", "zh_cn", "zh_tw"],
@@ -83,10 +88,18 @@ const cooldowns = new Discord.Collection();
 
 //console.log(client.guilds.cac);
 
+
+
 client.on('message', message => {
     //console.log(message);
     //If message doesn't start with prefix or is written by a bot, ignore
     if (message.author.bot) return;
+    var MUSIC_CHANNEL_ID = ""
+    db.exec(`SELECT * FROM servers WHERE guildId=${message.guild.id}`).then(rows => {
+         MUSIC_CHANNEL_ID = rows[0].musicChannelId
+
+    });
+
     if (!message.content.startsWith(prefix)) {
         if (message.channel.id !== MUSIC_CHANNEL_ID) {
             return
@@ -220,10 +233,12 @@ client.on('message', message => {
 ///Print when bot ready to console
 client.once('ready', async () => {
     console.log(`Logged in as ${client.user.username} (${client.user.id})`);
-   
-    var [npMessageObj, collector] = await npMessage(undefined, undefined, client);
 
-   
+    const db = await openDb('./data/serverData.sqlite');
+    db.exec('CREATE TABLE IF NOT EXISTS servers (guildId varchar(18) NOT NULL PRIMARY KEY, channelId varchar(18), playingMessageId varchar(18))');
+    
+
+    var [npMessageObj, collector] = await npMessage(undefined, undefined, client);
    
     collector.on("collect", (reaction, user) => {
         var queue = npMessageObj.client.queue.get(npMessageObj.guild.id)//.songs
