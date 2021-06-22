@@ -137,6 +137,7 @@ module.exports = {
             try {
                 
                 const results = await youtube.searchVideos(search, 1, { part: "snippet" });
+                //console.log(results);
                 console.log("start getinfo");
                 songInfo = await ytdl.getInfo(results[0].url);
                 console.log("end get info");
