@@ -9,7 +9,10 @@ const i18n = require("i18n");
 const path = require("path");
 require('dotenv').config();
 const { npMessage } = require("./include/npmessage");
-const { openDb } = require("./include/opendb");
+const sqlite3 = require('sqlite3');
+const sql = require('sqlite');
+
+//const { openDb } = require("./include/opendb");
 
 
 
@@ -23,6 +26,17 @@ client.commands = new Discord.Collection();
 client.on("warn", (info) => console.log(info));
 client.on("error", console.error);
 
+async function openDb(file) {
+    db = await sql.open({
+        filename: file,
+        driver: sqlite3.cached.Database
+    })
+    return db
+}
+
+openDb('./data/serverData.sqlite').then(db => {
+    return db;
+});
 
 
 //sql.open('/data/serverData.sqlite');
@@ -94,12 +108,14 @@ client.on('message', message => {
     //console.log(message);
     //If message doesn't start with prefix or is written by a bot, ignore
     if (message.author.bot) return;
-    var MUSIC_CHANNEL_ID = ""
-    db.exec(`SELECT * FROM servers WHERE guildId=${message.guild.id}`).then(rows => {
-         MUSIC_CHANNEL_ID = rows[0].musicChannelId
-
-    });
-
+    var MUSIC_CHANNEL_ID = ''
+    
+    db.get(`SELECT * FROM servers WHERE guildId='${message.guild.id}'`).then( row => {
+        //console.log(row.channelId);
+        MUSIC_CHANNEL_ID = row.channelId
+    })
+        .catch(console.error);
+    console.log(MUSIC_CHANNEL_ID);
     if (!message.content.startsWith(prefix)) {
         if (message.channel.id !== MUSIC_CHANNEL_ID) {
             return
@@ -234,7 +250,7 @@ client.on('message', message => {
 client.once('ready', async () => {
     console.log(`Logged in as ${client.user.username} (${client.user.id})`);
 
-    const db = await openDb('./data/serverData.sqlite');
+    
     db.exec('CREATE TABLE IF NOT EXISTS servers (guildId varchar(18) NOT NULL PRIMARY KEY, channelId varchar(18), playingMessageId varchar(18))');
     
 
