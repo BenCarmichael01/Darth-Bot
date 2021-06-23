@@ -11,7 +11,7 @@ const np = require("./nowplaying");
 const { Server } = require("tls");
 var XMLHttpRequest = require('xhr2');
 i18n.setLocale(LOCALE);
-
+const MSGTIMEOUT = config.MSGTIMEOUT
 module.exports = {
     name: "play",
     cooldown: 3,
@@ -23,20 +23,30 @@ module.exports = {
         message.delete();
         const serverQueue = message.client.queue.get(message.guild.id);
         //console.log(serverQueue);
-        if (!channel) return message.reply(i18n.__("play.errorNotChannel")).catch(console.error);
+        if (!channel) return message.reply(i18n.__("play.errorNotChannel")).then(msg => {
+            msg.delete({ timeout: MSGTIMEOUT })
+        }).catch(console.error);
         if (serverQueue && channel !== message.guild.me.voice.channel)
             return message
                 .reply(i18n.__mf("play.errorNotInSameChannel", { user: message.client.user }))
-                .catch(console.error);
+                .then(msg => {
+                    msg.delete({ timeout: MSGTIMEOUT })
+                }).catch(console.error);
 
         if (!args.length)
             return message
                 .reply(i18n.__mf("play.usageReply", { prefix: message.client.prefix }))
-                .catch(console.error);
+                .then(msg => {
+                    msg.delete({ timeout: MSGTIMEOUT })
+                }).catch(console.error);
 
         const permissions = channel.permissionsFor(message.client.user);
-        if (!permissions.has("CONNECT")) return message.reply(i18n.__("play.missingPermissionConnect"));
-        if (!permissions.has("SPEAK")) return message.reply(i18n.__("play.missingPermissionSpeak"));
+        if (!permissions.has("CONNECT")) return message.reply(i18n.__("play.missingPermissionConnect")).then(msg => {
+            msg.delete({ timeout: MSGTIMEOUT })
+        }).catch(console.error);
+        if (!permissions.has("SPEAK")) return message.reply(i18n.__("play.missingPermissionSpeak")).then(msg => {
+            msg.delete({ timeout: MSGTIMEOUT })
+        }).catch(console.error);
 
         const search = args.join(" ");
         const videoPattern = /^(https?:\/\/)?(www\.)?(m\.)?(youtube\.com|youtu\.?be)\/.+$/gi;
@@ -59,14 +69,18 @@ module.exports = {
                     if (res.statusCode == "302") {
                         return message.client.commands.get("play").execute(message, [res.headers.location]);
                     } else {
-                        return message.reply("No content could be found at that url.").catch(console.error);
+                        return message.reply("No content could be found at that url.").then(msg => {
+                            msg.delete({ timeout: MSGTIMEOUT })
+                        }).catch(console.error);
                     }
                 });
             } catch (error) {
                 console.error(error);
                 return message.reply(error.message).catch(console.error);
             }
-            return message.reply("Following url redirection...").catch(console.error);
+            return message.reply("Following url redirection...").then(msg => {
+                msg.delete({ timeout: MSGTIMEOUT })
+            }).catch(console.error);
         }
 
         const queueConstruct = {
@@ -119,7 +133,9 @@ module.exports = {
                 //console.log(song);
             } catch (error) {
                 console.error(error);
-                return message.reply(error.message).catch(console.error);
+                return message.reply(error.message).then(msg => {
+                    msg.delete({ timeout: MSGTIMEOUT })
+                }).catch(console.error);
             }
         } else if (scRegex.test(url)) {
             try {
@@ -131,7 +147,9 @@ module.exports = {
                 };
             } catch (error) {
                 console.error(error);
-                return message.reply(error.message).catch(console.error);
+                return message.reply(error.message).then(msg => {
+                    msg.delete({ timeout: MSGTIMEOUT })
+                }).catch(console.error);
             }
         } else {
             try {
@@ -159,7 +177,9 @@ module.exports = {
                 };
             } catch (error) {
                 console.error(error);
-                return message.reply(error.message).catch(console.error);
+                return message.reply(error.message).then(msg => {
+                    msg.delete({ timeout: MSGTIMEOUT })
+                }).catch(console.error);
             }
         }
         //DEBUG
@@ -168,7 +188,9 @@ module.exports = {
             serverQueue.songs.push(song);
             return serverQueue.textChannel
                 .send(i18n.__mf("play.queueAdded", { title: song.title, author: message.author }))
-                .catch(console.error);
+                .then(msg => {
+                    msg.delete({ timeout: MSGTIMEOUT })
+                }).catch(console.error);
         }
 
         queueConstruct.songs.push(song);
@@ -183,7 +205,9 @@ module.exports = {
             console.error(error);
             message.client.queue.delete(message.guild.id);
             await channel.leave();
-            return message.channel.send(i18n.__('play.cantJoinChannel', { error: error })).catch(console.error);
+            return message.channel.send(i18n.__('play.cantJoinChannel', { error: error })).then(msg => {
+                msg.delete({ timeout: MSGTIMEOUT })
+            }).catch(console.error);
         }
 
     }

@@ -5,12 +5,12 @@ const sql = require('sqlite');
 
 module.exports = {
     async openDb(file) {
-        const db = await sql.open({
-            filename: file,
-            driver: sqlite3.cached.Database
-        })
-        return db
+		const db = await sql.open({
+			filename: file,
+			driver: sqlite3.cached.Database
+		}).then((db) => { return db })
+		return db
     }
 };
-//npSong.duration > 0 ? npSong.duration * 1000 : 600000
-//check if playlist has been added by checking if songs is true or falsey
+
+//./data/serverData.sqlite
