@@ -140,7 +140,7 @@ client.on('message', async message => {
 		return row.channelId
 	}).catch(console.error);
 
-	console.log(MUSIC_CHANNEL_ID);
+	//console.log(MUSIC_CHANNEL_ID);
 	if (!message.content.startsWith(prefix)) {
 		if (message.channel.id !== MUSIC_CHANNEL_ID) {
 			return
