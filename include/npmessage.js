@@ -4,15 +4,40 @@ const { LOCALE } = require("../util/utils");
 const i18n = require("i18n");
 const Discord = require('discord.js');
 i18n.setLocale(LOCALE);
+const sqlite3 = require('sqlite3').verbose();
+const sql = require('sqlite');
+
 module.exports = {
-    async npMessage(message, npSong, client) {
-        //What did i use newSongs for? which module is it in as its not used in this one
+    async npMessage(message, npSong, client, guildId) {
+        
         //TODO this searches all channels bot can see, must fix if to be added to more servers. Must be like this so np message can be
         //reset everytime the bot launches also i broke the whole thing trying to reset np message at startup
         //var guilds = client.guilds.cache
         //console.log(guilds);
+        if (!guildId) {
+            guildId = message.guild.id;
+        }
+        db = await sql.open({
+            filename: './data/serverData.sqlite',
+            driver: sqlite3.cached.Database
+        }).then((db) => { return db })
+
+        //TODO get all values in one db request to make faster
+        MUSIC_CHANNEL_ID = await db.get(`SELECT * FROM servers WHERE guildId='${guildId}'`)
+            .then(row => {
+            //console.log(row.channelId);
+            return row.channelId
+            }).catch(console.error);
+        
+        playingMessageId = await db.get(`SELECT * FROM servers WHERE guildId='${guildId}'`)
+            .then(row => {
+                //console.log(row.channelId);
+                return row.playingMessageId
+            }).catch(console.error);
+
+        //console.log(guildId)
         if (message === undefined) {
-            var musicChannel = await client.channels.cache.get(MUSIC_CHANNEL_ID);
+            var musicChannel = await client.guilds.cache.get(guildId).channels.cache.get(MUSIC_CHANNEL_ID);
         }
         else {
             var musicChannel = await message.client.channels.cache.get(MUSIC_CHANNEL_ID);

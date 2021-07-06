@@ -64,7 +64,7 @@ module.exports = {
                 //.addField('Inline field title', 'Some value here', true)
                 //.setImage(args[10])
                 //.setTimestamp()
-            
+            //TODO run npmessage module after message created so collector works
             var playingMessage = await musicChannel.send(npMessage);
             await playingMessage.react("⏭");
             await playingMessage.react("⏯");

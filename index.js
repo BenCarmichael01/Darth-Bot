@@ -99,6 +99,7 @@ const cooldowns = new Discord.Collection();
 var db = {}
 client.once('ready', async () => {
 	console.log(`Logged in as ${client.user.username} (${client.user.id})`);
+	client.user.setActivity("Crimes", {type:"STREAMING"});
 	//Open serverData database and assign database object to db
 	 db = await sql.open({
 		filename: './data/serverData.sqlite',
@@ -113,20 +114,26 @@ client.once('ready', async () => {
 			return result2
 		}).catch(console.error);
 
-	console.log(serverDb)
+	//console.log(serverDb.length)
+	for (i = 0; i <= (serverDb.length-1); i++) {
 
-	var [npMessageObj, collector] = await npMessage(undefined, undefined, client);
-
-	collector.on("collect", (reaction, user) => {
-		var queue = npMessageObj.client.queue.get(npMessageObj.guild.id)//.songs
-		if (!queue) {
-			reaction.users.remove(user).catch(console.error)
-			npMessageObj.channel.send(i18n.__mf("nowplaying.errorNotQueue"))
-				.then(msg => {
-					msg.delete({ timeout: MSGTIMEOUT })
-				}).catch(console.error);
-		};
-	})
+		var npMessageObj = [];
+		var collector = []; 
+		[npMessageObj[i], collector[i]] = await npMessage(undefined, undefined, client, serverDb[i].guildId);
+		
+		collector[i].on("collect", (reaction, user) => {
+			
+			var queue = reaction.message.client.queue.get(reaction.message.guild.id)//.songs
+			if (!queue) {
+				reaction.users.remove(user).catch(console.error)
+				
+				reaction.message.channel.send(i18n.__mf("nowplaying.errorNotQueue"))
+					.then(msg => {
+						msg.delete({ timeout: MSGTIMEOUT })
+					}).catch(console.error);
+			};
+		})
+	}
 
 });
 
