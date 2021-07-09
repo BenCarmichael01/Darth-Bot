@@ -15,7 +15,7 @@ module.exports = {
         //var guilds = client.guilds.cache
         //console.log(guilds);
         if (!guildId) {
-            guildId = message.guild.id;
+            var guildId = message.guild.id;
         }
         db = await sql.open({
             filename: './data/serverData.sqlite',
@@ -23,17 +23,19 @@ module.exports = {
         }).then((db) => { return db })
 
         //TODO get all values in one db request to make faster
-        MUSIC_CHANNEL_ID = await db.get(`SELECT * FROM servers WHERE guildId='${guildId}'`)
-            .then(row => {
+        MUSIC_CHANNEL_ID = (await db.get(`SELECT channelId FROM servers WHERE guildId='${guildId}'`)).channelId
+
+        
+            /*.then(row => {
             //console.log(row.channelId);
             return row.channelId
-            }).catch(console.error);
+            }).catch(console.error);*/
         
-        playingMessageId = await db.get(`SELECT * FROM servers WHERE guildId='${guildId}'`)
-            .then(row => {
+        playingMessageId = (await db.get(`SELECT playingMessageId FROM servers WHERE guildId='${guildId}'`)).playingMessageId
+            /*.then(row => {
                 //console.log(row.channelId);
                 return row.playingMessageId
-            }).catch(console.error);
+            }).catch(console.error);*/
 
         //console.log(guildId)
         if (message === undefined) {

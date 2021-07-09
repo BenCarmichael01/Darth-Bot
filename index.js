@@ -113,6 +113,7 @@ client.once('ready', async () => {
 			//console.log(rows)
 			return result2
 		}).catch(console.error);
+	//console.log(serverDb[0].guildId);
 
 	//console.log(serverDb.length)
 	for (i = 0; i <= (serverDb.length-1); i++) {
@@ -120,7 +121,6 @@ client.once('ready', async () => {
 		var npMessageObj = [];
 		var collector = []; 
 		[npMessageObj[i], collector[i]] = await npMessage(undefined, undefined, client, serverDb[i].guildId);
-		
 		collector[i].on("collect", (reaction, user) => {
 			
 			var queue = reaction.message.client.queue.get(reaction.message.guild.id)//.songs
@@ -144,8 +144,14 @@ client.on('message', async message => {
 	
 	MUSIC_CHANNEL_ID = await db.get(`SELECT * FROM servers WHERE guildId='${message.guild.id}'`).then(row => {
 		//console.log(row.channelId);
-		return row.channelId
+		if (row) {
+			return row.channelId
+		} else return "";
 	}).catch(console.error);
+
+	if (!MUSIC_CHANNEL_ID) {
+		MUSIC_CHANNEL_ID = "";
+	}
 
 	//console.log(MUSIC_CHANNEL_ID);
 	if (!message.content.startsWith(prefix)) {
@@ -208,14 +214,22 @@ client.on('message', async message => {
 			.catch(console.error);
 	}
 	//Is the command music channel only?//
-	const musicChannelName = message.guild.channels.cache.get(MUSIC_CHANNEL_ID).id
-	if (command.isMusic && (message.channel.id != MUSIC_CHANNEL_ID)) {
-		return message.reply(i18n.__mf("common.musicOnly", { channel: musicChannelName })).then(msg => {
-			msg.delete({ timeout: MSGTIMEOUT })
-		})
-			.catch(console.error);;
 
-	}
+		
+	if (command.isMusic && (message.channel.id != MUSIC_CHANNEL_ID)) {
+		if (!MUSIC_CHANNEL_ID) {
+			message.channel.send(`You need to run ${prefix}setup before you can use this command`);
+			return
+		}
+		else {
+			const musicChannelName = message.guild.channels.cache.get(MUSIC_CHANNEL_ID).id
+			return message.reply(i18n.__mf("common.musicOnly", { channel: musicChannelName })).then(msg => {
+				msg.delete({ timeout: MSGTIMEOUT })
+			})
+				.catch(console.error);
+		}
+
+		}
 	///Usr has perms?///
 	if (command.permissions) {
 		const authorPerms = message.channel.permissionsFor(message.author);
