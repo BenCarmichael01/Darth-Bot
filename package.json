@@ -32,7 +32,8 @@
   },
   "nodemonConfig": {
     "ignore": [
-      "config.json"
+      "config.json",
+      "data/serverData.sqlite"
     ],
     "delay": "2500"
   }

@@ -1,82 +1,48 @@
 ﻿const { MessageEmbed } = require('discord.js');
-var { prefix } = require("../config");
+var { prefix, MUSIC_CHANNEL_ID, playingMessageId } = require("../config");
 const { LOCALE } = require("../util/utils");
 const i18n = require("i18n");
 const Discord = require('discord.js');
-const mysql = require('mysql');
 i18n.setLocale(LOCALE);
+const sqlite3 = require('sqlite3').verbose();
+const sql = require('sqlite');
+
 module.exports = {
-    async npMessage(message, npSong, client) {
-        //What did i use newSongs for? which module is it in as its not used in this one
+    async npMessage(message, npSong, client, guildId) {
+        
         //TODO this searches all channels bot can see, must fix if to be added to more servers. Must be like this so np message can be
         //reset everytime the bot launches also i broke the whole thing trying to reset np message at startup
         //var guilds = client.guilds.cache
         //console.log(guilds);
-        const con = mysql.createConnection({
-            host: 'localhost',
-            user: 'jacques',
-            password: 'Kotl!n@84',
-            database: 'channels'
-        });
-
-        async function msgSend (musicChannel, playingMessageId, newEmbed, outputQueue) {
-            output1 = await musicChannel.messages.fetch({ limit: 10 })
-                .then(async messages => {
-                    var outputVar = [];
-                    outputVar[0] = await messages.get(playingMessageId);
-                    //console.log(outputVar[0]);
-                    //Change now playing message to match current song
-                    outputVar[0].edit(outputQueue, newEmbed)
-                    return outputVar
-                })
-                .then(async outputVar => {
-                    //console.log(client.user.id)
-                    const filter = (reaction, user) => user.id !== (message ? message.client : client).user.id;
-
-                    /*if (message) { var filter = (reaction, user) => user.id !== message.client.user.id; }
-                    else if (client) { var filter = (reaction, user) => user.id !== client.user.id;}*/
-                    /*if (npSong !== undefined) { var timeSet = npSong.duration * 1000 }
-                    else { var timeSet = 600000 }*/
-
-                    outputVar[1] = outputVar[0].createReactionCollector(filter, {
-                        time: npSong === undefined || npSong.duration < 0 ? 600000 : npSong.duration * 1000
-                    });
-
-                    return outputVar;
-                }).catch(console.error);
-            return output1
+        if (!guildId) {
+            var guildId = message.guild.id;
         }
+        db = await sql.open({
+            filename: './data/serverData.sqlite',
+            driver: sqlite3.cached.Database
+        }).then((db) => { return db })
+
+        //TODO get all values in one db request to make faster
+        MUSIC_CHANNEL_ID = (await db.get(`SELECT channelId FROM servers WHERE guildId='${guildId}'`)).channelId
+
+        
+            /*.then(row => {
+            //console.log(row.channelId);
+            return row.channelId
+            }).catch(console.error);*/
+        
+        playingMessageId = (await db.get(`SELECT playingMessageId FROM servers WHERE guildId='${guildId}'`)).playingMessageId
+            /*.then(row => {
+                //console.log(row.channelId);
+                return row.playingMessageId
+            }).catch(console.error);*/
+
+        //console.log(guildId)
         if (message === undefined) {
-
-            con.query(`SELECT * FROM musicChannels`, (err, rows) => {
-                var queryResult = rows;
-                console.log(queryResult[0]);
-            });
-
-            for (i = 0; i < client.musicChannels.length; i++) {
-
-                var musicChannelId = queryResult[i].channelId
-                var guild = await client.guilds.get(queryResults[i])
-                var musicChannel = await guild.channels.cache.get(musicChannelId);
-                var playingMessageId = queryResult[i].playingMessageId;
-
-                outputQueue = "There is nothing in the queue right now"
-                var newEmbed = new MessageEmbed()
-                    .setColor('#5865F2')
-                    .setTitle("🎶Nothing is playing right now")
-                    .setURL("")
-                    //.setAuthor(args[3], args[4], args[5])
-                    //.setDescription(args[6])
-                    //.attachFiles(['./media/grogu.jpg'])
-                    .setImage('https://i.imgur.com/TObp4E6.jpg')
-                    .setFooter(`The prefix for this server is ${prefix}`);
-
-                [playingMessage, collector] = msgSend(musicChannel, playingMessageId, newEmbed, outputQueue)
-            }
+            var musicChannel = await client.guilds.cache.get(guildId).channels.cache.get(MUSIC_CHANNEL_ID);
         }
         else {
-            var musicChannel = await message.client.musicChannels.get(message.guild.id);
-
+            var musicChannel = await message.client.channels.cache.get(MUSIC_CHANNEL_ID);
         }
         if (message !== undefined && npSong !== undefined) {
             var queue = message.client.queue.get(message.guild.id).songs;
@@ -124,8 +90,6 @@ module.exports = {
                 //.attachFiles(['./media/grogu.jpg'])
                 .setImage('https://i.imgur.com/TObp4E6.jpg')
                 .setFooter(`The prefix for this server is ${prefix}`);
-
-            msgSend(musicChannel, playingMessageId, newEmbed, ouputQueue);
         }
         else {
             let currentQueue = queue.slice(1, 22);
@@ -145,7 +109,30 @@ module.exports = {
         };
 
        
-       
+        output1 = await musicChannel.messages.fetch({ limit: 10 })
+            .then(async messages => {
+                var outputVar = [];
+                outputVar[0] = await messages.get(playingMessageId);
+                //console.log(outputVar[0]);
+                //Change now playing message to match current song
+                outputVar[0].edit(outputQueue, newEmbed)
+                return outputVar
+            })
+            .then(async outputVar => {
+                //console.log(client.user.id)
+                const filter = (reaction, user) => user.id !== (message ? message.client : client).user.id;
+                
+                /*if (message) { var filter = (reaction, user) => user.id !== message.client.user.id; }
+                else if (client) { var filter = (reaction, user) => user.id !== client.user.id;}*/
+                /*if (npSong !== undefined) { var timeSet = npSong.duration * 1000 }
+                else { var timeSet = 600000 }*/
+
+                outputVar[1] = outputVar[0].createReactionCollector(filter, {
+                    time: npSong === undefined || npSong.duration < 0 ? 600000 : npSong.duration * 1000
+                });
+                
+                return outputVar;
+            }).catch(console.error);
 
 
       
