@@ -4,11 +4,24 @@ const { canModifyQueue, STAY_TIME, LOCALE, PRUNING, MSGTIMEOUT } = require("../u
 const i18n = require("i18n");
 i18n.setLocale(LOCALE);
 const np = require("../commands/music/nowplaying");
-var { MUSIC_CHANNEL_ID, playingMessageId } = require("../util/utils");
+var { playingMessageId, MUSIC_CHANNEL_ID } = require("../util/utils");
 const { npMessage } = require("./npmessage");
+const sqlite3 = require('sqlite3').verbose();
+const sql = require('sqlite');
+
 
 module.exports = {
     async play(song, message, newSongs) {
+        db = await sql.open({
+            filename: './data/serverData.sqlite',
+            driver: sqlite3.cached.Database
+        }).then((db) => { return db })
+
+        MUSIC_CHANNEL_ID = await db.get(`SELECT * FROM servers WHERE guildId='${message.guild.id}'`).then(row => {
+            //console.log(row.channelId);
+            return row.channelId
+        }).catch(console.error);
+
         const { SOUNDCLOUD_CLIENT_ID } = require("../util/utils");
         //TODO is this const needed?:
         const musicChannel = message.guild.channels.cache.get(MUSIC_CHANNEL_ID);
