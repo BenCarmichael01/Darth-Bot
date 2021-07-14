@@ -7,18 +7,50 @@ const { YOUTUBE_API_KEY, SOUNDCLOUD_CLIENT_ID, LOCALE, DEFAULT_VOLUME } = requir
 const youtube = new YouTubeAPI(YOUTUBE_API_KEY);
 const i18n = require("i18n");
 const config = require("../../config.json");
-const np = require("./nowplaying");
+//const np = require("./nowplaying");
 const { Server } = require("tls");
 var XMLHttpRequest = require('xhr2');
 i18n.setLocale(LOCALE);
 const MSGTIMEOUT = config.MSGTIMEOUT
-module.exports = {
-	name: "play",
-	cooldown: 3,
-	aliases: ["p"],
-	description: i18n.__("play.description"),
-	isMusic: true,
-	async execute(message, args) {
+const Commando = require('discord.js-commando')
+const sqlite3 = require('sqlite3').verbose();
+const sql = require('sqlite');
+const path = require('path');
+require('module-alias/register')
+
+module.exports = class playCommand extends Commando.Command {
+	constructor(client) {
+		super(client, {
+			name: 'play',
+			group: 'music',
+			memberName: 'play',
+			description: i18n.__("play.description"),
+			guildOnly: 'true',
+
+		})
+	};
+	
+	async run(message, args) {
+		var db = {};
+		console.log(path.resolve(__dirname, '../../data/serverData.sqlite'));
+		db = await sql.open({
+			filename: path.resolve(__dirname, '../../data/serverData.sqlite'),
+			driver: sqlite3.cached.Database
+		}).then((db) => { return db });
+
+		//TODO include fallback for no music channel registered
+		MUSIC_CHANNEL_ID = await db.get(`SELECT * FROM servers WHERE guildId='${message.guild.id}'`).then(row => {
+			//console.log(row.channelId);
+			if (row) {
+				return row.channelId
+			} else return "";
+		}).catch(console.error);
+
+		if (message.channel.id !== MUSIC_CHANNEL_ID) {
+			return message.reply("This command can only be used in the music channel")
+		}
+
+
 		const { channel } = message.member.voice;
 		message.delete();
 		const serverQueue = message.client.queue.get(message.guild.id);
@@ -117,7 +149,7 @@ module.exports = {
 
 				if (checkImage(`https://img.youtube.com/vi/${songId}/0.jpg`)) {
 					var songThumb = `https://img.youtube.com/vi/${songId}/0.jpg`
-					
+
 				}
 				else if (checkImage(`https://img.youtube.com/vi/${songId}/maxresdefault.jpg`)) {
 					var songThumb = `https://img.youtube.com/vi/${songId}/maxresdefault.jpg`
@@ -216,7 +248,8 @@ module.exports = {
 			return message.channel.send(i18n.__('play.cantJoinChannel', { error: error })).then(msg => {
 				msg.delete({ timeout: MSGTIMEOUT })
 			}).catch(console.error);
-		}
+		};
 
-	}
+
+	};
 };

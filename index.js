@@ -11,6 +11,8 @@ require('dotenv').config();
 const { npMessage } = require("./include/npmessage");
 const sqlite3 = require('sqlite3').verbose();
 const sql = require('sqlite');
+const Commando = require('discord.js-commando');
+
 
 //const { openDb } = require("./include/opendb");
 
@@ -18,7 +20,11 @@ const sql = require('sqlite');
 
 
 //TODO Delete previous message when next song in queue plays or edit the same embed 
-const client = new Discord.Client();
+//const client = new Discord.Client();
+const client = new Commando.Client({
+	owner: '337710838469230592',
+	commandPrefix: '&'
+});
 client.login();
 client.queue = new Map();
 client.commands = new Discord.Collection();
@@ -61,8 +67,11 @@ i18n.configure({
 	}
 });
 
-//Create array of command names from commands directory
+//Commando create commands
 
+
+//Create array of command names from commands directory
+/*
 var fileSync = function (dir, filelist) {
 
 	if (dir[dir.length - 1] != '/') dir = dir.concat('/')
@@ -88,7 +97,7 @@ for (const file of commandFiles) {
 	// set a new item in the Collection
 	// with the key as the command name and the value as the exported module
 	client.commands.set(command.name, command);
-}
+}*/
 //Create cooldown collection
 const cooldowns = new Discord.Collection();
 
@@ -99,7 +108,17 @@ const cooldowns = new Discord.Collection();
 var db = {}
 client.once('ready', async () => {
 	console.log(`Logged in as ${client.user.username} (${client.user.id})`);
-	client.user.setActivity("Crimes", {type:"STREAMING"});
+	client.user.setActivity("Crimes", { type: "STREAMING" });
+
+	client.registry
+		.registerGroups([
+			['fun', 'Fun Commands'],
+			['moderation', 'Moderation Command Group'],
+			['music', 'Music Command Group']
+		])
+		.registerDefaults()
+		.registerCommandsIn(path.join(__dirname, 'testCommands'));
+	
 	//Open serverData database and assign database object to db
 	 db = await sql.open({
 		filename: './data/serverData.sqlite',
@@ -141,7 +160,8 @@ client.on('message', async message => {
 	//console.log(message);
 	//If message doesn't start with prefix or is written by a bot, ignore
 	if (message.author.bot) return;
-	
+
+	if (message.channel.id === '756990417630789746') return;
 	MUSIC_CHANNEL_ID = await db.get(`SELECT * FROM servers WHERE guildId='${message.guild.id}'`).then(row => {
 		//console.log(row.channelId);
 		if (row) {
@@ -162,7 +182,7 @@ client.on('message', async message => {
 			const args = message.content.trim().split(/ +/);
 
 			try {
-				client.commands.get("play").execute(message, args);
+				client.registry.resolveCommand("play").run(message, args)
 				return
 
 			}

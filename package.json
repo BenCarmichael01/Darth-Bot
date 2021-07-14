@@ -14,12 +14,14 @@
     "@discordjs/opus": "^0.5.3",
     "array-move": "^3.0.1",
     "discord.js": "^12.5.1",
+    "discord.js-commando": "^0.12.3",
     "dotenv": "^8.6.0",
     "edit-json-file": "^1.6.0",
     "ffmpeg": "0.0.4",
     "fluent-ffmpeg": "^2.1.2",
     "i18n": "^0.13.3",
-    "nodemon": "^2.0.9",
+    "module-alias": "^2.2.2",
+    "nodemon": "^2.0.12",
     "opusscript": "^0.0.8",
     "simple-youtube-api": "^5.2.1",
     "soundcloud-downloader": "^1.0.0",
@@ -37,5 +39,8 @@
       "data/serverData.sqlite"
     ],
     "delay": "2500"
+  },
+  "_moduleAliases": {
+    "@root": "."
   }
 }
