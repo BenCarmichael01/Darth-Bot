@@ -1,4 +1,3 @@
-const fs = require('fs');
 const Discord = require('discord.js');
 //import prefix and bot token from config file
 var { prefix, token } = require('./config.json');
