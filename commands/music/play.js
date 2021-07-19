@@ -13,9 +13,10 @@ var XMLHttpRequest = require('xhr2');
 i18n.setLocale(LOCALE);
 const MSGTIMEOUT = config.MSGTIMEOUT
 const Commando = require('discord.js-commando')
+const path = require('path');
 const sqlite3 = require('sqlite3').verbose();
 const sql = require('sqlite');
-const path = require('path');
+
 require('module-alias/register')
 
 module.exports = class playCommand extends Commando.Command {
@@ -32,7 +33,7 @@ module.exports = class playCommand extends Commando.Command {
 	
 	async run(message, args) {
 		var db = {};
-		console.log(path.resolve(__dirname, '../../data/serverData.sqlite'));
+		//console.log(path.resolve(__dirname, '../../data/serverData.sqlite'));
 		db = await sql.open({
 			filename: path.resolve(__dirname, '../../data/serverData.sqlite'),
 			driver: sqlite3.cached.Database
@@ -45,7 +46,7 @@ module.exports = class playCommand extends Commando.Command {
 				return row.channelId
 			} else return "";
 		}).catch(console.error);
-
+		//console.log(MUSIC_CHANNEL_ID);
 		if (message.channel.id !== MUSIC_CHANNEL_ID) {
 			return message.reply("This command can only be used in the music channel")
 		}
@@ -132,26 +133,25 @@ module.exports = class playCommand extends Commando.Command {
 			var req = new XMLHttpRequest();
 			req.open('HEAD', url1, true);
 			await req.send();
-			if (req.status != 404) {
+			console.log(req.status);
+			if (req.status == 200) {
 				return true
 			}
 			else return false
-
-
-		}
+		};
 
 
 		if (urlValid) {
 			try {
 				songInfo = await ytdl.getBasicInfo(url);
-				songId = await ytdl.getURLVideoID(url)
+				var songId = await ytdl.getURLVideoID(url)
 
 
-				if (checkImage(`https://img.youtube.com/vi/${songId}/0.jpg`)) {
+				if (await checkImage(`https://img.youtube.com/vi/${songId}/0.jpg`)) {
 					var songThumb = `https://img.youtube.com/vi/${songId}/0.jpg`
 
 				}
-				else if (checkImage(`https://img.youtube.com/vi/${songId}/maxresdefault.jpg`)) {
+				else if (await checkImage(`https://img.youtube.com/vi/${songId}/maxresdefault.jpg`)) {
 					var songThumb = `https://img.youtube.com/vi/${songId}/maxresdefault.jpg`
 				}
 				else {
@@ -195,15 +195,15 @@ module.exports = class playCommand extends Commando.Command {
 				//console.log("getInfo start");
 				songInfo = await ytdl.getBasicInfo(results[0].url);
 				// console.log("getinfo end");
-				songId = await ytdl.getURLVideoID(results[0].url)
+				var songId = await ytdl.getURLVideoID(results[0].url)
 
-				//test = checkImage(`https://i3.ytimg.com/vi/${songId}/maxresdefault.jpg`);
-				//console.log(test);
-				if (checkImage(`https://i3.ytimg.com/vi/${songId}/maxresdefault.jpg`)) {
-					var songThumb = `https://i3.ytimg.com/vi/${songId}/maxresdefault.jpg`
+				var test = await checkImage(`https://img.youtube.com/vi/${songId}/maxresdefault.jpg`);
+				console.log(test);
+				if (await checkImage(`https://img.youtube.com/vi/${songId}/maxresdefault.jpg`)) {
+					var songThumb = `https://img.youtube.com/vi/${songId}/maxresdefault.jpg`
 				}
-				else if (checkImage(`https://i3.ytimg.com/vi/${songId}/hqdefault.jpg`)) {
-					var songThumb = `https://i3.ytimg.com/vi/${songId}/hqdefault.jpg`
+				else if (await checkImage(`https://img.youtube.com/vi/${songId}/hqdefault.jpg`)) {
+					var songThumb = `https://img.youtube.com/vi/${songId}/hqdefault.jpg`
 				}
 				else {
 					var songThumb = 'https://i.imgur.com/TObp4E6.jpg'

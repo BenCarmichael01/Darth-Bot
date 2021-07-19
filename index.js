@@ -114,13 +114,15 @@ client.once('ready', async () => {
 		.registerGroups([
 			['fun', 'Fun Commands'],
 			['moderation', 'Moderation Command Group'],
-			['music', 'Music Command Group']
+			['music', 'Music Command Group'],
+			['misc', 'Miscelanious Commands']
 		])
 		.registerDefaults()
-		.registerCommandsIn(path.join(__dirname, 'testCommands'));
-	
+		.registerCommandsIn(path.join(__dirname, 'commands'))
+
+
 	//Open serverData database and assign database object to db
-	 db = await sql.open({
+	db = await sql.open({
 		filename: './data/serverData.sqlite',
 		driver: sqlite3.cached.Database
 	}).then((db) => { return db })
@@ -135,17 +137,17 @@ client.once('ready', async () => {
 	//console.log(serverDb[0].guildId);
 
 	//console.log(serverDb.length)
-	for (i = 0; i <= (serverDb.length-1); i++) {
+	for (i = 0; i <= (serverDb.length - 1); i++) {
 
 		var npMessageObj = [];
-		var collector = []; 
+		var collector = [];
 		[npMessageObj[i], collector[i]] = await npMessage(undefined, undefined, client, serverDb[i].guildId);
 		collector[i].on("collect", (reaction, user) => {
-			
+
 			var queue = reaction.message.client.queue.get(reaction.message.guild.id)//.songs
 			if (!queue) {
 				reaction.users.remove(user).catch(console.error)
-				
+
 				reaction.message.channel.send(i18n.__mf("nowplaying.errorNotQueue"))
 					.then(msg => {
 						msg.delete({ timeout: MSGTIMEOUT })
@@ -153,7 +155,6 @@ client.once('ready', async () => {
 			};
 		})
 	}
-
 });
 
 client.on('message', async message => {
@@ -161,7 +162,8 @@ client.on('message', async message => {
 	//If message doesn't start with prefix or is written by a bot, ignore
 	if (message.author.bot) return;
 
-	if (message.channel.id === '756990417630789746') return;
+	//vvv What is this for?? vvv
+	//if (message.channel.id === '756990417630789746') return;
 	MUSIC_CHANNEL_ID = await db.get(`SELECT * FROM servers WHERE guildId='${message.guild.id}'`).then(row => {
 		//console.log(row.channelId);
 		if (row) {
@@ -183,6 +185,7 @@ client.on('message', async message => {
 
 			try {
 				client.registry.resolveCommand("play").run(message, args)
+				console.log("done");
 				return
 
 			}
@@ -235,7 +238,7 @@ client.on('message', async message => {
 	}
 	//Is the command music channel only?//
 
-		
+
 	if (command.isMusic && (message.channel.id != MUSIC_CHANNEL_ID)) {
 		if (!MUSIC_CHANNEL_ID) {
 			message.channel.send(`You need to run ${prefix}setup before you can use this command`);
@@ -249,7 +252,7 @@ client.on('message', async message => {
 				.catch(console.error);
 		}
 
-		}
+	}
 	///Usr has perms?///
 	if (command.permissions) {
 		const authorPerms = message.channel.permissionsFor(message.author);
@@ -295,24 +298,19 @@ client.on('message', async message => {
 
 	timestamps.set(message.author.id, now);
 	setTimeout(() => timestamps.delete(message.author.id), cooldownAmount);
-
-	///Execute command///
-	try {
-		command.execute(message, args);
-		return;
-	}
-	///Catch any unexpected errors, print to console and notify usr ///ADD LOG FILE///
-	catch (error) {
-		console.error(error);
-		message.reply('There was an error trying to execute that command, please try again.').then(msg => {
-			msg.delete({ timeout: MSGTIMEOUT })
-		})
-			.catch(console.error);
-	}
+	/*
+		///Execute command///
+		try {
+			command.execute(message, args);
+			return;
+		}
+		///Catch any unexpected errors, print to console and notify usr ///ADD LOG FILE///
+		catch (error) {
+			console.error(error);
+			message.reply('There was an error trying to execute that command, please try again.').then(msg => {
+				msg.delete({ timeout: MSGTIMEOUT })
+			})
+				.catch(console.error);
+		}*/
 
 });
-
-///Print when bot ready to console
-
-
-

@@ -7,25 +7,32 @@ const fs = require("fs");
 const i18n = require("i18n");
 const sqlite3 = require('sqlite3').verbose();
 const sql = require('sqlite');
-const { npMessage } = require("../include/npmessage");
+const { npMessage } = require("../../include/npmessage");
 //const { playingMessageId, MUSIC_CHANNEL_ID } = require("../util/utils");
-var { prefix } = require('../config');
-const { MSGTIMEOUT } = require("../util/utils");
-module.exports = {
-	name: "setup",
-	aliases: [],
-	description: "Setup the channel for music commands",
-	args: true,
-	usage: "#<music_channel>",
-	guildOnly: true,
-	async execute(message, args) {
+var { prefix } = require('../../config');
+const { MSGTIMEOUT } = require("../../util/utils");
+const Commando = require('discord.js-commando')
+const path = require('path');
+
+module.exports = class setupCommand extends Commando.Command {
+	constructor(client) {
+		super(client, {
+			name: 'setup',
+			group: 'moderation',
+			memberName: 'setup',
+			description: 'Setup the channel for music commands',
+			guildOnly: 'true',
+			argsType: 'multiple'
+		})
+	};
+	async run(message, args) {
 		var channelTag = args[0];
 		channelTag = JSON.stringify(channelTag).replace(/[""#<>]/g, "");
 
 		if (message.guild.channels.cache.get(channelTag)) {
 			try {
 				db = await sql.open({
-					filename: './data/serverData.sqlite',
+					filename: path.resolve(__dirname, '../../data/serverData.sqlite'),
 					driver: sqlite3.cached.Database
 				}).then((db) => { return db })
 

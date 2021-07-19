@@ -98,6 +98,7 @@ module.exports = {
                 index = i + 1
                 outputQueue = index + ". " + currentQueue[i].title + "\n" + outputQueue
             };
+            console.log(npSong.thumbUrl);
             var newEmbed = new MessageEmbed()
                 .setColor('#5865F2')
                 .setTitle(`🎶 Now playing: ${npSong.title}`)

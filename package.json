@@ -21,7 +21,6 @@
     "fluent-ffmpeg": "^2.1.2",
     "i18n": "^0.13.3",
     "module-alias": "^2.2.2",
-    "nodemon": "^2.0.12",
     "opusscript": "^0.0.8",
     "simple-youtube-api": "^5.2.1",
     "soundcloud-downloader": "^1.0.0",

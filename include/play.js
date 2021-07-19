@@ -3,7 +3,8 @@ const scdl = require("soundcloud-downloader").default;
 const { canModifyQueue, STAY_TIME, LOCALE, PRUNING, MSGTIMEOUT } = require("../util/utils");
 const i18n = require("i18n");
 i18n.setLocale(LOCALE);
-const np = require("../commands/music/nowplaying");
+//TODO FIX THIS REF WHEN MOVED COMMAND TO COMMANDO
+//const np = require("../commands/music/nowplaying");
 var { playingMessageId, MUSIC_CHANNEL_ID } = require("../util/utils");
 const { npMessage } = require("./npmessage");
 const sqlite3 = require('sqlite3').verbose();
