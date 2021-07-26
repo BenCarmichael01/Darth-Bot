@@ -1,23 +1,21 @@
-const { play } = require("../../include/play");
-const ytdl = require("ytdl-core-discord");
-const YouTubeAPI = require("simple-youtube-api");
-const scdl = require("soundcloud-downloader").default
-const https = require("https");
-const { YOUTUBE_API_KEY, SOUNDCLOUD_CLIENT_ID, LOCALE, DEFAULT_VOLUME } = require("../../util/utils");
-const youtube = new YouTubeAPI(YOUTUBE_API_KEY);
-const i18n = require("i18n");
-const config = require("../../config.json");
-//const np = require("./nowplaying");
-const { Server } = require("tls");
-var XMLHttpRequest = require('xhr2');
-i18n.setLocale(LOCALE);
-const MSGTIMEOUT = config.MSGTIMEOUT
-const Commando = require('discord.js-commando')
+const { play } = require('@include/play');
+const ytdl = require('ytdl-core-discord');
+const YouTubeAPI = require('simple-youtube-api');
+const scdl = require('soundcloud-downloader').default;
+const https = require('https');
+const { YOUTUBE_API_KEY, SOUNDCLOUD_CLIENT_ID, LOCALE, DEFAULT_VOLUME } = require('@util/utils');
+const i18n = require('i18n');
+const XMLHttpRequest = require('xhr2');
+const Commando = require('discord.js-commando');
 const path = require('path');
 const sqlite3 = require('sqlite3').verbose();
 const sql = require('sqlite');
+const config = require('@root/config.json');
 
-require('module-alias/register')
+i18n.setLocale(LOCALE);
+const {MSGTIMEOUT} = config;
+const youtube = new YouTubeAPI(YOUTUBE_API_KEY);
+require('module-alias/register');
 
 module.exports = class playCommand extends Commando.Command {
 	constructor(client) {
@@ -25,63 +23,63 @@ module.exports = class playCommand extends Commando.Command {
 			name: 'play',
 			group: 'music',
 			memberName: 'play',
-			description: i18n.__("play.description"),
+			description: i18n.__('play.description'),
 			guildOnly: 'true',
 
-		})
-	};
-	
+		});
+	}
+
 	async run(message, args) {
-		var db = {};
-		//console.log(path.resolve(__dirname, '../../data/serverData.sqlite'));
+		let db = {};
+		// console.log(path.resolve(__dirname, '../../data/serverData.sqlite'));
 		db = await sql.open({
 			filename: path.resolve(__dirname, '../../data/serverData.sqlite'),
-			driver: sqlite3.cached.Database
-		}).then((db) => { return db });
+			driver: sqlite3.cached.Database,
+		}).then((thedb) => thedb);
 
-		//TODO include fallback for no music channel registered
-		MUSIC_CHANNEL_ID = await db.get(`SELECT * FROM servers WHERE guildId='${message.guild.id}'`).then(row => {
-			//console.log(row.channelId);
+		// TODO include fallback for no music channel registered
+		const MUSIC_CHANNEL_ID = await db.get(`SELECT * FROM servers WHERE guildId='${message.guild.id}'`).then(row => {
+			// console.log(row.channelId);
 			if (row) {
-				return row.channelId
-			} else return "";
+				return row.channelId;
+			}
+			return '';
 		}).catch(console.error);
-		//console.log(MUSIC_CHANNEL_ID);
+		// console.log(MUSIC_CHANNEL_ID);
 		if (message.channel.id !== MUSIC_CHANNEL_ID) {
-			return message.reply("This command can only be used in the music channel")
+			return message.reply('This command can only be used in the music channel');
 		}
-
 
 		const { channel } = message.member.voice;
 		message.delete();
 		const serverQueue = message.client.queue.get(message.guild.id);
-		//console.log(serverQueue);
-		if (!channel) return message.reply(i18n.__("play.errorNotChannel")).then(msg => {
-			msg.delete({ timeout: MSGTIMEOUT })
+		// console.log(serverQueue);
+		if (!channel) return message.reply(i18n.__('play.errorNotChannel')).then((msg) => {
+			msg.delete({ timeout: MSGTIMEOUT });
 		}).catch(console.error);
-		if (serverQueue && channel !== message.guild.me.voice.channel)
+		if (serverQueue && channel !== message.guild.me.voice.channel) {
 			return message
-				.reply(i18n.__mf("play.errorNotInSameChannel", { user: message.client.user }))
-				.then(msg => {
-					msg.delete({ timeout: MSGTIMEOUT })
+				.reply(i18n.__mf('play.errorNotInSameChannel', { user: message.client.user }))
+				.then((msg) => {
+					msg.delete({ timeout: MSGTIMEOUT });
 				}).catch(console.error);
-
-		if (!args.length)
+		}
+		if (!args.length) {
 			return message
-				.reply(i18n.__mf("play.usageReply", { prefix: message.client.prefix }))
-				.then(msg => {
-					msg.delete({ timeout: MSGTIMEOUT })
+				.reply(i18n.__mf('play.usageReply', { prefix: message.client.prefix }))
+				.then((msg) => {
+					msg.delete({ timeout: MSGTIMEOUT });
 				}).catch(console.error);
-
+		}
 		const permissions = channel.permissionsFor(message.client.user);
-		if (!permissions.has("CONNECT")) return message.reply(i18n.__("play.missingPermissionConnect")).then(msg => {
+		if (!permissions.has('CONNECT')) return message.reply(i18n.__('play.missingPermissionConnect')).then(msg => {
 			msg.delete({ timeout: MSGTIMEOUT })
 		}).catch(console.error);
-		if (!permissions.has("SPEAK")) return message.reply(i18n.__("play.missingPermissionSpeak")).then(msg => {
+		if (!permissions.has('SPEAK')) return message.reply(i18n.__('play.missingPermissionSpeak')).then(msg => {
 			msg.delete({ timeout: MSGTIMEOUT })
 		}).catch(console.error);
 
-		const search = args.join(" ");
+		const search = args.join(' ');
 		const videoPattern = /^(https?:\/\/)?(www\.)?(m\.)?(youtube\.com|youtu\.?be)\/.+$/gi;
 		const playlistPattern = /^.*(list=)([^#\&\?]*).*/gi;
 		const scRegex = /^https?:\/\/(soundcloud\.com)\/(.*)$/;
@@ -89,20 +87,20 @@ module.exports = class playCommand extends Commando.Command {
 		const url = args[0];
 		const urlValid = videoPattern.test(args[0]);
 
-		// Start the playlist if playlist url was provided
+		//  Start the playlist if playlist url was provided
 		if (!videoPattern.test(args[0]) && playlistPattern.test(args[0])) {
-			return message.client.commands.get("playlist").execute(message, args);
-		} else if (scdl.isValidUrl(url) && url.includes("/sets/")) {
-			return message.client.commands.get("playlist").execute(message, args);
+			return message.client.commands.get('playlist').execute(message, args);
+		} else if (scdl.isValidUrl(url) && url.includes('/sets/')) {
+			return message.client.commands.get('playlist').execute(message, args);
 		}
 
 		if (mobileScRegex.test(url)) {
 			try {
 				https.get(url, function (res) {
-					if (res.statusCode == "302") {
-						return message.client.commands.get("play").execute(message, [res.headers.location]);
+					if (res.statusCode == '302') {
+						return message.client.commands.get('play').execute(message, [res.headers.location]);
 					} else {
-						return message.reply("No content could be found at that url.").then(msg => {
+						return message.reply('No content could be found at that url.').then(msg => {
 							msg.delete({ timeout: MSGTIMEOUT })
 						}).catch(console.error);
 					}
@@ -111,7 +109,7 @@ module.exports = class playCommand extends Commando.Command {
 				console.error(error);
 				return message.reply(error.message).catch(console.error);
 			}
-			return message.reply("Following url redirection...").then(msg => {
+			return message.reply('Following url redirection...').then(msg => {
 				msg.delete({ timeout: MSGTIMEOUT })
 			}).catch(console.error);
 		}
@@ -128,7 +126,7 @@ module.exports = class playCommand extends Commando.Command {
 
 		let songInfo = null;
 		let song = null;
-		//TODO this functions always seems to return undefined so the default thumbnail is used everytime
+		// TODO this functions always seems to return undefined so the default thumbnail is used everytime
 		async function checkImage(url1) {
 			var req = new XMLHttpRequest();
 			req.open('HEAD', url1, true);
@@ -147,19 +145,19 @@ module.exports = class playCommand extends Commando.Command {
 				var songId = await ytdl.getURLVideoID(url)
 
 
-				if (await checkImage(`https://img.youtube.com/vi/${songId}/0.jpg`)) {
-					var songThumb = `https://img.youtube.com/vi/${songId}/0.jpg`
+				if (await checkImage(`https:// img.youtube.com/vi/${songId}/0.jpg`)) {
+					var songThumb = `https:// img.youtube.com/vi/${songId}/0.jpg`
 
 				}
-				else if (await checkImage(`https://img.youtube.com/vi/${songId}/maxresdefault.jpg`)) {
-					var songThumb = `https://img.youtube.com/vi/${songId}/maxresdefault.jpg`
+				else if (await checkImage(`https:// img.youtube.com/vi/${songId}/maxresdefault.jpg`)) {
+					var songThumb = `https:// img.youtube.com/vi/${songId}/maxresdefault.jpg`
 				}
 				else {
-					var songThumb = 'https://i.imgur.com/TObp4E6.jpg'
-					console.log("No thumb")
+					var songThumb = 'https:// i.imgur.com/TObp4E6.jpg'
+					console.log('No thumb')
 				};
 
-				//console.log(songThumb);
+				// console.log(songThumb);
 
 				song = {
 					title: songInfo.videoDetails.title,
@@ -167,7 +165,7 @@ module.exports = class playCommand extends Commando.Command {
 					thumbUrl: songThumb,
 					duration: songInfo.videoDetails.lengthSeconds
 				};
-				//console.log(song);
+				// console.log(song);
 			} catch (error) {
 				console.error(error);
 				return message.reply(error.message).then(msg => {
@@ -190,24 +188,24 @@ module.exports = class playCommand extends Commando.Command {
 			}
 		} else {
 			try {
-				//console.log("results");
-				const results = await youtube.searchVideos(search, 1, { part: "snippet" });
-				//console.log("getInfo start");
+				// console.log('results');
+				const results = await youtube.searchVideos(search, 1, { part: 'snippet' });
+				// console.log('getInfo start');
 				songInfo = await ytdl.getBasicInfo(results[0].url);
-				// console.log("getinfo end");
+				//  console.log('getinfo end');
 				var songId = await ytdl.getURLVideoID(results[0].url)
 
-				var test = await checkImage(`https://img.youtube.com/vi/${songId}/maxresdefault.jpg`);
+				var test = await checkImage(`https:// img.youtube.com/vi/${songId}/maxresdefault.jpg`);
 				console.log(test);
-				if (await checkImage(`https://img.youtube.com/vi/${songId}/maxresdefault.jpg`)) {
-					var songThumb = `https://img.youtube.com/vi/${songId}/maxresdefault.jpg`
+				if (await checkImage(`https:// img.youtube.com/vi/${songId}/maxresdefault.jpg`)) {
+					var songThumb = `https:// img.youtube.com/vi/${songId}/maxresdefault.jpg`
 				}
-				else if (await checkImage(`https://img.youtube.com/vi/${songId}/hqdefault.jpg`)) {
-					var songThumb = `https://img.youtube.com/vi/${songId}/hqdefault.jpg`
+				else if (await checkImage(`https:// img.youtube.com/vi/${songId}/hqdefault.jpg`)) {
+					var songThumb = `https:// img.youtube.com/vi/${songId}/hqdefault.jpg`
 				}
 				else {
-					var songThumb = 'https://i.imgur.com/TObp4E6.jpg'
-					console.log("No thumb")
+					var songThumb = 'https:// i.imgur.com/TObp4E6.jpg'
+					console.log('No thumb')
 				};
 				song = {
 					title: songInfo.videoDetails.title,
@@ -222,12 +220,12 @@ module.exports = class playCommand extends Commando.Command {
 				}).catch(console.error);
 			}
 		}
-		//DEBUG
-		//console.log(`ServerQueue: ${serverQueue}`); TODO message timeout
+		// DEBUG
+		// console.log(`ServerQueue: ${serverQueue}`); TODO message timeout
 		if (serverQueue) {
 			serverQueue.songs.push(song);
 			return serverQueue.textChannel
-				.send(i18n.__mf("play.queueAdded", { title: song.title, author: message.author }))
+				.send(i18n.__mf('play.queueAdded', { title: song.title, author: message.author }))
 				.then(msg => {
 					msg.delete({ timeout: MSGTIMEOUT })
 				}).catch(console.error);
@@ -239,8 +237,8 @@ module.exports = class playCommand extends Commando.Command {
 			queueConstruct.connection = await channel.join();
 			await queueConstruct.connection.voice.setSelfDeaf(true);
 			play(queueConstruct.songs[0], message);
-			//message.channel.send("DELETING MESSAGE NOW");
-			//message.delete();
+			// message.channel.send('DELETING MESSAGE NOW');
+			// message.delete();
 		} catch (error) {
 			console.error(error);
 			message.client.queue.delete(message.guild.id);
@@ -250,6 +248,6 @@ module.exports = class playCommand extends Commando.Command {
 			}).catch(console.error);
 		};
 
-
+		return 1;
 	};
 };
