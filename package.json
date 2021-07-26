@@ -42,12 +42,12 @@
   },
   "_moduleAliases": {
     "@root": "./",
-    "@commands/*": "./commands/*",
-    "@include/*": "./include/*",
-    "@media/*": "./media/*",
-    "@locales/*": "./locales/*",
-    "@util/*": "./util/*",
-    "@data/*": "./data/*"
+    "@commands": "./commands",
+    "@include": "./include",
+    "@media": "./media",
+    "@locales": "./locales",
+    "@util": "./util",
+    "@data": "./data"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^4.28.4",

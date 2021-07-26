@@ -13,6 +13,7 @@
   "rules": {
     "no-await-in-loop": 0,
     "class-methods-use-this": "off",
+    "no-unneeded-ternary": "off",
     "linebreak-style": [ "error", "windows" ],
     "import/no-unresolved": [
       2,

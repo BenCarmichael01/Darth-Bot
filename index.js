@@ -2,12 +2,13 @@ require('module-alias/register');
 const Discord = require('discord.js');
 const i18n = require('i18n');
 const path = require('path');
-const sqlite3 = require('sqlite3').verbose();
-const sql = require('sqlite');
 const Commando = require('discord.js-commando');
+const sqlite3 = require('sqlite3').verbose();
+const sqlite = require('sqlite');
 require('dotenv').config();
 const { MSGTIMEOUT } = require('@util/utils');
 const { npMessage } = require('@include/npmessage');
+const { openDb } = require('@include/opendb');
 
 // const { openDb } = require('./include/opendb');
 
@@ -88,7 +89,7 @@ for (const file of commandFiles) {
 // Create cooldown collection
 const cooldowns = new Discord.Collection();
 
-// doing this here fails as there is no message to pass it 
+// doing this here fails as there is no message to pass it
 
 // console.log(client.guilds.cac);
 let db = {};
@@ -106,20 +107,24 @@ client.once('ready', async () => {
 		.registerDefaults()
 		.registerCommandsIn(path.join(__dirname, 'commands'));
 
+	client.setProvider(sqlite.open({ filename: 'database.db', driver: sqlite3.Database }).then((thedb) => new Commando.SQLiteProvider(thedb)))
+		.catch(console.error);
 	// Open serverData database and assign database object to db
-	db = await sql.open({
+	db = await openDb();
+
+	/* db = await sql.open({
 		filename: './data/serverData.sqlite',
 		driver: sqlite3.cached.Database,
 	}).then((thedb) => thedb);
-
+	*/
 	// If servers table doesnt exist then create it. Then get all results from table
 	const serverDb = await db.run('CREATE TABLE IF NOT EXISTS servers (guildId varchar(18) NOT NULL PRIMARY KEY, channelId varchar(18), playingMessageId varchar(18));')
 		.then(async () => {
-			const result2 = await db.all(' SELECT * FROM servers;')
+			const result2 = await db.all(' SELECT * FROM servers;');
 			// console.log(rows)
 			return result2;
 		}).catch(console.error);
-	// console.log(serverDb[0].guildId);
+	// console.log(serverDb);
 
 	// console.log(serverDb.length)
 	for (let i = 0; i <= (serverDb.length - 1); i++) {
@@ -146,7 +151,7 @@ client.on('message', async (message) => {
 
 	// vvv What is this for?? vvv
 	// if (message.channel.id === '756990417630789746') return;
-	let MUSIC_CHANNEL_ID = await db.get(`SELECT * FROM servers WHERE guildId='${message.guild.id}'`).then(row => {
+	let MUSIC_CHANNEL_ID = await db.get(`SELECT * FROM servers WHERE guildId='${message.guild.id}'`).then((row) => {
 		// console.log(row.channelId);
 		if (row) {
 			return row.channelId;
@@ -172,7 +177,7 @@ client.on('message', async (message) => {
 				return;
 			} catch (error) {
 				console.error(error);
-				message.reply('There was an error trying to execute that command, please try again.').then(msg => {
+				message.reply('There was an error trying to execute that command, please try again.').then((msg) => {
 					msg.delete({ timeout: MSGTIMEOUT });
 				})
 					.catch(console.error);
@@ -201,7 +206,7 @@ client.on('message', async (message) => {
 		|| client.commands.find((cmd) => cmd.aliases && cmd.aliases.includes(commandName));
 	if (!command) {
 		// TODO localise//
-		message.reply(`That isn't a command! \n Use ${prefix}help to see a list of my commands`).then(msg => {
+		message.reply(`That isn't a command! \n Use ${prefix}help to see a list of my commands`).then((msg) => {
 			msg.delete({ timeout: MSGTIMEOUT });
 		})
 			.catch(console.error);
@@ -224,8 +229,8 @@ client.on('message', async (message) => {
 			return;
 		}
 
-		const musicChannelName = message.guild.channels.cache.get(MUSIC_CHANNEL_ID).id
-		message.reply(i18n.__mf('common.musicOnly', { channel: musicChannelName })).then(msg => {
+		const musicChannelName = message.guild.channels.cache.get(MUSIC_CHANNEL_ID).id;
+		message.reply(i18n.__mf('common.musicOnly', { channel: musicChannelName })).then((msg) => {
 			msg.delete({ timeout: MSGTIMEOUT });
 		}).catch(console.error);
 		return;
@@ -267,7 +272,7 @@ client.on('message', async (message) => {
 
 		if (now < expirationTime) {
 			const timeLeft = (expirationTime - now) / 1000;
-			message.reply(`Please wait ${timeLeft.toFixed(1)} more second(s) before reusing the \`${command.name}\` command.`).then(msg => {
+			message.reply(`Please wait ${timeLeft.toFixed(1)} more second(s) before reusing the \`${command.name}\` command.`).then((msg) => {
 				msg.delete({ timeout: MSGTIMEOUT });
 			}).catch(console.error);
 			return;

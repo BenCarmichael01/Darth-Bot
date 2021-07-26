@@ -1,3 +1,4 @@
+require('module-alias/register');
 const { play } = require('@include/play');
 const ytdl = require('ytdl-core-discord');
 const YouTubeAPI = require('simple-youtube-api');
@@ -5,7 +6,7 @@ const scdl = require('soundcloud-downloader').default;
 const https = require('https');
 const { YOUTUBE_API_KEY, SOUNDCLOUD_CLIENT_ID, LOCALE, DEFAULT_VOLUME } = require('@util/utils');
 const i18n = require('i18n');
-const XMLHttpRequest = require('xhr2');
+const { XMLHttpRequest } = require('xmlhttprequest');
 const Commando = require('discord.js-commando');
 const path = require('path');
 const sqlite3 = require('sqlite3').verbose();
@@ -13,9 +14,8 @@ const sql = require('sqlite');
 const config = require('@root/config.json');
 
 i18n.setLocale(LOCALE);
-const {MSGTIMEOUT} = config;
+const { MSGTIMEOUT } = config;
 const youtube = new YouTubeAPI(YOUTUBE_API_KEY);
-require('module-alias/register');
 
 module.exports = class playCommand extends Commando.Command {
 	constructor(client) {
@@ -38,7 +38,7 @@ module.exports = class playCommand extends Commando.Command {
 		}).then((thedb) => thedb);
 
 		// TODO include fallback for no music channel registered
-		const MUSIC_CHANNEL_ID = await db.get(`SELECT * FROM servers WHERE guildId='${message.guild.id}'`).then(row => {
+		const MUSIC_CHANNEL_ID = await db.get(`SELECT * FROM servers WHERE guildId='${message.guild.id}'`).then((row) => {
 			// console.log(row.channelId);
 			if (row) {
 				return row.channelId;
@@ -54,9 +54,11 @@ module.exports = class playCommand extends Commando.Command {
 		message.delete();
 		const serverQueue = message.client.queue.get(message.guild.id);
 		// console.log(serverQueue);
-		if (!channel) return message.reply(i18n.__('play.errorNotChannel')).then((msg) => {
-			msg.delete({ timeout: MSGTIMEOUT });
-		}).catch(console.error);
+		if (!channel) {
+			return message.reply(i18n.__('play.errorNotChannel')).then((msg) => {
+				msg.delete({ timeout: MSGTIMEOUT });
+			}).catch(console.error);
+		}
 		if (serverQueue && channel !== message.guild.me.voice.channel) {
 			return message
 				.reply(i18n.__mf('play.errorNotInSameChannel', { user: message.client.user }))
@@ -72,12 +74,16 @@ module.exports = class playCommand extends Commando.Command {
 				}).catch(console.error);
 		}
 		const permissions = channel.permissionsFor(message.client.user);
-		if (!permissions.has('CONNECT')) return message.reply(i18n.__('play.missingPermissionConnect')).then(msg => {
-			msg.delete({ timeout: MSGTIMEOUT })
-		}).catch(console.error);
-		if (!permissions.has('SPEAK')) return message.reply(i18n.__('play.missingPermissionSpeak')).then(msg => {
-			msg.delete({ timeout: MSGTIMEOUT })
-		}).catch(console.error);
+		if (!permissions.has('CONNECT')) {
+			return message.reply(i18n.__('play.missingPermissionConnect')).then(msg => {
+				msg.delete({ timeout: MSGTIMEOUT })
+			}).catch(console.error);
+		}
+		if (!permissions.has('SPEAK')) {
+			return message.reply(i18n.__('play.missingPermissionSpeak')).then(msg => {
+				msg.delete({ timeout: MSGTIMEOUT })
+			}).catch(console.error);
+		}
 
 		const search = args.join(' ');
 		const videoPattern = /^(https?:\/\/)?(www\.)?(m\.)?(youtube\.com|youtu\.?be)\/.+$/gi;
@@ -90,20 +96,20 @@ module.exports = class playCommand extends Commando.Command {
 		//  Start the playlist if playlist url was provided
 		if (!videoPattern.test(args[0]) && playlistPattern.test(args[0])) {
 			return message.client.commands.get('playlist').execute(message, args);
-		} else if (scdl.isValidUrl(url) && url.includes('/sets/')) {
+		}
+		if (scdl.isValidUrl(url) && url.includes('/sets/')) {
 			return message.client.commands.get('playlist').execute(message, args);
 		}
 
 		if (mobileScRegex.test(url)) {
 			try {
-				https.get(url, function (res) {
-					if (res.statusCode == '302') {
+				https.get(url, (res) => {
+					if (res.statusCode === '302') {
 						return message.client.commands.get('play').execute(message, [res.headers.location]);
-					} else {
-						return message.reply('No content could be found at that url.').then(msg => {
-							msg.delete({ timeout: MSGTIMEOUT })
-						}).catch(console.error);
 					}
+					return message.reply('No content could be found at that url.').then((msg) => {
+						msg.delete({ timeout: MSGTIMEOUT });
+					}).catch(console.error);
 				});
 			} catch (error) {
 				console.error(error);
@@ -121,41 +127,35 @@ module.exports = class playCommand extends Commando.Command {
 			songs: [],
 			loop: false,
 			volume: DEFAULT_VOLUME || 100,
-			playing: true
+			playing: true,
 		};
 
 		let songInfo = null;
 		let song = null;
 		// TODO this functions always seems to return undefined so the default thumbnail is used everytime
 		async function checkImage(url1) {
-			var req = new XMLHttpRequest();
-			req.open('HEAD', url1, true);
+			const req = new XMLHttpRequest();
+			req.open('HEAD', url1, false);
 			await req.send();
-			console.log(req.status);
-			if (req.status == 200) {
-				return true
+			if (req.status === 200) {
+				return true;
 			}
-			else return false
-		};
+			return false;
+		}
 
-
+		let songThumb = '';
 		if (urlValid) {
 			try {
 				songInfo = await ytdl.getBasicInfo(url);
-				var songId = await ytdl.getURLVideoID(url)
-
-
-				if (await checkImage(`https:// img.youtube.com/vi/${songId}/0.jpg`)) {
-					var songThumb = `https:// img.youtube.com/vi/${songId}/0.jpg`
-
+				const songId = await ytdl.getURLVideoID(url);
+				if (await checkImage(`https://img.youtube.com/vi/${songId}/0.jpg`)) {
+					songThumb = `https://img.youtube.com/vi/${songId}/0.jpg`;
+				} else if (await checkImage(`https://img.youtube.com/vi/${songId}/maxresdefault.jpg`)) {
+					songThumb = `https://img.youtube.com/vi/${songId}/maxresdefault.jpg`;
+				} else {
+					songThumb = 'attachment://grogu.jpg';
+					console.log('No thumb');
 				}
-				else if (await checkImage(`https:// img.youtube.com/vi/${songId}/maxresdefault.jpg`)) {
-					var songThumb = `https:// img.youtube.com/vi/${songId}/maxresdefault.jpg`
-				}
-				else {
-					var songThumb = 'https:// i.imgur.com/TObp4E6.jpg'
-					console.log('No thumb')
-				};
 
 				// console.log(songThumb);
 
@@ -163,13 +163,13 @@ module.exports = class playCommand extends Commando.Command {
 					title: songInfo.videoDetails.title,
 					url: songInfo.videoDetails.video_url,
 					thumbUrl: songThumb,
-					duration: songInfo.videoDetails.lengthSeconds
+					duration: songInfo.videoDetails.lengthSeconds,
 				};
 				// console.log(song);
 			} catch (error) {
 				console.error(error);
-				return message.reply(error.message).then(msg => {
-					msg.delete({ timeout: MSGTIMEOUT })
+				return message.reply(error.message).then((msg) => {
+					msg.delete({ timeout: MSGTIMEOUT });
 				}).catch(console.error);
 			}
 		} else if (scRegex.test(url)) {
@@ -178,12 +178,12 @@ module.exports = class playCommand extends Commando.Command {
 				song = {
 					title: trackInfo.title,
 					url: trackInfo.permalink_url,
-					duration: Math.ceil(trackInfo.duration / 1000)
+					duration: Math.ceil(trackInfo.duration / 1000),
 				};
 			} catch (error) {
 				console.error(error);
-				return message.reply(error.message).then(msg => {
-					msg.delete({ timeout: MSGTIMEOUT })
+				return message.reply(error.message).then((msg) => {
+					msg.delete({ timeout: MSGTIMEOUT });
 				}).catch(console.error);
 			}
 		} else {
@@ -193,20 +193,18 @@ module.exports = class playCommand extends Commando.Command {
 				// console.log('getInfo start');
 				songInfo = await ytdl.getBasicInfo(results[0].url);
 				//  console.log('getinfo end');
-				var songId = await ytdl.getURLVideoID(results[0].url)
+				const songId = await ytdl.getURLVideoID(results[0].url);
 
-				var test = await checkImage(`https:// img.youtube.com/vi/${songId}/maxresdefault.jpg`);
-				console.log(test);
-				if (await checkImage(`https:// img.youtube.com/vi/${songId}/maxresdefault.jpg`)) {
-					var songThumb = `https:// img.youtube.com/vi/${songId}/maxresdefault.jpg`
+				// const test = await checkImage(`https://img.youtube.com/vi/${songId}/maxresdefault.jpg`);
+				console.log(await checkImage(`https://img.youtube.com/vi/${songId}/maxresdefault.jpg`));
+				if (await checkImage(`https://img.youtube.com/vi/${songId}/maxresdefault.jpg`)) {
+					songThumb = `https://img.youtube.com/vi/${songId}/maxresdefault.jpg`;
+				} else if (await checkImage(`https://img.youtube.com/vi/${songId}/hqdefault.jpg`)) {
+					songThumb = `https://img.youtube.com/vi/${songId}/hqdefault.jpg`;
+				} else {
+					songThumb = 'https://i.imgur.com/TObp4E6.jpg';
+					console.log('No thumb');
 				}
-				else if (await checkImage(`https:// img.youtube.com/vi/${songId}/hqdefault.jpg`)) {
-					var songThumb = `https:// img.youtube.com/vi/${songId}/hqdefault.jpg`
-				}
-				else {
-					var songThumb = 'https:// i.imgur.com/TObp4E6.jpg'
-					console.log('No thumb')
-				};
 				song = {
 					title: songInfo.videoDetails.title,
 					url: songInfo.videoDetails.video_url,
