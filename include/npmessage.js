@@ -29,7 +29,7 @@ module.exports = {
 		}).catch(console.error); */
 
 		const { playingMessageId } = await db.get(`SELECT playingMessageId FROM servers WHERE guildId='${guildId}'`);
-		//console.log(playingMessageId);
+		// console.log(playingMessageId);
 		/* .then(row => {
 			// console.log(row.channelId);
 			return row.playingMessageId
@@ -46,7 +46,6 @@ module.exports = {
 		if (message !== undefined && npSong !== undefined) {
 			queue = message.client.queue.get(message.guild.id).songs;
 		}
-
 		/* function generateQueue(message, queue) {
 			let outputQueue = [];
 			// TODO add queue size to config//
@@ -95,7 +94,6 @@ module.exports = {
 				index = i + 1;
 				outputQueue = `${index}. ${currentQueue[i].title}\n ${outputQueue}`;
 			}
-			console.log(npSong.thumbUrl);
 			newEmbed = new MessageEmbed()
 				.setColor('#5865F2')
 				.setTitle(`🎶 Now playing: ${npSong.title}`)
@@ -110,7 +108,7 @@ module.exports = {
 			.then(async (messages) => {
 				const outputArr = [];
 				outputArr[0] = await messages.get(playingMessageId);
-				//console.log(messages.get(playingMessageId));
+				// console.log(messages.get(playingMessageId));
 				// Change now playing message to match current song
 				outputArr[0].edit(outputQueue, newEmbed);
 				return outputArr;

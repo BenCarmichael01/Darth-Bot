@@ -40,7 +40,8 @@
         "ignoreComments": true,
         "code": 110
       }
-    ]
+    ],
+    "consistent-return": "off"
   },
   "settings": {
     "import/resolver": {

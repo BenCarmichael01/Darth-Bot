@@ -107,7 +107,7 @@ client.once('ready', async () => {
 		.registerDefaults()
 		.registerCommandsIn(path.join(__dirname, 'commands'));
 
-	client.setProvider(sqlite.open({ filename: 'database.db', driver: sqlite3.Database }).then((thedb) => new Commando.SQLiteProvider(thedb)))
+	client.setProvider(sqlite.open({ filename: './data/commandoData.db', driver: sqlite3.Database }).then((thedb) => new Commando.SQLiteProvider(thedb)))
 		.catch(console.error);
 	// Open serverData database and assign database object to db
 	db = await openDb();
