@@ -73,10 +73,10 @@ module.exports = {
 		} */
 		// console.log(generateQueue(message, queue));
 
-		let outputQueue = '';
+		let outputQueue = 'There is nothing in the queue right now';
 		let newEmbed = {};
 		if (npSong === undefined) {
-			outputQueue = 'There is nothing in the queue right now';
+			// outputQueue = 'There is nothing in the queue right now';
 			newEmbed = new MessageEmbed()
 				.setColor('#5865F2')
 				.setTitle('🎶Nothing is playing right now')

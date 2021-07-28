@@ -31,6 +31,7 @@ module.exports = class playCommand extends Commando.Command {
 	}
 
 	async run(message, args) {
+		const prefix = message.guild.commandPrefix;
 		let db = {};
 		// console.log(path.resolve(__dirname, '../../data/serverData.sqlite'));
 		db = await sql.open({
@@ -39,25 +40,34 @@ module.exports = class playCommand extends Commando.Command {
 		}).then((thedb) => thedb);
 
 		// TODO include fallback for no music channel registered
-		const MUSIC_CHANNEL_ID = await db.get(`SELECT * FROM servers WHERE guildId='${message.guild.id}'`).then(row => {
+		const MUSIC_CHANNEL_ID = await db.get(`SELECT * FROM servers WHERE guildId='${message.guild.id}'`).then((row) => {
 			// console.log(row.channelId);
 			if (row) {
 				return row.channelId;
 			}
 			return '';
 		}).catch(console.error);
-		// console.log(MUSIC_CHANNEL_ID);
-		if (message.channel.id !== MUSIC_CHANNEL_ID) {
-			return message.reply('This command can only be used in the music channel');
-		}
 
+		if (!MUSIC_CHANNEL_ID) {
+			message.channel.send(`You need to run ${prefix}setup before you can use this command`).then((msg) => {
+				msg.delete({ timeout: MSGTIMEOUT });
+			}).catch(console.error);
+			return;
+		}
+		if (message.channel.id !== MUSIC_CHANNEL_ID) {
+			return message.reply(`This command can only be used in <#${MUSIC_CHANNEL_ID}>`).then((msg) => {
+				msg.delete({ timeout: MSGTIMEOUT });
+			}).catch(console.error);
+		}
 		const { channel } = message.member.voice;
 		message.delete();
 		const serverQueue = message.client.queue.get(message.guild.id);
 		// console.log(serverQueue);
-		if (!channel) return message.reply(i18n.__('play.errorNotChannel')).then((msg) => {
-			msg.delete({ timeout: MSGTIMEOUT });
-		}).catch(console.error);
+		if (!channel) {
+			return message.reply(i18n.__('play.errorNotChannel')).then((msg) => {
+				msg.delete({ timeout: MSGTIMEOUT });
+			}).catch(console.error);
+		}
 		if (serverQueue && channel !== message.guild.me.voice.channel) {
 			return message
 				.reply(i18n.__mf('play.errorNotInSameChannel', { user: message.client.user }))
