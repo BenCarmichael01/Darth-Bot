@@ -6,12 +6,13 @@ const scdl = require('soundcloud-downloader').default;
 const https = require('https');
 const { YOUTUBE_API_KEY, SOUNDCLOUD_CLIENT_ID, LOCALE, DEFAULT_VOLUME } = require('@util/utils');
 const i18n = require('i18n');
-const { XMLHttpRequest } = require('xmlhttprequest');
+const XMLHttpRequest = require('xhr2');
 const Commando = require('discord.js-commando');
 const path = require('path');
 const sqlite3 = require('sqlite3').verbose();
 const sql = require('sqlite');
 const config = require('@root/config.json');
+const { npMessage } = require('../../include/npmessage');
 
 i18n.setLocale(LOCALE);
 const { MSGTIMEOUT } = config;
@@ -38,7 +39,7 @@ module.exports = class playCommand extends Commando.Command {
 		}).then((thedb) => thedb);
 
 		// TODO include fallback for no music channel registered
-		const MUSIC_CHANNEL_ID = await db.get(`SELECT * FROM servers WHERE guildId='${message.guild.id}'`).then((row) => {
+		const MUSIC_CHANNEL_ID = await db.get(`SELECT * FROM servers WHERE guildId='${message.guild.id}'`).then(row => {
 			// console.log(row.channelId);
 			if (row) {
 				return row.channelId;
@@ -54,11 +55,9 @@ module.exports = class playCommand extends Commando.Command {
 		message.delete();
 		const serverQueue = message.client.queue.get(message.guild.id);
 		// console.log(serverQueue);
-		if (!channel) {
-			return message.reply(i18n.__('play.errorNotChannel')).then((msg) => {
-				msg.delete({ timeout: MSGTIMEOUT });
-			}).catch(console.error);
-		}
+		if (!channel) return message.reply(i18n.__('play.errorNotChannel')).then((msg) => {
+			msg.delete({ timeout: MSGTIMEOUT });
+		}).catch(console.error);
 		if (serverQueue && channel !== message.guild.me.voice.channel) {
 			return message
 				.reply(i18n.__mf('play.errorNotInSameChannel', { user: message.client.user }))
@@ -75,19 +74,19 @@ module.exports = class playCommand extends Commando.Command {
 		}
 		const permissions = channel.permissionsFor(message.client.user);
 		if (!permissions.has('CONNECT')) {
-			return message.reply(i18n.__('play.missingPermissionConnect')).then(msg => {
-				msg.delete({ timeout: MSGTIMEOUT })
+			return message.reply(i18n.__('play.missingPermissionConnect')).then((msg) => {
+				msg.delete({ timeout: MSGTIMEOUT });
 			}).catch(console.error);
 		}
 		if (!permissions.has('SPEAK')) {
-			return message.reply(i18n.__('play.missingPermissionSpeak')).then(msg => {
-				msg.delete({ timeout: MSGTIMEOUT })
+			return message.reply(i18n.__('play.missingPermissionSpeak')).then((msg) => {
+				msg.delete({ timeout: MSGTIMEOUT });
 			}).catch(console.error);
 		}
 
 		const search = args.join(' ');
 		const videoPattern = /^(https?:\/\/)?(www\.)?(m\.)?(youtube\.com|youtu\.?be)\/.+$/gi;
-		const playlistPattern = /^.*(list=)([^#\&\?]*).*/gi;
+		const playlistPattern = /^.*(list=)([^#&?]*).*/gi;
 		const scRegex = /^https?:\/\/(soundcloud\.com)\/(.*)$/;
 		const mobileScRegex = /^https?:\/\/(soundcloud\.app\.goo\.gl)\/(.*)$/;
 		const url = args[0];
@@ -95,16 +94,16 @@ module.exports = class playCommand extends Commando.Command {
 
 		//  Start the playlist if playlist url was provided
 		if (!videoPattern.test(args[0]) && playlistPattern.test(args[0])) {
-			return message.client.commands.get('playlist').execute(message, args);
+			return message.client.registry.resolveCommand('playlist').run(message, args);
 		}
 		if (scdl.isValidUrl(url) && url.includes('/sets/')) {
-			return message.client.commands.get('playlist').execute(message, args);
+			return message.client.registry.resolveCommand('playlist').run(message, args);
 		}
 
 		if (mobileScRegex.test(url)) {
 			try {
 				https.get(url, (res) => {
-					if (res.statusCode === '302') {
+					if (res.statusCode == '302') {
 						return message.client.commands.get('play').execute(message, [res.headers.location]);
 					}
 					return message.reply('No content could be found at that url.').then((msg) => {
@@ -115,8 +114,8 @@ module.exports = class playCommand extends Commando.Command {
 				console.error(error);
 				return message.reply(error.message).catch(console.error);
 			}
-			return message.reply('Following url redirection...').then(msg => {
-				msg.delete({ timeout: MSGTIMEOUT })
+			return message.reply('Following url redirection...').then((msg) => {
+				msg.delete({ timeout: MSGTIMEOUT });
 			}).catch(console.error);
 		}
 
@@ -132,38 +131,16 @@ module.exports = class playCommand extends Commando.Command {
 
 		let songInfo = null;
 		let song = null;
-		// TODO this functions always seems to return undefined so the default thumbnail is used everytime
-		async function checkImage(url1) {
-			const req = new XMLHttpRequest();
-			req.open('HEAD', url1, false);
-			await req.send();
-			if (req.status === 200) {
-				return true;
-			}
-			return false;
-		}
 
-		let songThumb = '';
 		if (urlValid) {
 			try {
-				songInfo = await ytdl.getBasicInfo(url);
-				const songId = await ytdl.getURLVideoID(url);
-				if (await checkImage(`https://img.youtube.com/vi/${songId}/0.jpg`)) {
-					songThumb = `https://img.youtube.com/vi/${songId}/0.jpg`;
-				} else if (await checkImage(`https://img.youtube.com/vi/${songId}/maxresdefault.jpg`)) {
-					songThumb = `https://img.youtube.com/vi/${songId}/maxresdefault.jpg`;
-				} else {
-					songThumb = 'attachment://grogu.jpg';
-					console.log('No thumb');
-				}
-
-				// console.log(songThumb);
-
+				songInfo = await ytdl.getBasicInfo(url).videoDetails;
+				const { thumbnails } = songInfo;
 				song = {
-					title: songInfo.videoDetails.title,
-					url: songInfo.videoDetails.video_url,
-					thumbUrl: songThumb,
-					duration: songInfo.videoDetails.lengthSeconds,
+					title: songInfo.title,
+					url: songInfo.video_url,
+					thumbUrl: thumbnails[thumbnails.length - 1].url,
+					duration: songInfo.lengthSeconds,
 				};
 				// console.log(song);
 			} catch (error) {
@@ -191,30 +168,18 @@ module.exports = class playCommand extends Commando.Command {
 				// console.log('results');
 				const results = await youtube.searchVideos(search, 1, { part: 'snippet' });
 				// console.log('getInfo start');
-				songInfo = await ytdl.getBasicInfo(results[0].url);
-				//  console.log('getinfo end');
-				const songId = await ytdl.getURLVideoID(results[0].url);
-
-				// const test = await checkImage(`https://img.youtube.com/vi/${songId}/maxresdefault.jpg`);
-				console.log(await checkImage(`https://img.youtube.com/vi/${songId}/maxresdefault.jpg`));
-				if (await checkImage(`https://img.youtube.com/vi/${songId}/maxresdefault.jpg`)) {
-					songThumb = `https://img.youtube.com/vi/${songId}/maxresdefault.jpg`;
-				} else if (await checkImage(`https://img.youtube.com/vi/${songId}/hqdefault.jpg`)) {
-					songThumb = `https://img.youtube.com/vi/${songId}/hqdefault.jpg`;
-				} else {
-					songThumb = 'https://i.imgur.com/TObp4E6.jpg';
-					console.log('No thumb');
-				}
+				songInfo = (await ytdl.getBasicInfo(results[0].url)).videoDetails;
+				const { thumbnails } = songInfo;
 				song = {
-					title: songInfo.videoDetails.title,
-					url: songInfo.videoDetails.video_url,
-					thumbUrl: songThumb,
-					duration: songInfo.videoDetails.lengthSeconds
+					title: songInfo.title,
+					url: songInfo.video_url,
+					thumbUrl: thumbnails[thumbnails.length - 1].url,
+					duration: songInfo.lengthSeconds,
 				};
 			} catch (error) {
 				console.error(error);
-				return message.reply(error.message).then(msg => {
-					msg.delete({ timeout: MSGTIMEOUT })
+				return message.reply(error.message).then((msg) => {
+					msg.delete({ timeout: MSGTIMEOUT });
 				}).catch(console.error);
 			}
 		}
@@ -222,10 +187,11 @@ module.exports = class playCommand extends Commando.Command {
 		// console.log(`ServerQueue: ${serverQueue}`); TODO message timeout
 		if (serverQueue) {
 			serverQueue.songs.push(song);
+			npMessage(message, serverQueue.songs[0]);
 			return serverQueue.textChannel
 				.send(i18n.__mf('play.queueAdded', { title: song.title, author: message.author }))
-				.then(msg => {
-					msg.delete({ timeout: MSGTIMEOUT })
+				.then((msg) => {
+					msg.delete({ timeout: MSGTIMEOUT });
 				}).catch(console.error);
 		}
 
@@ -241,11 +207,11 @@ module.exports = class playCommand extends Commando.Command {
 			console.error(error);
 			message.client.queue.delete(message.guild.id);
 			await channel.leave();
-			return message.channel.send(i18n.__('play.cantJoinChannel', { error: error })).then(msg => {
-				msg.delete({ timeout: MSGTIMEOUT })
+			return message.channel.send(i18n.__('play.cantJoinChannel', { error: error })).then((msg) => {
+				msg.delete({ timeout: MSGTIMEOUT });
 			}).catch(console.error);
-		};
+		}
 
 		return 1;
-	};
+	}
 };
