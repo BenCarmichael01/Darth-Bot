@@ -41,7 +41,10 @@
         "code": 110
       }
     ],
-    "consistent-return": "off"
+    "consistent-return": "off",
+    "no-bitwise": "off",
+    "no-var": "off",
+    "vars-on-top": "off"
   },
   "settings": {
     "import/resolver": {

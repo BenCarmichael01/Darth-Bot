@@ -1,5 +1,4 @@
 require('module-alias/register');
-const Discord = require('discord.js');
 const i18n = require('i18n');
 const path = require('path');
 const Commando = require('discord.js-commando');
@@ -50,42 +49,6 @@ i18n.configure({
 	},
 });
 
-// Commando create commands
-
-// Create array of command names from commands directory
-/*
-var fileSync = function (dir, filelist) {
-
-	if (dir[dir.length - 1] != '/') dir = dir.concat('/')
-
-	var fs = fs || require('fs'),
-		files = fs.readdirSync(dir);
-	filelist = filelist || [];
-	files.forEach(function (file) {
-		if (fs.statSync(dir + file).isDirectory()) {
-			filelist = fileSync(dir + file + '/', filelist);
-		}
-		else {
-			filelist.push(dir + file);
-		}
-	});
-	return filelist;
-};
-
-const commandFiles = fileSync('./commands').filter(file => file.endsWith('.js'));
-
-for (const file of commandFiles) {
-	const command = require(`${file}`);
-	//  set a new item in the Collection
-	//  with the key as the command name and the value as the exported module
-	client.commands.set(command.name, command);
-} */
-// Create cooldown collection
-// const cooldowns = new Discord.Collection();
-
-// doing this here fails as there is no message to pass it
-
-// console.log(client.guilds.cac);
 var db = {};
 client.once('ready', async () => {
 	console.log(`Logged in as ${client.user.username} (${client.user.id})`);
@@ -118,6 +81,7 @@ client.once('ready', async () => {
 			// console.log(rows)
 			return result2;
 		}).catch(console.error);
+
 	// console.log(serverDb);
 
 	/*
@@ -147,7 +111,6 @@ client.once('ready', async () => {
 		});
 	}
 });
-
 
 client.on('message', async (message) => {
 	// If message doesn't start with prefix or is written by a bot, ignore

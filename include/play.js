@@ -46,7 +46,7 @@ module.exports = {
 
 		try {
 			if (song.url.includes('youtube.com')) {
-				stream = await ytdl(song.url, { highWaterMark: 1 < 25 });
+				stream = await ytdl(song.url, { highWaterMark: 1 << 25 });
 			} else if (song.url.includes('soundcloud.com')) {
 				try {
 					stream = await scdl.downloadFormat(
@@ -79,7 +79,7 @@ module.exports = {
 
 		queue.connection.on('disconnect', () => message.client.queue.delete(message.guild.id));
 		let collector;
-		const playingMessage = {};
+		// let playingMessage = {};
 		const dispatcher = queue.connection
 			.play(stream, { type: streamType })
 			.on('finish', () => {
@@ -104,7 +104,7 @@ module.exports = {
 			});
 		dispatcher.setVolumeLogarithmic(queue.volume / 100);
 
-		[playingMessage, collector] = await npMessage(message, song);
+		[, collector] = await npMessage(message, song);
 
 		collector.on('collect', (reaction, user) => {
 			if (!queue) return;
