@@ -31,22 +31,23 @@ module.exports = class playCommand extends Commando.Command {
 	}
 
 	async run(message, args) {
+		message.delete();
 		const prefix = message.guild.commandPrefix;
-		let db = {};
+		/* let db = {};
 		// console.log(path.resolve(__dirname, '../../data/serverData.sqlite'));
 		db = await sql.open({
 			filename: path.resolve(__dirname, '../../data/serverData.sqlite'),
 			driver: sqlite3.cached.Database,
 		}).then((thedb) => thedb);
 
-		// TODO include fallback for no music channel registered
 		const MUSIC_CHANNEL_ID = await db.get(`SELECT * FROM servers WHERE guildId='${message.guild.id}'`).then((row) => {
 			// console.log(row.channelId);
 			if (row) {
 				return row.channelId;
 			}
 			return '';
-		}).catch(console.error);
+		}).catch(console.error); */
+		const MUSIC_CHANNEL_ID = message.guild.settings.get('musicChannel');
 
 		if (!MUSIC_CHANNEL_ID) {
 			message.channel.send(`You need to run ${prefix}setup before you can use this command`).then((msg) => {
@@ -60,7 +61,7 @@ module.exports = class playCommand extends Commando.Command {
 			}).catch(console.error);
 		}
 		const { channel } = message.member.voice;
-		message.delete();
+
 		const serverQueue = message.client.queue.get(message.guild.id);
 		// console.log(serverQueue);
 		if (!channel) {
@@ -217,7 +218,7 @@ module.exports = class playCommand extends Commando.Command {
 			console.error(error);
 			message.client.queue.delete(message.guild.id);
 			await channel.leave();
-			return message.channel.send(i18n.__('play.cantJoinChannel', { error: error })).then((msg) => {
+			return message.channel.send(i18n.__('play.cantJoinChannel', { error })).then((msg) => {
 				msg.delete({ timeout: MSGTIMEOUT });
 			}).catch(console.error);
 		}

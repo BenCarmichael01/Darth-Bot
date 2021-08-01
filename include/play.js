@@ -14,7 +14,6 @@ i18n.setLocale(LOCALE);
 // TODO FIX THIS REF WHEN MOVED COMMAND TO COMMANDO
 // const np = require('../commands/music/nowplaying');
 const { npMessage } = require('@include/npmessage');
-const { openDb } = require('@include/opendb');
 
 module.exports = {
 	async play(song, message) {

@@ -28,7 +28,14 @@ i18n.configure({
 	locales: ['en', 'es', 'ko', 'fr', 'tr', 'pt_br', 'zh_cn', 'zh_tw'],
 	directory: path.join(__dirname, 'locales'),
 	defaultLocale: 'en',
-	objectNotation: true,
+
+
+
+
+
+
+
+	Notation: true,
 	register: global,
 
 	logWarnFn: function warn(msg) {
@@ -63,9 +70,11 @@ client.once('ready', async () => {
 		])
 		.registerDefaults()
 		.registerCommandsIn(path.join(__dirname, 'commands'));
-
-	client.setProvider(sqlite.open({ filename: './data/commandoData.db', driver: sqlite3.Database }).then((thedb) => new Commando.SQLiteProvider(thedb)))
+	var provider = null;
+	client.setProvider(sqlite.open({ filename: './data/commandoData.db', driver: sqlite3.Database })
+		.then((thedb) => { return provider = new Commando.SQLiteProvider(thedb) }))
 		.catch(console.error);
+
 	// Open serverData database and assign database object to db
 	db = await openDb();
 
@@ -95,6 +104,16 @@ client.once('ready', async () => {
 	});
 	*/
 	// console.log(serverDb.length)
+
+	// console.log(getMapSize(provider.settings));
+	const settings1 = client.provider.settings;
+	const arraySet = settings1.entries();
+	// console.log(arraySet);
+	console.log(settings1.constructor);
+	for (let i = 0; i < settings1.size; i++) {
+		const miniMap = arraySet.next().value;
+		// console.log(miniMap.get(miniMap.values().next().value));
+	}
 	for (let i = 0; i <= (serverDb.length - 1); i++) {
 		const npMessageObj = [];
 		const collector = [];
@@ -109,6 +128,9 @@ client.once('ready', async () => {
 					}).catch(console.error);
 			}
 		});
+		// client.guilds.cache.get(serverDb[i].guildId).settings.set('test', 'setting');
+		let guildy = serverDb[i].guildId;
+		//console.log(client.settings.get(global, 'test'));
 	}
 });
 

@@ -16,17 +16,19 @@ module.exports = {
 		// reset everytime the bot launches
 		const guildId = (guildIdParam ? guildIdParam : message.guild.id);
 		const prefix = (message ? message.guild.commandPrefix : client.guilds.cache.get(guildId).commandPrefix);
-		const db = await openDb();
+		// const db = await openDb();
 
 		// TODO get all values in one db request to make faster
-		const MUSIC_CHANNEL_ID = (await db.get(`SELECT channelId FROM servers WHERE guildId='${guildId}'`)).channelId;
-
+		// const MUSIC_CHANNEL_ID = (await db.get(`SELECT channelId FROM servers WHERE guildId='${guildId}'`)).channelId;
+		const MUSIC_CHANNEL_ID = (await message ? await message.guild : await client.guilds.cache.get(guildId)).settings.get('musicChannel');
+		// console.log(MUSIC_CHANNEL_ID);
 		/* .then(row => {
 		// console.log(row.channelId);
 		return row.channelId
 		}).catch(console.error); */
 
-		const { playingMessageId } = await db.get(`SELECT playingMessageId FROM servers WHERE guildId='${guildId}'`);
+		// const { playingMessageId } = await db.get(`SELECT playingMessageId FROM servers WHERE guildId='${guildId}'`);
+		const playingMessageId = (await message ? await message.guild : await client.guilds.cache.get(guildId)).settings.get('playingMessage');
 		// console.log(playingMessageId);
 		/* .then(row => {
 			// console.log(row.channelId);

@@ -36,19 +36,17 @@ module.exports = class setupCommand extends Commando.Command {
 		if (message.guild.channels.cache.get(channelTag)) {
 			try {
 				const db = await openDb();
-				let outputQueue = '';
-				let newEmbed = {};
 				// Create nowplaying message to be pushed to channel
 				const musicChannel = message.guild.channels.cache.get(channelTag);
 
 				/* const image = fs.readFileSync(path.resolve('./media/grogu.jpg'));
 				const attachment = new Discord.MessageAttachment(image, 'grogu.jpg'); */
 
-				outputQueue = 'There is nothing in the queue right now';
-				newEmbed = new Discord.MessageEmbed()
+				const outputQueue = '__**Up Next:**__:\nSend a url or a song name to start the queue';
+				const newEmbed = new Discord.MessageEmbed()
 					.setColor('#5865F2')
-					.setTitle('🎶Nothing is playing right now')
-					// .attachFiles(attachment)
+					.setTitle('🎶 Nothing is playing right now')
+					.setURL('')
 					.setImage('https://i.imgur.com/TObp4E6.jpg')
 					.setFooter(`The prefix for this server is ${prefix}`);
 
@@ -74,14 +72,18 @@ module.exports = class setupCommand extends Commando.Command {
 					}
 				});
 				// Updates db entry for server if exists, if not then it creates one
-				await db.run(`UPDATE servers SET channelId=${channelTag}, playingMessageId=${playingMessage.id} WHERE guildId=${message.guild.id};`)
+				const { settings } = message.guild;
+				console.log(await settings.set('musicChannel', channelTag));
+				console.log(await settings.set('playingMessage', playingMessage.id));
+				/* await db.run(`UPDATE servers SET channelId=${channelTag}, playingMessageId=${playingMessage.id} WHERE guildId=${message.guild.id};`)
 					.then(async (rows) => {
 						if (rows.changes === 0) {
 							await db.run(`INSERT INTO servers(guildId, channelId, playingMessageId) VALUES (${message.guild.id}, ${channelTag}, ${playingMessage.id})`);
 						}
 					});
 				const MUSIC_CHANNEL_ID = (await db.get(`SELECT channelId FROM servers WHERE guildId='${message.guild.id}'`)).channelId;
-
+				*/
+				const MUSIC_CHANNEL_ID = settings.get('musicChannel');
 				if (MUSIC_CHANNEL_ID === channelTag) {
 					message.channel.send(`The music channel has been set to <#${MUSIC_CHANNEL_ID}> \n Setup Complete!`)
 						.then((msg) => {
