@@ -161,20 +161,8 @@
 		"disabled": "**disabled**",
 		"errorNotChannel": "You need to join a voice channel first!",
 		"cooldownMessage": "please wait {time} more second(s) before reusing the `{name}` command.",
-		"errorCommend": "There was an error executing that command.",
+		"errorCommand": "There was an error executing that command.",
 		"channelOnly": "This command can only be used in <#{channel}>",
 		"missingPerms": "You don't have permission to do that"
-	},
-	"loop.description": "loop.description",
-	"move.description": "move.description",
-	"nowplaying.description": "nowplaying.description",
-	"play.description": "play.description",
-	"playlist.description": "playlist.description",
-	"remove.description": "remove.description",
-	"resume.description": "resume.description",
-	"search.description": "search.description",
-	"shuffle.description": "shuffle.description",
-	"skip.description": "skip.description",
-	"skipto.description": "skipto.description",
-	"volume.description": "volume.description"
+	}
 }

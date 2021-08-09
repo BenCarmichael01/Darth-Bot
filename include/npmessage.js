@@ -11,17 +11,21 @@ const { MessageEmbed } = Discord;
 i18n.setLocale(LOCALE);
 
 module.exports = {
-	async npMessage(message, npSong, client, guildIdParam) {
+	async npMessage(args) {
+		const {
+			client,
+			message,
+			npSong,
+			guildIdParam,
+		} = args;
 		// TODO this searches all channels bot can see, must fix if to be added to more servers. Must be like this so np message can be
 		// reset everytime the bot launches
 		const guildId = (guildIdParam ? guildIdParam : message.guild.id);
 		const prefix = (message ? message.guild.commandPrefix : client.guilds.cache.get(guildId).commandPrefix);
 		// const db = await openDb();
-
 		// TODO get all values in one db request to make faster
 		// const MUSIC_CHANNEL_ID = (await db.get(`SELECT channelId FROM servers WHERE guildId='${guildId}'`)).channelId;
 		const MUSIC_CHANNEL_ID = (await message ? await message.guild : await client.guilds.cache.get(guildId)).settings.get('musicChannel');
-		// console.log(MUSIC_CHANNEL_ID);
 		/* .then(row => {
 		// console.log(row.channelId);
 		return row.channelId
@@ -82,6 +86,7 @@ module.exports = {
 				outputArr[0] = await messages.get(playingMessageId);
 				// Change now playing message to match current song
 				outputArr[0].edit(outputQueue, newEmbed);
+				// outputArr[0].edit({ content: outputQueue, embeds: [newEmbed] });
 				return outputArr;
 			})
 			.then(async (outputArr) => {

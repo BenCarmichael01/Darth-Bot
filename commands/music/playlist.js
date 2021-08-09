@@ -97,7 +97,7 @@ module.exports = class playlistCommand extends Commando.Command {
 		}
 
 		const newSongs = videos
-			.filter((video) => video.title != 'Private video' && video.title != 'Deleted video')
+			.filter((video) => video.title !== 'Private video' && video.title !== 'Deleted video')
 			.map((video) => {
 				const { thumbnails } = video;
 				const thumbIndex = Object.keys(thumbnails).length - 1;
@@ -110,10 +110,15 @@ module.exports = class playlistCommand extends Commando.Command {
 				return song;
 			});
 		// console.log(newSongs);
-		serverQueue ? serverQueue.songs.push(...newSongs) : queueConstruct.songs.push(...newSongs);
 		if (serverQueue) {
-			npMessage(message, serverQueue.songs[0]);
-		};
+			serverQueue.songs.push(...newSongs);
+		} else {
+			queueConstruct.songs.push(...newSongs);
+		}
+		// serverQueue ? serverQueue.songs.push(...newSongs) : queueConstruct.songs.push(...newSongs);
+		if (serverQueue) {
+			npMessage({ message, npSong: serverQueue.songs[0] });
+		}
 		if (!serverQueue) {
 			message.client.queue.set(message.guild.id, queueConstruct);
 
@@ -126,7 +131,7 @@ module.exports = class playlistCommand extends Commando.Command {
 				console.error(error);
 				message.client.queue.delete(message.guild.id);
 				await channel.leave();
-				return message.channel.send(i18n.__('play.cantJoinChannel', { error: error })).catch(console.error);
+				return message.channel.send(i18n.__('play.cantJoinChannel', { error })).catch(console.error);
 			}
 		}
 		return 1;

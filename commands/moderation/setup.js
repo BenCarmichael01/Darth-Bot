@@ -35,7 +35,7 @@ module.exports = class setupCommand extends Commando.Command {
 
 		if (message.guild.channels.cache.get(channelTag)) {
 			try {
-				const db = await openDb();
+				// const db = await openDb();
 				// Create nowplaying message to be pushed to channel
 				const musicChannel = message.guild.channels.cache.get(channelTag);
 
@@ -50,7 +50,7 @@ module.exports = class setupCommand extends Commando.Command {
 					.setImage('https://i.imgur.com/TObp4E6.jpg')
 					.setFooter(`The prefix for this server is ${prefix}`);
 
-				const playingMessage = await musicChannel.send(outputQueue, newEmbed);
+				const playingMessage = await musicChannel.send(({ content: outputQueue, embeds: [newEmbed] }));
 				await playingMessage.react('⏭');
 				await playingMessage.react('⏯');
 				await playingMessage.react('🔇');

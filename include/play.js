@@ -21,7 +21,7 @@ module.exports = {
 
 		if (queue) {
 			const npSong = queue.songs[0];
-			npMessage(message, npSong);
+			npMessage({ message, npSong });
 		}
 		if (!song) {
 			setTimeout(() => {
@@ -103,7 +103,7 @@ module.exports = {
 			});
 		dispatcher.setVolumeLogarithmic(queue.volume / 100);
 
-		[, collector] = await npMessage(message, song);
+		[, collector] = await npMessage({ message, npSong: song });
 
 		collector.on('collect', (reaction, user) => {
 			if (!queue) return;
@@ -245,7 +245,7 @@ module.exports = {
 						.catch(console.error);
 					try {
 						queue.connection.dispatcher.end();
-						npMessage(message);
+						npMessage({ message });
 					} catch (error) {
 						console.error(error);
 						queue.connection.disconnect();
@@ -262,12 +262,11 @@ module.exports = {
 
 
 		collector.on('end', () => {
-			/*playingMessage.reactions.removeAll().catch(console.error);
+			/* playingMessage.reactions.removeAll().catch(console.error);
 			if (PRUNING && playingMessage && !playingMessage.deleted) {
 				playingMessage.delete({ timeout: 3000 }).catch(console.error);
-			}*/
+			} */
 			//
 		});
-
-	}
+	},
 };

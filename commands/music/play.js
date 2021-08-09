@@ -198,7 +198,7 @@ module.exports = class playCommand extends Commando.Command {
 		// console.log(`ServerQueue: ${serverQueue}`); TODO message timeout
 		if (serverQueue) {
 			serverQueue.songs.push(song);
-			npMessage(message, serverQueue.songs[0]);
+			npMessage({ message, npSong: serverQueue.songs[0] });
 			return serverQueue.textChannel
 				.send(i18n.__mf('play.queueAdded', { title: song.title, author: message.author }))
 				.then((msg) => {
