@@ -15,7 +15,7 @@ const client = new Commando.Client({
 client.login();
 client.queue = new Map();
 // client.commands = new Discord.Collection();
-client.on('debug', console.log)
+// client.on('debug', console.log)
 client.on('warn', (info) => console.log(info));
 client.on('error', console.error);
 
@@ -79,7 +79,7 @@ client.once('ready', async () => {
 			musicGuilds.push(guild.id);
 		}
 	});
-	
+
 	for (let i = 0; i <= (musicGuilds.length - 1); i++) {
 		const npMessageObj = [];
 		const collector = [];

@@ -30,7 +30,7 @@
     "sqlite": "^4.0.23",
     "sqlite3": "https://github.com/mapbox/node-sqlite3/tarball/master",
     "string-progressbar": "^1.0.4",
-    "tar": "^4.4.15",
+    "tar": "^4.4.16",
     "xhr2": "^0.2.1",
     "xmlhttprequest": "^1.8.0",
     "ytdl-core": "^4.9.1",
