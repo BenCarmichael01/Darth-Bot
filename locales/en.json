@@ -164,5 +164,13 @@
 		"errorCommand": "There was an error executing that command.",
 		"channelOnly": "This command can only be used in <#{channel}>",
 		"missingPerms": "You don't have permission to do that"
+	},
+	"moderation": {
+		"kick": {
+			"description": "Kicks a member from the discord server",
+			"prompt": "Please specify a member to kick",
+			"kicked": "<@{member}> has been kicked",
+			"fail": "I cannot kick <@{member}>, they are too powerful!"
+		}
 	}
 }
