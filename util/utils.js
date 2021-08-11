@@ -1,20 +1,20 @@
 exports.canModifyQueue = (member) => {
-  const { channelID } = member.voice;
-  const botChannel = member.guild.voice.channelID;
+	const { channelID } = member.voice;
+	const botChannel = member.guild.voice.channelID;
 
-  if (channelID !== botChannel) {
-    return;
-  }
+	if (channelID !== botChannel) {
+		return;
+	}
 
-  return true;
+	return true;
 };
 
 let config;
 
 try {
-  config = require("../config.json");
+	config = require('../config.json');
 } catch (error) {
-  config = null;
+	config = null;
 }
 
 exports.TOKEN = config ? config.TOKEN : process.env.TOKEN;
@@ -25,7 +25,7 @@ exports.MAX_PLAYLIST_SIZE = config ? config.MAX_PLAYLIST_SIZE : process.env.MAX_
 exports.PRUNING = config ? config.PRUNING : process.env.PRUNING;
 exports.STAY_TIME = config ? config.STAY_TIME : process.env.STAY_TIME;
 exports.MSGTIMEOUT = config ? config.MSGTIMEOUT : process.env.MSGTIMEOUT;
-exports.DEFAULT_VOLUME = config ? config.DEFAULT_VOLUME: process.env.DEFAULT_VOLUME;
+exports.DEFAULT_VOLUME = config ? config.DEFAULT_VOLUME : process.env.DEFAULT_VOLUME;
 exports.LOCALE = config ? config.LOCALE : process.env.LOCALE;
 exports.MUSIC_CHANNEL_ID = config ? config.MUSIC_CHANNEL_ID : process.env.MUSIC_CHANNEL_ID;
 exports.playingMessageId = config ? config.playingMessageId : process.env.playingMessageId;

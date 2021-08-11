@@ -7,11 +7,7 @@ const sqlite = require('sqlite');
 require('dotenv').config();
 const { MSGTIMEOUT } = require('@util/utils');
 const { npMessage } = require('@include/npmessage');
-const { openDb } = require('@include/opendb');
 
-// const { openDb } = require('./include/opendb');
-
-// const client = new Discord.Client();
 const client = new Commando.Client({
 	owner: '337710838469230592',
 	commandPrefix: '!',
@@ -19,7 +15,7 @@ const client = new Commando.Client({
 client.login();
 client.queue = new Map();
 // client.commands = new Discord.Collection();
-// client.on('debug', console.log)
+client.on('debug', console.log)
 client.on('warn', (info) => console.log(info));
 client.on('error', console.error);
 
@@ -66,24 +62,6 @@ client.once('ready', async () => {
 	await client.setProvider(sqlite.open({ filename: './data/commandoData.db', driver: sqlite3.cached.Database })
 		.then((thedb) => new Commando.SQLiteProvider(thedb)))
 		.catch(console.error);
-
-	// Open serverData database and assign database object to db
-	// db = await openDb();
-
-	/* db = await sqlite.open({
-		filename: './data/serverData.sqlite',
-		driver: sqlite3.cached.Database,
-	}).then((thedb) => thedb);
-
-	// If servers table doesnt exist then create it. Then get all results from table
-	const serverDb = await db.run('CREATE TABLE IF NOT EXISTS servers (guildId varchar(18) NOT NULL PRIMARY KEY, channelId varchar(18), playingMessageId varchar(18));')
-		.then(async () => {
-			const result2 = await db.all(' SELECT * FROM servers;');
-			// console.log(rows)
-			return result2;
-		}).catch(console.error);
-		*/
-	// console.log(serverDb);
 	/*
 	// For this to work check if messagechannel is a music channel
 	client.dispatcher.addInhibitor((msg) => {
@@ -94,10 +72,6 @@ client.once('ready', async () => {
 		}
 	});
 	*/
-	// console.log(serverDb.length)
-
-	// console.log(getMapSize(provider.settings));
-	// const guilds = client.guilds;
 	const musicGuilds = [];
 	client.guilds.cache.each((guild) => {
 		const channelExists = guild.settings.get('musicChannel');
@@ -105,19 +79,7 @@ client.once('ready', async () => {
 			musicGuilds.push(guild.id);
 		}
 	});
-	// console.log(musicGuilds);
-	/*
-	const settings1 = client.provider.settings;
-	const arraySet = settings1.entries();
-	let guildsMap = {};
-	const newArray = Array.from(arraySet);
-
-	// console.log(newArray);
-	// console.log(settings1.size);
-	for (let i = 0; i < settings1.size; i++) {
-		// console.log(newArray.entries().next().value)
-		// newArray.forEach((element) => console.log(element));
-	} */
+	
 	for (let i = 0; i <= (musicGuilds.length - 1); i++) {
 		const npMessageObj = [];
 		const collector = [];
@@ -132,9 +94,6 @@ client.once('ready', async () => {
 					}).catch(console.error);
 			}
 		});
-		// client.guilds.cache.get(serverDb[i].guildId).settings.set('test', 'setting');
-		// let guildy = serverDb[i].guildId;
-		// console.log(client.settings.get(global, 'test'));
 	}
 });
 

@@ -1,10 +1,5 @@
 ﻿const Discord = require('discord.js');
 const i18n = require('i18n');
-const sqlite3 = require('sqlite3').verbose();
-const sql = require('sqlite');
-const fs = require('fs');
-const path = require('path');
-const { openDb } = require('@include/opendb');
 const { LOCALE } = require('../util/utils');
 
 const { MessageEmbed } = Discord;
@@ -18,28 +13,12 @@ module.exports = {
 			npSong,
 			guildIdParam,
 		} = args;
-		// TODO this searches all channels bot can see, must fix if to be added to more servers. Must be like this so np message can be
-		// reset everytime the bot launches
+
 		const guildId = (guildIdParam ? guildIdParam : message.guild.id);
 		const prefix = (message ? message.guild.commandPrefix : client.guilds.cache.get(guildId).commandPrefix);
-		// const db = await openDb();
-		// TODO get all values in one db request to make faster
-		// const MUSIC_CHANNEL_ID = (await db.get(`SELECT channelId FROM servers WHERE guildId='${guildId}'`)).channelId;
 		const MUSIC_CHANNEL_ID = (await message ? await message.guild : await client.guilds.cache.get(guildId)).settings.get('musicChannel');
-		/* .then(row => {
-		// console.log(row.channelId);
-		return row.channelId
-		}).catch(console.error); */
-
-		// const { playingMessageId } = await db.get(`SELECT playingMessageId FROM servers WHERE guildId='${guildId}'`);
 		const playingMessageId = (await message ? await message.guild : await client.guilds.cache.get(guildId)).settings.get('playingMessage');
-		// console.log(playingMessageId);
-		/* .then(row => {
-			// console.log(row.channelId);
-			return row.playingMessageId
-		}).catch(console.error); */
 
-		// console.log(guildId)
 		let musicChannel = '';
 		if (message === undefined) {
 			musicChannel = await client.guilds.cache.get(guildId).channels.cache.get(MUSIC_CHANNEL_ID);
