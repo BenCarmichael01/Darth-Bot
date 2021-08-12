@@ -1,8 +1,8 @@
 const Commando = require('discord.js-commando');
 const i18n = require('i18n');
-
+const { LOCALE } = require('@util/utils');
 // TODO add guildLocale to per-server db
-i18n.setLocale('en');
+i18n.setLocale(LOCALE);
 
 module.exports = class KickCommand extends Commando.Command {
 	constructor(client) {
@@ -21,9 +21,9 @@ module.exports = class KickCommand extends Commando.Command {
 		const { member } = args;
 		if (member.kickable) {
 			member.kick();
-			message.reply(i18n.__mf('moderation.kick.kicked', { member: member.id }));
+			message.reply(i18n.__mf('moderation.kick.kicked', { member: member.user.id }));
 		} else {
-			message.reply(i18n.__mf('moderation.kick.fail', { member: member.id }));
+			message.reply(i18n.__mf('moderation.kick.fail', { member: member.user.id }));
 		}
 	}
 };

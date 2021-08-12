@@ -6,13 +6,9 @@ const scdl = require('soundcloud-downloader').default;
 const https = require('https');
 const { YOUTUBE_API_KEY, SOUNDCLOUD_CLIENT_ID, LOCALE, DEFAULT_VOLUME } = require('@util/utils');
 const i18n = require('i18n');
-const XMLHttpRequest = require('xhr2');
 const Commando = require('discord.js-commando');
-const path = require('path');
-const sqlite3 = require('sqlite3').verbose();
-const sql = require('sqlite');
 const config = require('@root/config.json');
-const { npMessage } = require('../../include/npmessage');
+const { npMessage } = require('@include/npmessage');
 
 i18n.setLocale(LOCALE);
 const { MSGTIMEOUT } = config;
@@ -33,37 +29,22 @@ module.exports = class playCommand extends Commando.Command {
 	async run(message, args) {
 		message.delete();
 		const prefix = message.guild.commandPrefix;
-		/* let db = {};
-		// console.log(path.resolve(__dirname, '../../data/serverData.sqlite'));
-		db = await sql.open({
-			filename: path.resolve(__dirname, '../../data/serverData.sqlite'),
-			driver: sqlite3.cached.Database,
-		}).then((thedb) => thedb);
-
-		const MUSIC_CHANNEL_ID = await db.get(`SELECT * FROM servers WHERE guildId='${message.guild.id}'`).then((row) => {
-			// console.log(row.channelId);
-			if (row) {
-				return row.channelId;
-			}
-			return '';
-		}).catch(console.error); */
 		const MUSIC_CHANNEL_ID = message.guild.settings.get('musicChannel');
 
 		if (!MUSIC_CHANNEL_ID) {
-			message.channel.send(`You need to run ${prefix}setup before you can use this command`).then((msg) => {
+			message.channel.send(i18n.__mf('common.noSetup', { prefix })).then((msg) => {
 				msg.delete({ timeout: MSGTIMEOUT });
 			}).catch(console.error);
 			return;
 		}
 		if (message.channel.id !== MUSIC_CHANNEL_ID) {
-			return message.reply(`This command can only be used in <#${MUSIC_CHANNEL_ID}>`).then((msg) => {
-				msg.delete({ timeout: MSGTIMEOUT });
-			}).catch(console.error);
+			return message.reply(i18n.__mf('common.channelOnly', { channel: MUSIC_CHANNEL_ID }))
+				.then((msg) => { msg.delete({ timeout: MSGTIMEOUT });
+				}).catch(console.error);
 		}
 		const { channel } = message.member.voice;
 
 		const serverQueue = message.client.queue.get(message.guild.id);
-		// console.log(serverQueue);
 		if (!channel) {
 			return message.reply(i18n.__('play.errorNotChannel')).then((msg) => {
 				msg.delete({ timeout: MSGTIMEOUT });
@@ -176,9 +157,7 @@ module.exports = class playCommand extends Commando.Command {
 			}
 		} else {
 			try {
-				// console.log('results');
 				const results = await youtube.searchVideos(search, 1, { part: 'snippet' });
-				// console.log('getInfo start');
 				songInfo = (await ytdl.getBasicInfo(results[0].url)).videoDetails;
 				const { thumbnails } = songInfo;
 				song = {
@@ -194,8 +173,7 @@ module.exports = class playCommand extends Commando.Command {
 				}).catch(console.error);
 			}
 		}
-		// DEBUG
-		// console.log(`ServerQueue: ${serverQueue}`); TODO message timeout
+
 		if (serverQueue) {
 			serverQueue.songs.push(song);
 			npMessage({ message, npSong: serverQueue.songs[0] });
@@ -212,8 +190,6 @@ module.exports = class playCommand extends Commando.Command {
 			queueConstruct.connection = await channel.join();
 			await queueConstruct.connection.voice.setSelfDeaf(true);
 			play(queueConstruct.songs[0], message);
-			// message.channel.send('DELETING MESSAGE NOW');
-			// message.delete();
 		} catch (error) {
 			console.error(error);
 			message.client.queue.delete(message.guild.id);

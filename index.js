@@ -15,7 +15,7 @@ const client = new Commando.Client({
 client.login();
 client.queue = new Map();
 // client.commands = new Discord.Collection();
-// client.on('debug', console.log)
+// client.on('debug', console.log);
 client.on('warn', (info) => console.log(info));
 client.on('error', console.error);
 
@@ -98,6 +98,7 @@ client.once('ready', async () => {
 });
 
 client.on('message', async (message) => {
+	console.log(message.responses);
 	// If message doesn't start with prefix or is written by a bot, ignore
 	if (message.author.bot) return;
 	// console.log(message);
