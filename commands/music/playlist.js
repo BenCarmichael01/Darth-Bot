@@ -11,6 +11,7 @@ const {
 	MAX_PLAYLIST_SIZE,
 	DEFAULT_VOLUME,
 	LOCALE,
+	MSGTIMEOUT,
 } = require('@util/utils');
 
 i18n.setLocale(LOCALE);
@@ -24,17 +25,23 @@ module.exports = class playlistCommand extends Commando.Command {
 			memberName: 'playlist',
 			description: i18n.__('playlist.description'),
 			guildOnly: 'true',
+			args: [{
+				key: 'playlist',
+				prompt: i18n.__('playlist.prompt'),
+				type: 'string',
+			}],
 			argsType: 'multiple',
 		});
 	}
 
 	async run(message, args) {
+		message.delete({ TIMEOUT: MSGTIMEOUT });
 		const { channel } = message.member.voice;
 		const serverQueue = message.client.queue.get(message.guild.id);
-
-		if (!args.length) {
+		console.log(args.playlist);
+		if (!args.playlist) {
 			return message
-				.reply(i18n.__mf('playlist.usageReply', { prefix: message.client.prefix }))
+				.reply(i18n.__mf('playlist.usageReply', { prefix: message.guild.commandPrefix }))
 				.catch(console.error);
 		}
 		if (!channel) return message.reply(i18n.__('playlist.errorNotChannel')).catch(console.error);
@@ -49,10 +56,10 @@ module.exports = class playlistCommand extends Commando.Command {
 				.catch(console.error);
 		}
 
-		const search = args.join(' ');
 		const pattern = /^.*(youtu.be\/|list=)([^#&?]*).*/gi;
-		const url = args[0];
-		const urlValid = pattern.test(args[0]);
+		const url = args.playlist;
+		const urlValid = pattern.test(args.playlist);
+		const search = args.playlist;
 
 		const queueConstruct = {
 			textChannel: message.channel,
@@ -134,6 +141,7 @@ module.exports = class playlistCommand extends Commando.Command {
 				return message.channel.send(i18n.__('play.cantJoinChannel', { error })).catch(console.error);
 			}
 		}
-		return 1;
+		// TODO this used to return 1 but i cant remember why so i've removed it
+		return;
 	}
 };
