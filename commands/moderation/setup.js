@@ -19,6 +19,10 @@ module.exports = class setupCommand extends Commando.Command {
 		let channelTag = args[0];
 		channelTag = JSON.stringify(channelTag).replace(/[""#<>]/g, '');
 
+		message.channel.send(i18n.__mf('common.startSetup', { channel: channelTag }))
+			.then((msg) => { msg.delete({ timeout: MSGTIMEOUT }); })
+			.catch(console.error);
+
 		const prefix = message.guild.commandPrefix;
 
 		if (message.guild.channels.cache.get(channelTag)) {
@@ -33,7 +37,7 @@ module.exports = class setupCommand extends Commando.Command {
 					.setImage('https://i.imgur.com/TObp4E6.jpg')
 					.setFooter(`The prefix for this server is ${prefix}`);
 
-				const playingMessage = await musicChannel.send(({ content: outputQueue, embeds: [newEmbed] }));
+				const playingMessage = await musicChannel.send(outputQueue, newEmbed);
 				await playingMessage.react('⏭');
 				await playingMessage.react('⏯');
 				await playingMessage.react('🔇');

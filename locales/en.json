@@ -166,7 +166,8 @@
 		"errorCommand": "There was an error executing that command.",
 		"channelOnly": "This command can only be used in <#{channel}>",
 		"missingPerms": "You don't have permission to do that",
-		"noSetup": "You need to run {prefix}setup before you can use this command"
+		"noSetup": "You need to run {prefix}setup before you can use this command",
+		"startSetup": "Beginning setup in <#{channel}> ..."
 	},
 	"moderation": {
 		"kick": {
