@@ -22,7 +22,6 @@ module.exports = class playCommand extends Commando.Command {
 			memberName: 'play',
 			description: i18n.__('play.description'),
 			guildOnly: 'true',
-
 		});
 	}
 
@@ -31,17 +30,6 @@ module.exports = class playCommand extends Commando.Command {
 		const prefix = message.guild.commandPrefix;
 		const MUSIC_CHANNEL_ID = message.guild.settings.get('musicChannel');
 
-		if (!MUSIC_CHANNEL_ID) {
-			message.channel.send(i18n.__mf('common.noSetup', { prefix })).then((msg) => {
-				msg.delete({ timeout: MSGTIMEOUT });
-			}).catch(console.error);
-			return;
-		}
-		if (message.channel.id !== MUSIC_CHANNEL_ID) {
-			return message.reply(i18n.__mf('common.channelOnly', { channel: MUSIC_CHANNEL_ID }))
-				.then((msg) => { msg.delete({ timeout: MSGTIMEOUT });
-				}).catch(console.error);
-		}
 		const { channel } = message.member.voice;
 
 		const serverQueue = message.client.queue.get(message.guild.id);
@@ -59,7 +47,7 @@ module.exports = class playCommand extends Commando.Command {
 		}
 		if (!args.length) {
 			return message
-				.reply(i18n.__mf('play.usageReply', { prefix: message.client.prefix }))
+				.reply(i18n.__mf('play.usageReply', { prefix }))
 				.then((msg) => {
 					msg.delete({ timeout: MSGTIMEOUT });
 				}).catch(console.error);

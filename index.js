@@ -62,16 +62,35 @@ client.once('ready', async () => {
 	await client.setProvider(sqlite.open({ filename: './data/commandoData.db', driver: sqlite3.cached.Database })
 		.then((thedb) => new Commando.SQLiteProvider(thedb)))
 		.catch(console.error);
-	/*
-	// For this to work check if messagechannel is a music channel
+
+	// Creates inhibitor to restrict music commands to music channel
 	client.dispatcher.addInhibitor((msg) => {
-		if (msg.command.groupdID === 'music' && !musicChannels.has(msg.channel.id)) {
+		const musicChannel = msg.guild.settings.get('musicChannel');
+		const prefix = msg.guild.commandPrefix;
+		// If no musicChannel, recommend run setup
+		if (msg.command.groupID === 'music' && !musicChannel) {
+			msg.delete({ timeout: MSGTIMEOUT });
 			return {
-				reason: 'wrongchannel', response: msg.reply('This is inhibitor test'),
+				reason: 'nosetup',
+				response: msg.reply(i18n.__mf('common.noSetup', { prefix }))
+					.then((response) => {
+						response.delete({ timeout: MSGTIMEOUT });
+					}).catch(console.error),
+			};
+		}
+		if (msg.command.groupID === 'music' && (musicChannel !== msg.channel.id)) {
+			msg.delete({ timeout: MSGTIMEOUT });
+			return {
+				reason: 'wrongchannel',
+				response: msg.reply(i18n.__mf('common.channelOnly', { channel: msg.guild.settings.get('musicChannel') }))
+					.then((response) => {
+						response.delete({ timeout: MSGTIMEOUT + 800 });
+					})
+					.catch(console.error),
 			};
 		}
 	});
-	*/
+
 	const musicGuilds = [];
 	client.guilds.cache.each((guild) => {
 		const channelExists = guild.settings.get('musicChannel');
@@ -98,10 +117,8 @@ client.once('ready', async () => {
 });
 
 client.on('message', async (message) => {
-	console.log(message.responses);
-	// If message doesn't start with prefix or is written by a bot, ignore
-	if (message.author.bot) return;
 	// console.log(message);
+	if (message.author.bot) return;
 	let MUSIC_CHANNEL_ID = await message.guild.settings.get('musicChannel');
 
 	if (!MUSIC_CHANNEL_ID) {
@@ -115,19 +132,17 @@ client.on('message', async (message) => {
 			.catch(console.error);
 	}
 	*/
-	if (!message.isCommand) {
-		if (message.channel.id === MUSIC_CHANNEL_ID) {
-			const args = message.content.trim().split(/ +/);
-			try {
-				client.registry.resolveCommand('play').run(message, args);
-				return;
-			} catch (error) {
-				console.error(error);
-				message.reply(i18n.__('errorCommand')).then((msg) => {
-					msg.delete({ timeout: MSGTIMEOUT });
-				})
-					.catch(console.error);
-			}
+	if (!message.isCommand && (message.channel.id === MUSIC_CHANNEL_ID)) {
+		const args = message.content.trim().split(/ +/);
+		try {
+			client.registry.resolveCommand('play').run(message, args);
+			return;
+		} catch (error) {
+			console.error(error);
+			message.reply(i18n.__('errorCommand')).then((msg) => {
+				msg.delete({ timeout: MSGTIMEOUT });
+			})
+				.catch(console.error);
 		}
 	}
 });
