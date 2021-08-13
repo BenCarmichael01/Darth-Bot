@@ -38,7 +38,7 @@ module.exports = class playlistCommand extends Commando.Command {
 		message.delete({ TIMEOUT: MSGTIMEOUT });
 		const { channel } = message.member.voice;
 		const serverQueue = message.client.queue.get(message.guild.id);
-		console.log(args.playlist);
+		
 		if (!args.playlist) {
 			return message
 				.reply(i18n.__mf('playlist.usageReply', { prefix: message.guild.commandPrefix }))
@@ -82,10 +82,10 @@ module.exports = class playlistCommand extends Commando.Command {
 				console.error(error);
 				return message.reply(i18n.__('playlist.errorNotFoundPlaylist')).catch(console.error);
 			}
-		} else if (scdl.isValidUrl(args[0])) {
-			if (args[0].includes('/sets/')) {
+		} else if (scdl.isValidUrl(args.playlist)) {
+			if (args.playlist.includes('/sets/')) {
 				message.channel.send(i18n.__('playlist.fetchingPlaylist'));
-				playlist = await scdl.getSetInfo(args[0], SOUNDCLOUD_CLIENT_ID);
+				playlist = await scdl.getSetInfo(args.playlist, SOUNDCLOUD_CLIENT_ID);
 				videos = playlist.tracks.map((track) => ({
 					title: track.title,
 					url: track.permalink_url,
