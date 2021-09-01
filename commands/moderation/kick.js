@@ -21,9 +21,9 @@ module.exports = class KickCommand extends Commando.Command {
 		const { member } = args;
 		if (member.kickable) {
 			member.kick();
-			message.reply(i18n.__mf('moderation.kick.kicked', { member: member.user.id }));
+			message.reply(i18n.__mf('moderation.kick.success', { member: member.user.username }));
 		} else {
-			message.reply(i18n.__mf('moderation.kick.fail', { member: member.user.id }));
+			message.reply(i18n.__mf('moderation.kick.fail', { member: member.user.username }));
 		}
 	}
 };
