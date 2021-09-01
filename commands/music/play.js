@@ -26,7 +26,7 @@ module.exports = class playCommand extends Commando.Command {
 	}
 
 	async run(message, args) {
-		message.delete();
+		
 		const prefix = message.guild.commandPrefix;
 		const MUSIC_CHANNEL_ID = message.guild.settings.get('musicChannel');
 
@@ -74,12 +74,14 @@ module.exports = class playCommand extends Commando.Command {
 
 		//  Start the playlist if playlist url was provided
 		if (!videoPattern.test(args[0]) && playlistPattern.test(args[0])) {
+			args.playlist = args[0];
 			return message.client.registry.resolveCommand('playlist').run(message, args);
 		}
 		if (scdl.isValidUrl(url) && url.includes('/sets/')) {
 			return message.client.registry.resolveCommand('playlist').run(message, args);
 		}
 
+		message.delete({ TIMEOUT: MSGTIMEOUT });
 		if (mobileScRegex.test(url)) {
 			try {
 				https.get(url, (res) => {
