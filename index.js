@@ -90,7 +90,6 @@ client.once('ready', async () => {
 			};
 		}
 	});
-
 	const musicGuilds = [];
 	client.guilds.cache.each((guild) => {
 		const channelExists = guild.settings.get('musicChannel');
@@ -124,14 +123,7 @@ client.on('message', async (message) => {
 	if (!MUSIC_CHANNEL_ID) {
 		MUSIC_CHANNEL_ID = '';
 	}
-	/* if (message.isCommand && (message.command.groupID === 'music') && (message.channel.id !== MUSIC_CHANNEL_ID)) {
-		return message.channel.send(i18n.__mf('common.channelOnly', { channel: MUSIC_CHANNEL_ID }))
-			.then((msg) => {
-				msg.delete({ timeout: MSGTIMEOUT });
-			})
-			.catch(console.error);
-	}
-	*/
+
 	if (!message.isCommand && (message.channel.id === MUSIC_CHANNEL_ID)) {
 		const args = message.content.trim().split(/ +/);
 		try {

@@ -19,7 +19,11 @@
       2,
       { "caseSensitive": false }
     ],
-    "indent": [ "error", "tab" ],
+    "indent": [
+      "error",
+      "tab",
+      { "SwitchCase": 1 }
+    ],
     "no-tabs": 0,
     "no-console": 0,
     "no-plusplus": [

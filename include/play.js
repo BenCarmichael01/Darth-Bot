@@ -102,7 +102,7 @@ module.exports = {
 				module.exports.play(queue.songs[0], message);
 			});
 		dispatcher.setVolumeLogarithmic(queue.volume / 100);
-
+		// vvv Do not remove comma!!
 		[, collector] = await npMessage({ message, npSong: song });
 
 		collector.on('collect', (reaction, user) => {
