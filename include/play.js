@@ -110,6 +110,32 @@ module.exports = {
 			const member = message.guild.member(user);
 
 			switch (reaction.emoji.name) {
+				case '⏯':
+					reaction.users.remove(user).catch(console.error);
+					if (!canModifyQueue(member)) return i18n.__('common.errorNotChannel');
+					if (queue.playing) {
+						queue.playing = !queue.playing;
+						// console.log(queue.playing);
+						queue.connection.dispatcher.pause(true);
+						queue.textChannel
+							.send(i18n.__mf('play.pauseSong', { author: user }))
+							.then(msg => {
+								msg.delete({ timeout: 2000 })
+							})
+							.catch(console.error);
+					} else {
+						queue.playing = !queue.playing;
+						// console.log(queue.playing);
+						queue.connection.dispatcher.resume();
+						queue.textChannel
+							.send(i18n.__mf('play.resumeSong', { author: user }))
+							.then(msg => {
+								msg.delete({ timeout: 2000 })
+							})
+							.catch(console.error);
+					}
+					break;
+
 				case '⏭':
 					queue.playing = true;
 					reaction.users.remove(user).catch(console.error);
@@ -128,33 +154,6 @@ module.exports = {
 						.catch(console.error);
 					collector.stop();
 					break;
-
-				case '⏯':
-					reaction.users.remove(user).catch(console.error);
-					if (!canModifyQueue(member)) return i18n.__('common.errorNotChannel');
-					if (queue.playing) {
-						queue.playing = !queue.playing;
-						//console.log(queue.playing);
-						queue.connection.dispatcher.pause(true);
-						queue.textChannel
-							.send(i18n.__mf('play.pauseSong', { author: user }))
-							.then(msg => {
-								msg.delete({ timeout: 2000 })
-							})
-							.catch(console.error);
-					} else {
-						queue.playing = !queue.playing;
-						//console.log(queue.playing);
-						queue.connection.dispatcher.resume();
-						queue.textChannel
-							.send(i18n.__mf('play.resumeSong', { author: user }))
-							.then(msg => {
-								msg.delete({ timeout: 2000 })
-							})
-							.catch(console.error);
-					}
-					break;
-
 				case '🔇':
 					reaction.users.remove(user).catch(console.error);
 					if (!canModifyQueue(member)) return i18n.__('common.errorNotChannel');
@@ -258,8 +257,6 @@ module.exports = {
 					break;
 			}
 		});
-
-
 
 		collector.on('end', () => {
 			/* playingMessage.reactions.removeAll().catch(console.error);

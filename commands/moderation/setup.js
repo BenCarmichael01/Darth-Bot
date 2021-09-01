@@ -38,8 +38,8 @@ module.exports = class setupCommand extends Commando.Command {
 					.setFooter(`The prefix for this server is ${prefix}`);
 
 				const playingMessage = await musicChannel.send(outputQueue, newEmbed);
-				await playingMessage.react('⏭');
 				await playingMessage.react('⏯');
+				await playingMessage.react('⏭');
 				await playingMessage.react('🔇');
 				await playingMessage.react('🔉');
 				await playingMessage.react('🔊');
