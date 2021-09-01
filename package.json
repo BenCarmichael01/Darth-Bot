@@ -14,7 +14,7 @@
     "@discordjs/opus": "^0.5.3",
     "array-move": "^3.0.1",
     "better-sqlite3": "^7.4.3",
-    "discord.js": "^12.5.1",
+    "discord.js": "12.5.3",
     "discord.js-commando": "^0.12.3",
     "dotenv": "^8.6.0",
     "edit-json-file": "^1.6.0",
@@ -30,7 +30,7 @@
     "sqlite": "^4.0.23",
     "sqlite3": "https://github.com/mapbox/node-sqlite3/tarball/master",
     "string-progressbar": "^1.0.4",
-    "tar": "^4.4.17",
+    "tar": "^4.4.19",
     "xhr2": "^0.2.1",
     "xmlhttprequest": "^1.8.0",
     "ytdl-core": "^4.9.1",
@@ -57,6 +57,7 @@
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.24.0",
     "eslint-plugin-promise": "^5.1.0",
-    "eslint-plugin-react": "^7.24.0"
+    "eslint-plugin-react": "^7.24.0",
+    "nodemon": "^2.0.12"
   }
 }
