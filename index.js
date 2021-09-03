@@ -1,18 +1,19 @@
 require('module-alias/register');
 const i18n = require('i18n');
 const path = require('path');
-const Commando = require('discord.js-commando');
+const sapphire = require('@sapphire/framework');
 const sqlite3 = require('sqlite3');
 const sqlite = require('sqlite');
 require('dotenv').config();
 const { MSGTIMEOUT } = require('@util/utils');
 const { npMessage } = require('@include/npmessage');
 
-const client = new Commando.Client({
-	owner: '337710838469230592',
-	commandPrefix: '!',
+const client = new sapphire.SapphireClient({
+	intents: ['GUILDS', 'GUILD_MESSAGES'],
+	// owner: '337710838469230592',
+	defaultPrefix: '!',
 });
-client.login();
+client.login(process.env.DISCORD_TOKEN);
 client.queue = new Map();
 // client.commands = new Discord.Collection();
 // client.on('debug', console.log);
@@ -48,8 +49,8 @@ i18n.configure({
 client.once('ready', async () => {
 	console.log(`Logged in as ${client.user.username} (${client.user.id})`);
 	client.user.setActivity('Crimes', { type: 'STREAMING' });
-
-	client.registry
+	console.log(client.stores.commands);
+	/* client.registry
 		.registerGroups([
 			['fun', 'Fun Commands'],
 			['moderation', 'Moderation Command Group'],
@@ -62,7 +63,7 @@ client.once('ready', async () => {
 	await client.setProvider(sqlite.open({ filename: './data/commandoData.db', driver: sqlite3.cached.Database })
 		.then((thedb) => new Commando.SQLiteProvider(thedb)))
 		.catch(console.error);
-
+		
 	// Creates inhibitor to restrict music commands to music channel
 	client.dispatcher.addInhibitor((msg) => {
 		const musicChannel = msg.guild.settings.get('musicChannel');
@@ -113,6 +114,7 @@ client.once('ready', async () => {
 			}
 		});
 	}
+	*/
 });
 
 client.on('message', async (message) => {
