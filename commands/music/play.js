@@ -6,7 +6,7 @@ const scdl = require('soundcloud-downloader').default;
 const https = require('https');
 const { YOUTUBE_API_KEY, SOUNDCLOUD_CLIENT_ID, LOCALE, DEFAULT_VOLUME } = require('@util/utils');
 const i18n = require('i18n');
-const Commando = require('discord.js-commando');
+const { Command } = require('@sapphire/framework');
 const config = require('@root/config.json');
 const { npMessage } = require('@include/npmessage');
 
@@ -14,7 +14,7 @@ i18n.setLocale(LOCALE);
 const { MSGTIMEOUT } = config;
 const youtube = new YouTubeAPI(YOUTUBE_API_KEY);
 
-module.exports = class playCommand extends Commando.Command {
+module.exports = class playCommand extends Command {
 	constructor(client) {
 		super(client, {
 			name: 'play',

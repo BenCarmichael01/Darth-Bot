@@ -2,7 +2,7 @@ const { play } = require('@include/play');
 const { npMessage } = require('@include/npmessage');
 const YouTubeAPI = require('simple-youtube-api');
 const scdl = require('soundcloud-downloader').default;
-const Commando = require('discord.js-commando');
+const { Command } = require('@sapphire/framework');
 const i18n = require('i18n');
 
 const {
@@ -17,7 +17,7 @@ const {
 i18n.setLocale(LOCALE);
 const youtube = new YouTubeAPI(YOUTUBE_API_KEY);
 
-module.exports = class playlistCommand extends Commando.Command {
+module.exports = class playlistCommand extends Command {
 	constructor(client) {
 		super(client, {
 			name: 'playlist',

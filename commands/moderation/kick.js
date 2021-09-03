@@ -1,10 +1,10 @@
-const Commando = require('discord.js-commando');
+const { Command } = require('@sapphire/framework');
 const i18n = require('i18n');
 const { LOCALE } = require('@util/utils');
 // TODO add guildLocale to per-server db
 i18n.setLocale(LOCALE);
 
-module.exports = class KickCommand extends Commando.Command {
+module.exports = class KickCommand extends Command {
 	constructor(client) {
 		super(client, {
 			name: 'kick',

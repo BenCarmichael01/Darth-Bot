@@ -1,11 +1,10 @@
-const { canModifyQueue, LOCALE } = require("../../util/utils");
+const { canModifyQueue, LOCALE } = require("@util/utils");
 const i18n = require("i18n");
-const Commando = require('discord.js-commando')
-const path = require('path');
+const { Command } = require('@sapphire/framework');
 
 i18n.setLocale(LOCALE);
 
-module.exports = class shuffleCommand extends Commando.Command {
+module.exports = class shuffleCommand extends Command {
 	constructor(client) {
 		super(client, {
 			name: 'shuffle',

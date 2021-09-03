@@ -1,11 +1,10 @@
-const { canModifyQueue, LOCALE } = require("../../util/utils");
+const { canModifyQueue, LOCALE } = require("@util/utils");
 const i18n = require("i18n");
-const Commando = require('discord.js-commando')
-const path = require('path');
+const { Command } = require('@sapphire/framework');
 
 i18n.setLocale(LOCALE);
 
-module.exports = class skipCommand extends Commando.Command {
+module.exports = class skipCommand extends Command {
 	constructor(client) {
 		super(client, {
 			name: 'skip',

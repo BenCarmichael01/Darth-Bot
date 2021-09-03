@@ -1,12 +1,11 @@
-const { canModifyQueue, LOCALE } = require("../../util/utils");
+const { canModifyQueue, LOCALE } = require("@util/utils");
 const i18n = require("i18n");
-const Commando = require('discord.js-commando')
-const path = require('path');
+const { Command } = require('@sapphire/framework');
 i18n.setLocale(LOCALE);
 
 const pattern = /^[0-9]{1,2}(\s*,\s*[0-9]{1,2})*$/;
 
-module.exports = class removeCommand extends Commando.Command {
+module.exports = class removeCommand extends Command {
 	constructor(client) {
 		super(client, {
 			name: 'remove',
@@ -15,8 +14,9 @@ module.exports = class removeCommand extends Commando.Command {
 			description: i18n.__("remove.description"),
 			guildOnly: 'true',
 			argsType: 'single'
-		})
-	};
+		});
+	}
+
 	async run(message, args) {
 		const queue = message.client.queue.get(message.guild.id);
 

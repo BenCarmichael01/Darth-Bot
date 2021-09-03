@@ -1,11 +1,11 @@
 const move = require('array-move');
 const { canModifyQueue, LOCALE } = require('@util/utils');
 const i18n = require('i18n');
-const Commando = require('discord.js-commando');
+const { Command } = require('@sapphire/framework');
 
 i18n.setLocale(LOCALE);
 
-module.exports = class moveCommand extends Commando.Command {
+module.exports = class moveCommand extends Command {
 	constructor(client) {
 		super(client, {
 			name: 'move',

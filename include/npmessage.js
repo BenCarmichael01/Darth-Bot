@@ -1,8 +1,7 @@
-﻿const Discord = require('discord.js');
+﻿const { MessageEmbed } = require('@sapphire/framework');
 const i18n = require('i18n');
 const { LOCALE } = require('../util/utils');
 
-const { MessageEmbed } = Discord;
 i18n.setLocale(LOCALE);
 
 module.exports = {

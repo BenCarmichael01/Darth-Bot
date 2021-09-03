@@ -1,14 +1,13 @@
-const { MessageEmbed } = require("discord.js");
 const YouTubeAPI = require("simple-youtube-api");
-const { YOUTUBE_API_KEY, LOCALE } = require("../../util/utils");
+const { YOUTUBE_API_KEY, LOCALE } = require("@util/utils");
 const youtube = new YouTubeAPI(YOUTUBE_API_KEY);
 const i18n = require("i18n");
-const Commando = require('discord.js-commando')
-const path = require('path');
+const { Command, MessageEmbed } = require('@sapphire/framework');
+
 
 i18n.setLocale(LOCALE);
 
-module.exports = class searchCommand extends Commando.Command {
+module.exports = class searchCommand extends Command {
 	constructor(client) {
 		super(client, {
 			name: 'search',
@@ -16,8 +15,9 @@ module.exports = class searchCommand extends Commando.Command {
 			memberName: 'search',
 			description: i18n.__("search.description"),
 			guildOnly: 'true',
-		})
-	};
+		});
+	}
+
 	async run(message, args) {
 		if (!args.length)
 			return message

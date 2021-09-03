@@ -1,9 +1,8 @@
-﻿const Discord = require('discord.js');
-const i18n = require('i18n');
-const Commando = require('discord.js-commando');
-const { MSGTIMEOUT } = require('../../util/utils');
+﻿const i18n = require('i18n');
+const { Command, MessageEmbed } = require('@sapphire/framework');
+const { MSGTIMEOUT } = require('@util/utils');
 
-module.exports = class setupCommand extends Commando.Command {
+module.exports = class setupCommand extends Command {
 	constructor(client) {
 		super(client, {
 			name: 'setup',
@@ -30,7 +29,7 @@ module.exports = class setupCommand extends Commando.Command {
 				const musicChannel = message.guild.channels.cache.get(channelTag);
 
 				const outputQueue = '__**Up Next:**__:\nSend a url or a song name to start the queue';
-				const newEmbed = new Discord.MessageEmbed()
+				const newEmbed = new MessageEmbed()
 					.setColor('#5865F2')
 					.setTitle('🎶 Nothing is playing right now')
 					.setURL('')
