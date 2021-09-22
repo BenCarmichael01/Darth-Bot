@@ -8,6 +8,9 @@
     "start": "node .",
     "exit": " process.kill(process.pid)"
   },
+  "engines": {
+    "node": "14.13.x"
+  },
   "author": "",
   "license": "ISC",
   "dependencies": {
