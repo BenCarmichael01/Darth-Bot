@@ -265,7 +265,15 @@ FakesAssemblies/
 
 # Node.js Tools for Visual Studio
 .ntvs_analysis.dat
-node_modules/
+node_modules/*
+#!node_modules/ytdl-core
+#node_modules/ytdl-core/lib/*
+#!node_modules/ytdl-core/lib/info.js
+#node_modules/ytdl-core/typings
+#node_modules/ytdl-core/LICENSE
+#node_modules/ytdl-core/package.json
+#node_modules/ytdl-core/README.md
+
 
 # Visual Studio 6 build log
 *.plg

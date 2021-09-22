@@ -1,11 +1,19 @@
 const { prefix } = require('../config.json');
-module.exports = {
-	name: 'help',
-	description: 'List all of my commands or info about a specific command.',
-	aliases: ['commands'],
-	usage: '[command name]',
-	cooldown: 5,
-	execute(message, args) {
+const Commando = require('discord.js-commando')
+
+module.exports = class helpCommand extends Commando.Command {
+	constructor(client) {
+		super(client, {
+			name: 'help',
+			group: 'misc',
+			memberName: 'help',
+			description: 'List all of my commands or info about a specific command.',
+			guildOnly: 'false',
+
+		})
+	};
+
+	async run(message, args) {
 		const data = [];
 		const { commands } = message.client;
 
@@ -41,5 +49,5 @@ module.exports = {
 		data.push(`**Cooldown:** ${command.cooldown || 3} second(s)`);
 
 		message.channel.send(data, { split: true });
-	},
+	}
 };
