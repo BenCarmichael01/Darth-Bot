@@ -28,6 +28,7 @@
     "module-alias": "^2.2.2",
     "node-gyp": "^8.1.0",
     "opusscript": "^0.0.8",
+    "set-value": "^4.0.1",
     "simple-youtube-api": "^5.2.1",
     "soundcloud-downloader": "^1.0.0",
     "sqlite": "^4.0.23",
