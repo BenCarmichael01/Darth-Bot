@@ -1,12 +1,15 @@
-require('module-alias/register');
-const i18n = require('i18n');
+// require('module-alias/register');`${__base}include/npmessage`
 const path = require('path');
+
+global.__base = path.join(__dirname, '/');
+const i18n = require('i18n');
 const Commando = require('discord.js-commando');
 const sqlite3 = require('sqlite3');
 const sqlite = require('sqlite');
 require('dotenv').config();
-const { MSGTIMEOUT } = require('@util/utils');
-const { npMessage } = require('@include/npmessage');
+
+const { MSGTIMEOUT } = require(`${__base}util/utils`);
+const { npMessage } = require(`${__base}include/npmessage`);
 
 const client = new Commando.Client({
 	owner: '337710838469230592',

@@ -1,5 +1,5 @@
 const move = require('array-move');
-const { canModifyQueue, LOCALE } = require('@util/utils');
+const { canModifyQueue, LOCALE } = require(`${__base}util/utils`);
 const i18n = require('i18n');
 const Commando = require('discord.js-commando');
 
