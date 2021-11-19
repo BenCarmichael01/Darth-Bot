@@ -26,7 +26,6 @@ module.exports = class playCommand extends Commando.Command {
 	}
 
 	async run(message, args) {
-		
 		const prefix = message.guild.commandPrefix;
 		const MUSIC_CHANNEL_ID = message.guild.settings.get('musicChannel');
 
