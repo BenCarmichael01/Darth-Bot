@@ -9,6 +9,7 @@ const i18n = require('i18n');
 const { Command } = require('@sapphire/framework');
 const config = require('@root/config.json');
 const { npMessage } = require(`${__base}/include/npmessage`);
+const {MSGTIMEOUT} = require(`$__base/util/utils`)
 
 i18n.setLocale(LOCALE);
 const { MSGTIMEOUT } = config;

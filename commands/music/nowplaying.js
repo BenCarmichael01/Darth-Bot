@@ -1,23 +1,18 @@
 const createBar = require("string-progressbar");
-const { Command, MessageEmbed } = require('@sapphire/framework');
+const { MessageEmbed } = require('discord.js');
 const path = require('path');
 const { LOCALE } = require("@util/utils");
 const i18n = require("i18n");
 
 i18n.setLocale(LOCALE);
 
-module.exports = class nowPlayingCommand extends Command {
-	constructor(client) {
-		super(client, {
-			name: 'nowplaying',
-			group: 'music',
-			memberName: 'nowplaying',
-			description: i18n.__('nowplaying.description'),
-			guildOnly: 'true',
-		});
-	}
+module.exports = {
+	name: 'nowplaying',
+	category: 'music',
+	description: i18n.__('nowplaying.description'),
+	guildOnly: 'true',
 
-	async run(message, args) {
+	callback(message, args) {
 		const queue = message.client.queue.get(message.guild.id);
 		if (!queue) return message.reply(i18n.__("nowplaying.errorNotQueue")).catch(console.error);
 
