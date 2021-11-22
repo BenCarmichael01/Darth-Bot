@@ -1,5 +1,5 @@
 const { play } = require('@include/play');
-const { npMessage } = require('@include/npmessage');
+const { npMessage } = require(`${__base}/include/npmessage`);
 const YouTubeAPI = require('simple-youtube-api');
 const scdl = require('soundcloud-downloader').default;
 const { Command } = require('@sapphire/framework');
@@ -12,7 +12,7 @@ const {
 	DEFAULT_VOLUME,
 	LOCALE,
 	MSGTIMEOUT,
-} = require('@util/utils');
+} = require(`${__base}/util/utils`);
 
 i18n.setLocale(LOCALE);
 const youtube = new YouTubeAPI(YOUTUBE_API_KEY);

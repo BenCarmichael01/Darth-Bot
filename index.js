@@ -1,12 +1,12 @@
-require('module-alias/register');
-const i18n = require('i18n');
 const path = require('path');
+global.__base = path.join(__dirname, '/');
+const i18n = require('i18n');
 const sapphire = require('@sapphire/framework');
 const sqlite3 = require('sqlite3');
 const sqlite = require('sqlite');
 require('dotenv').config();
-const { MSGTIMEOUT } = require('@util/utils');
-const { npMessage } = require('@include/npmessage');
+const { MSGTIMEOUT } = require(`${__base}/util/utils`);
+const { npMessage } = require(`${__base}/include/npmessage`);
 
 const client = new sapphire.SapphireClient({
 	intents: ['GUILDS', 'GUILD_MESSAGES'],

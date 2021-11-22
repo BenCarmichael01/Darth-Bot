@@ -1,6 +1,6 @@
 ﻿const i18n = require('i18n');
 const { Command, MessageEmbed } = require('@sapphire/framework');
-const { MSGTIMEOUT } = require('@util/utils');
+const { MSGTIMEOUT } = require(`${__base}/util/utils`);
 
 module.exports = class setupCommand extends Command {
 	constructor(client) {

@@ -4,11 +4,11 @@ const ytdl = require('ytdl-core-discord');
 const YouTubeAPI = require('simple-youtube-api');
 const scdl = require('soundcloud-downloader').default;
 const https = require('https');
-const { YOUTUBE_API_KEY, SOUNDCLOUD_CLIENT_ID, LOCALE, DEFAULT_VOLUME } = require('@util/utils');
+const { YOUTUBE_API_KEY, SOUNDCLOUD_CLIENT_ID, LOCALE, DEFAULT_VOLUME } = require(`${__base}/util/utils`);
 const i18n = require('i18n');
 const { Command } = require('@sapphire/framework');
 const config = require('@root/config.json');
-const { npMessage } = require('@include/npmessage');
+const { npMessage } = require(`${__base}/include/npmessage`);
 
 i18n.setLocale(LOCALE);
 const { MSGTIMEOUT } = config;
