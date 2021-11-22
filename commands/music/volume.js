@@ -1,23 +1,16 @@
-const { canModifyQueue, LOCALE } = require("@util/utils");
+const { canModifyQueue, LOCALE } = require(`${__base}util/utils`);
 const i18n = require("i18n");
-const { Command } = require('@sapphire/framework');
-
 
 i18n.setLocale(LOCALE);
 
-module.exports = class volumeCommand extends Command {
-	constructor(client) {
-		super(client, {
+module.exports = {
 			name: 'volume',
-			group: 'music',
-			memberName: 'volume',
+			category: 'music',
 			description: i18n.__('volume.description'),
 			guildOnly: 'true',
-			argsType: 'multiple',
-		});
-	}
+			// argsType: 'multiple',
 
-	async run(message, args) {
+	callback(message, args) {
 		const queue = message.client.queue.get(message.guild.id);
 
 		if (!queue) return message.reply(i18n.__("volume.errorNotQueue")).catch(console.error);
@@ -32,5 +25,5 @@ module.exports = class volumeCommand extends Command {
 		queue.volume = args[0];
 		queue.connection.dispatcher.setVolumeLogarithmic(args[0] / 100);
 		return queue.textChannel.send(i18n.__mf("volume.result", { arg: args[0] })).catch(console.error);
-	};
+	},
 };

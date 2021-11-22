@@ -1,18 +1,13 @@
 ﻿const i18n = require('i18n');
-const { Command, MessageEmbed } = require('@sapphire/framework');
+const { MessageEmbed } = require('discord.js');
 const { MSGTIMEOUT } = require(`${__base}/util/utils`);
 
-module.exports = class setupCommand extends Command {
-	constructor(client) {
-		super(client, {
+module.exports = {
 			name: 'setup',
-			group: 'moderation',
-			memberName: 'setup',
+			category: 'moderation',
 			description: 'Setup the channel for music commands',
 			guildOnly: 'true',
-			argsType: 'multiple',
-		});
-	}
+			// argsType: 'multiple',
 
 	async run(message, args) {
 		let channelTag = args[0];

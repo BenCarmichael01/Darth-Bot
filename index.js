@@ -1,19 +1,26 @@
 const path = require('path');
 global.__base = path.join(__dirname, '/');
 const i18n = require('i18n');
-const sapphire = require('@sapphire/framework');
+const discordjs = require('discord.js');
+const wokcommands = require('wokcommands');
 const sqlite3 = require('sqlite3');
 const sqlite = require('sqlite');
-require('dotenv').config();
+const { Intents } = discordjs;
 const { MSGTIMEOUT } = require(`${__base}/util/utils`);
 const { npMessage } = require(`${__base}/include/npmessage`);
+require('dotenv').config();
 
-const client = new sapphire.SapphireClient({
-	intents: ['GUILDS', 'GUILD_MESSAGES'],
+const client = new discordjs.Client({
+	intents: [
+		Intents.FLAGS.GUILDS,
+		Intents.FLAGS.GUILD_MESSAGES,
+		Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
+	],
 	// owner: '337710838469230592',
-	defaultPrefix: '!',
+
 });
-client.login(process.env.DISCORD_TOKEN);
+
+client.login(process.env.DISCORD_TOKEN_DEV);
 client.queue = new Map();
 // client.commands = new Discord.Collection();
 // client.on('debug', console.log);
@@ -46,10 +53,18 @@ i18n.configure({
 	},
 });
 
-client.once('ready', async () => {
+client.on('ready', async () => {
+	new wokcommands(client, {
+		// The name of the local folder for your command files
+		commandsDir: path.join(__dirname, 'commands'),
+		testServers: ['756990417630789744', '856658520270307339'],
+		botOwners: '337710838469230592',
+		
+	  })
+	  .setDefaultPrefix('!');
 	console.log(`Logged in as ${client.user.username} (${client.user.id})`);
 	client.user.setActivity('Crimes', { type: 'STREAMING' });
-	console.log(client.stores.commands);
+	// console.log(client.stores.commands);
 	/* client.registry
 		.registerGroups([
 			['fun', 'Fun Commands'],

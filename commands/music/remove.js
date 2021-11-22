@@ -1,23 +1,17 @@
-const { canModifyQueue, LOCALE } = require("@util/utils");
+const { canModifyQueue, LOCALE } = require(`${__base}util/utils`);
 const i18n = require("i18n");
-const { Command } = require('@sapphire/framework');
 i18n.setLocale(LOCALE);
 
 const pattern = /^[0-9]{1,2}(\s*,\s*[0-9]{1,2})*$/;
 
-module.exports = class removeCommand extends Command {
-	constructor(client) {
-		super(client, {
+module.exports = {
 			name: 'remove',
-			group: 'music',
-			memberName: 'remove',
+			category: 'music',
 			description: i18n.__("remove.description"),
 			guildOnly: 'true',
-			argsType: 'single'
-		});
-	}
+			// argsType: 'single'
 
-	async run(message, args) {
+	callback(message, args) {
 		const queue = message.client.queue.get(message.guild.id);
 
 		if (!queue) return message.channel.send(i18n.__("remove.errorNotQueue")).catch(console.error);

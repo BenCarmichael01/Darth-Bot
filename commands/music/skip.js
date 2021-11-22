@@ -1,20 +1,16 @@
-const { canModifyQueue, LOCALE } = require("@util/utils");
+const { canModifyQueue, LOCALE } = require(`${__base}util/utils`);
 const i18n = require("i18n");
-const { Command } = require('@sapphire/framework');
 
 i18n.setLocale(LOCALE);
 
-module.exports = class skipCommand extends Command {
-	constructor(client) {
-		super(client, {
+module.exports = {
 			name: 'skip',
 			group: 'music',
 			memberName: 'skip',
 			description: i18n.__("skip.description"),
 			guildOnly: 'true',
-		})
-	};
-	async run(message, args) {
+
+	callback(message, args) {
 		const queue = message.client.queue.get(message.guild.id);
 		if (!queue) return message.reply(i18n.__("skip.errorNotQueue")).catch(console.error);
 		if (!canModifyQueue(message.member)) return i18n.__("common.errorNotChannel");

@@ -1,24 +1,19 @@
 const YouTubeAPI = require("simple-youtube-api");
-const { YOUTUBE_API_KEY, LOCALE } = require("@util/utils");
+const { YOUTUBE_API_KEY, LOCALE } = require(`${__base}util/utils`);
 const youtube = new YouTubeAPI(YOUTUBE_API_KEY);
 const i18n = require("i18n");
-const { Command, MessageEmbed } = require('@sapphire/framework');
+const { MessageEmbed } = require('discord.js');
 
 
 i18n.setLocale(LOCALE);
 
-module.exports = class searchCommand extends Command {
-	constructor(client) {
-		super(client, {
+module.exports = {
 			name: 'search',
-			group: 'music',
-			memberName: 'search',
+			category: 'music',
 			description: i18n.__("search.description"),
 			guildOnly: 'true',
-		});
-	}
 
-	async run(message, args) {
+	async callback(message, args) {
 		if (!args.length)
 			return message
 				.reply(i18n.__mf("search.usageReply", { prefix: message.client.prefix, name: module.exports.name }))

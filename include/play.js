@@ -1,4 +1,3 @@
-require('module-alias/register');
 const ytdl = require('ytdl-core-discord');
 const scdl = require('soundcloud-downloader').default;
 const {
@@ -7,13 +6,13 @@ const {
 	LOCALE,
 	MSGTIMEOUT,
 	SOUNDCLOUD_CLIENT_ID,
-} = require(`${__base}/util/utils`);
+} = require(`${__base}util/utils`);
 const i18n = require('i18n');
 
 i18n.setLocale(LOCALE);
 // TODO FIX THIS REF WHEN MOVED COMMAND TO COMMANDO
 // const np = require('../commands/music/nowplaying');
-const { npMessage } = require(`${__base}/include/npmessage`);
+const { npMessage } = require(`${__base}include/npmessage`);
 
 module.exports = {
 	async play(song, message) {

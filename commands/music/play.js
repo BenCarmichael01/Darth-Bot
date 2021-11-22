@@ -1,31 +1,26 @@
-require('module-alias/register');
-const { play } = require('@include/play');
+const { play } = require(`${__base}include/play`);
 const ytdl = require('ytdl-core-discord');
 const YouTubeAPI = require('simple-youtube-api');
 const scdl = require('soundcloud-downloader').default;
 const https = require('https');
-const { YOUTUBE_API_KEY, SOUNDCLOUD_CLIENT_ID, LOCALE, DEFAULT_VOLUME } = require(`${__base}/util/utils`);
+const { YOUTUBE_API_KEY, SOUNDCLOUD_CLIENT_ID, LOCALE, DEFAULT_VOLUME } = require(`${__base}util/utils`);
 const i18n = require('i18n');
-const { Command } = require('@sapphire/framework');
-const config = require('@root/config.json');
-const { npMessage } = require(`${__base}/include/npmessage`);
+
+const config = require(`${__base}config.json`);
+const { npMessage } = require(`${__base}include/npmessage`);
+const {MSGTIMEOUT} = require(`${__base}util/utils`)
 
 i18n.setLocale(LOCALE);
 const { MSGTIMEOUT } = config;
 const youtube = new YouTubeAPI(YOUTUBE_API_KEY);
 
-module.exports = class playCommand extends Command {
-	constructor(client) {
-		super(client, {
+module.exports = {
 			name: 'play',
-			group: 'music',
-			memberName: 'play',
+			category: 'music',
 			description: i18n.__('play.description'),
 			guildOnly: 'true',
-		});
-	}
 
-	async run(message, args) {
+	async callback(message, args) {
 		
 		const prefix = message.guild.commandPrefix;
 		const MUSIC_CHANNEL_ID = message.guild.settings.get('musicChannel');

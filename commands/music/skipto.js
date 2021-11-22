@@ -1,22 +1,16 @@
-const { canModifyQueue, LOCALE } = require("@util/utils");
+const { canModifyQueue, LOCALE } = require(`${__base}util/utils`);
 const i18n = require("i18n");
-const { Command } = require('@sapphire/framework');
 
 i18n.setLocale(LOCALE);
 
-module.exports = class skiptoCommand extends Command {
-	constructor(client) {
-		super(client, {
+module.exports = {
 			name: 'skipto',
-			group: 'music',
-			memberName: 'skipto',
+			category: 'music',
 			description: i18n.__('skipto.description'),
 			guildOnly: 'true',
-			argsType: 'multiple',
-		});
-	}
+			// argsType: 'multiple',
 
-	async run(message, args) {
+	callback(message, args) {
 		
 		if (!args.length || isNaN(args[0]))
 			return message

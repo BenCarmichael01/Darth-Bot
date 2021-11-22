@@ -1,8 +1,7 @@
-const { play } = require('@include/play');
-const { npMessage } = require(`${__base}/include/npmessage`);
+const { play } = require(`${__base}include/play`);
+const { npMessage } = require(`${__base}include/npmessage`);
 const YouTubeAPI = require('simple-youtube-api');
 const scdl = require('soundcloud-downloader').default;
-const { Command } = require('@sapphire/framework');
 const i18n = require('i18n');
 
 const {
@@ -17,24 +16,19 @@ const {
 i18n.setLocale(LOCALE);
 const youtube = new YouTubeAPI(YOUTUBE_API_KEY);
 
-module.exports = class playlistCommand extends Command {
-	constructor(client) {
-		super(client, {
+module.exports = {
 			name: 'playlist',
-			group: 'music',
-			memberName: 'playlist',
+			category: 'music',
 			description: i18n.__('playlist.description'),
 			guildOnly: 'true',
-			args: [{
+			/*args: [{
 				key: 'playlist',
 				prompt: i18n.__('playlist.prompt'),
 				type: 'string',
 			}],
-			argsType: 'multiple',
-		});
-	}
+			argsType: 'multiple', */
 
-	async run(message, args) {
+	async callback(message, args) {
 		message.delete({ TIMEOUT: MSGTIMEOUT });
 		const { channel } = message.member.voice;
 		const serverQueue = message.client.queue.get(message.guild.id);

@@ -1,16 +1,11 @@
-const { Command } = require('@sapphire/framework');
 // const oneLine = require('common-tags').oneLine;
-module.exports = class pinguCommand extends Command {
-	constructor(client) {
-		super(client, {
+module.exports = {
 			name: 'pingu',
-			group: 'fun',
-			memberName: 'pingu',
+			category: 'fun',
 			description: 'Ping Pong',
-		});
-	}
 
-	async run(message) {
+
+	callback(message) {
 		message.channel.send('Pong');
 	}
 	/* {

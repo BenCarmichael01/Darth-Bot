@@ -1,24 +1,18 @@
 const move = require('array-move');
 const { canModifyQueue, LOCALE } = require(`${__base}/util/utils`);
 const i18n = require('i18n');
-const { Command } = require('@sapphire/framework');
 
 i18n.setLocale(LOCALE);
 
-module.exports = class moveCommand extends Command {
-	constructor(client) {
-		super(client, {
-			name: 'move',
-			aliases: ['mv'],
-			group: 'music',
-			memberName: 'move',
-			description: i18n.__('move.description'),
-			guildOnly: 'true',
-			argsType: 'multiple',
-		});
-	}
+module.exports = {
+	name: 'move',
+	aliases: ['mv'],
+	category: 'music',
+	description: i18n.__('move.description'),
+	guildOnly: 'true',
+			// argsType: 'multiple',
 
-	async run(message, args) {
+	callback(message, args) {
 		const queue = message.client.queue.get(message.guild.id);
 		if (!queue) return message.channel.send(i18n.__('move.errorNotQueue')).catch(console.error);
 		if (!canModifyQueue(message.member)) return;

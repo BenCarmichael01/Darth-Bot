@@ -1,23 +1,18 @@
-const { Command } = require('@sapphire/framework');
 const i18n = require('i18n');
 const { LOCALE } = require(`${__base}/util/utils`);
 // TODO add guildLocale to per-server db
 i18n.setLocale(LOCALE);
 
-module.exports = class KickCommand extends Command {
-	constructor(client) {
-		super(client, {
-			name: 'kick',
-			group: 'moderation',
-			memberName: 'kick',
-			description: i18n.__('moderation.kick.description'),
-			clientPermissions: ['KICK_MEMBERS'],
-			userPermissions: ['KICK_MEMBERS'],
-			args: [{ key: 'member', prompt: i18n.__('moderation.kick.prompt'), type: 'member' }],
-		});
-	}
+module.exports = {
+		name: 'kick',
+		category: 'moderation',
+		description: i18n.__('moderation.kick.description'),
+		// clientPermissions: ['KICK_MEMBERS'],
+		permissions: ['KICK_MEMBERS'],
+		// args: [{ key: 'member', prompt: i18n.__('moderation.kick.prompt'), type: 'member' }],
 
-	async run(message, args) {
+	
+	callback(message, args) {
 		const { member } = args;
 		if (member.kickable) {
 			member.kick();
