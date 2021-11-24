@@ -18,7 +18,7 @@ module.exports = {
 			description: i18n.__('play.description'),
 			guildOnly: 'true',
 
-	async callback(message, args) {
+	async callback({message, args}) {
 		
 		const prefix = message.guild.commandPrefix;
 		const MUSIC_CHANNEL_ID = message.guild.settings.get('musicChannel');

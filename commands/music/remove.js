@@ -11,7 +11,7 @@ module.exports = {
 			guildOnly: 'true',
 			// argsType: 'single'
 
-	callback(message, args) {
+	callback({message, args}) {
 		const queue = message.client.queue.get(message.guild.id);
 
 		if (!queue) return message.channel.send(i18n.__("remove.errorNotQueue")).catch(console.error);

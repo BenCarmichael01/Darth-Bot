@@ -8,7 +8,7 @@ module.exports = {
 	description: i18n.__('loop.description'),
 	guildOnly: 'true',
 
-	callback(message, args) {
+	callback({message}) {
 		const queue = message.client.queue.get(message.guild.id);
 		if (!queue) return message.reply(i18n.__("loop.errorNotQueue")).catch(console.error);
 		if (!canModifyQueue(message.member)) return i18n.__("common.errorNotChannel");

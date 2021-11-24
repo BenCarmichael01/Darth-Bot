@@ -12,7 +12,7 @@ module.exports = {
 		// args: [{ key: 'member', prompt: i18n.__('moderation.kick.prompt'), type: 'member' }],
 
 	
-	callback(message, args) {
+	callback({message, args}) {
 		const { member } = args;
 		if (member.kickable) {
 			member.kick();

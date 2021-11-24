@@ -10,7 +10,7 @@ module.exports = {
 			guildOnly: 'true',
 			// argsType: 'multiple',
 
-	callback(message, args) {
+	callback({message, args}) {
 		const queue = message.client.queue.get(message.guild.id);
 
 		if (!queue) return message.reply(i18n.__("volume.errorNotQueue")).catch(console.error);

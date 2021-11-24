@@ -13,7 +13,7 @@ module.exports = {
 			description: i18n.__("search.description"),
 			guildOnly: 'true',
 
-	async callback(message, args) {
+	async callback({message, args}) {
 		if (!args.length)
 			return message
 				.reply(i18n.__mf("search.usageReply", { prefix: message.client.prefix, name: module.exports.name }))

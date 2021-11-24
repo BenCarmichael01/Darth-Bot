@@ -10,7 +10,7 @@ module.exports = {
 			guildOnly: 'true',
 			// argsType: 'multiple',
 
-	callback(message, args) {
+	callback({message, args}) {
 		
 		if (!args.length || isNaN(args[0]))
 			return message

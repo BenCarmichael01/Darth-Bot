@@ -28,7 +28,7 @@ module.exports = {
 			}],
 			argsType: 'multiple', */
 
-	async callback(message, args) {
+	async callback({message, args}) {
 		message.delete({ TIMEOUT: MSGTIMEOUT });
 		const { channel } = message.member.voice;
 		const serverQueue = message.client.queue.get(message.guild.id);

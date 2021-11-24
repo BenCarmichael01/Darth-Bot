@@ -5,7 +5,7 @@ module.exports =  {
 			// argsType: 'multiple',
 			description: `Gives a random number between the specified values \nEx:${prefix}roll <lowest value> <highest value>`,
 
-	callback(message, args) {
+	callback({message, args}) {
 		var min = Math.ceil(args[0]);
 		var max = Math.floor(args[1]);
 		if (!min) {

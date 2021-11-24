@@ -9,7 +9,7 @@ module.exports = {
 			description: i18n.__("shuffle.description"),
 			guildOnly: 'true',
 
-	callback(message, args) {
+	callback({message}) {
 		const queue = message.client.queue.get(message.guild.id);
 		if (!queue) return message.channel.send(i18n.__("shuffle.errorNotQueue")).catch(console.error);
 		if (!canModifyQueue(message.member)) return i18n.__("common.errorNotChannel");

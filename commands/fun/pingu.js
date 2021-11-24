@@ -5,7 +5,7 @@ module.exports = {
 			description: 'Ping Pong',
 
 
-	callback(message) {
+	callback({message}) {
 		message.channel.send('Pong');
 	}
 	/* {

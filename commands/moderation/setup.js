@@ -8,10 +8,13 @@ module.exports = {
 			category: 'moderation',
 			description: 'Setup the channel for music commands',
 			guildOnly: 'true',
+			permissions: ['ADMINISTRATOR'],
 			// argsType: 'multiple',
 
-	async callback(message, args) {
+	async callback({message, args}) {
+		console.log(args);
 		let channelTag = args[0];
+		console.log(channelTag);
 		channelTag = JSON.stringify(channelTag).replace(/[""#<>]/g, '');
 
 		message.channel.send(i18n.__mf('common.startSetup', { channel: channelTag }))

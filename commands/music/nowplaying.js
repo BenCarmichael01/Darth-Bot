@@ -12,7 +12,7 @@ module.exports = {
 	description: i18n.__('nowplaying.description'),
 	guildOnly: 'true',
 
-	callback(message, args) {
+	callback({message, args}) {
 		const queue = message.client.queue.get(message.guild.id);
 		if (!queue) return message.reply(i18n.__("nowplaying.errorNotQueue")).catch(console.error);
 
