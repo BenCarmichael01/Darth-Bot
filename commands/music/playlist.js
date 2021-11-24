@@ -11,7 +11,7 @@ const {
 	DEFAULT_VOLUME,
 	LOCALE,
 	MSGTIMEOUT,
-} = require(`${__base}/util/utils`);
+} = require(`${__base}/include/utils`);
 
 i18n.setLocale(LOCALE);
 const youtube = new YouTubeAPI(YOUTUBE_API_KEY);

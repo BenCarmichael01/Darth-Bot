@@ -1,6 +1,6 @@
 ﻿const i18n = require('i18n');
 const { MessageEmbed } = require('discord.js');
-const { MSGTIMEOUT, LOCALE } = require(`${__base}/util/utils`);
+const { MSGTIMEOUT, LOCALE } = require(`${__base}/include/utils`);
 
 i18n.setLocale(LOCALE);
 module.exports = {

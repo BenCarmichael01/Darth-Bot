@@ -1,5 +1,5 @@
 const i18n = require('i18n');
-const { LOCALE } = require(`${__base}/util/utils`);
+const { LOCALE } = require(`${__base}/include/utils`);
 // TODO add guildLocale to per-server db
 i18n.setLocale(LOCALE);
 

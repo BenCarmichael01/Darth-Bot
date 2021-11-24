@@ -6,7 +6,7 @@ const {
 	LOCALE,
 	MSGTIMEOUT,
 	SOUNDCLOUD_CLIENT_ID,
-} = require(`${__base}util/utils`);
+} = require(`${__base}include/utils`);
 const i18n = require('i18n');
 
 i18n.setLocale(LOCALE);

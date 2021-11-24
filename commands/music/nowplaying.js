@@ -1,7 +1,7 @@
 const createBar = require("string-progressbar");
 const { MessageEmbed } = require('discord.js');
 const path = require('path');
-const { LOCALE } = require(`${__base}util/utils`);
+const { LOCALE } = require(`${__base}include/utils`);
 const i18n = require("i18n");
 
 i18n.setLocale(LOCALE);
