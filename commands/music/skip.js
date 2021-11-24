@@ -5,8 +5,7 @@ i18n.setLocale(LOCALE);
 
 module.exports = {
 			name: 'skip',
-			group: 'music',
-			memberName: 'skip',
+			category: 'music',
 			description: i18n.__("skip.description"),
 			guildOnly: 'true',
 

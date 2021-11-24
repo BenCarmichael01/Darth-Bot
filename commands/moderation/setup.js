@@ -1,7 +1,8 @@
 ﻿const i18n = require('i18n');
 const { MessageEmbed } = require('discord.js');
-const { MSGTIMEOUT } = require(`${__base}/util/utils`);
+const { MSGTIMEOUT, LOCALE } = require(`${__base}/util/utils`);
 
+i18n.setLocale(LOCALE);
 module.exports = {
 			name: 'setup',
 			category: 'moderation',
@@ -9,7 +10,7 @@ module.exports = {
 			guildOnly: 'true',
 			// argsType: 'multiple',
 
-	async run(message, args) {
+	async callback(message, args) {
 		let channelTag = args[0];
 		channelTag = JSON.stringify(channelTag).replace(/[""#<>]/g, '');
 

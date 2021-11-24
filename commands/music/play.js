@@ -3,15 +3,13 @@ const ytdl = require('ytdl-core-discord');
 const YouTubeAPI = require('simple-youtube-api');
 const scdl = require('soundcloud-downloader').default;
 const https = require('https');
-const { YOUTUBE_API_KEY, SOUNDCLOUD_CLIENT_ID, LOCALE, DEFAULT_VOLUME } = require(`${__base}util/utils`);
+const { YOUTUBE_API_KEY, SOUNDCLOUD_CLIENT_ID, LOCALE, DEFAULT_VOLUME, MSGTIMEOUT } = require('../../util/utils');
 const i18n = require('i18n');
 
 const config = require(`${__base}config.json`);
 const { npMessage } = require(`${__base}include/npmessage`);
-const {MSGTIMEOUT} = require(`${__base}util/utils`)
 
 i18n.setLocale(LOCALE);
-const { MSGTIMEOUT } = config;
 const youtube = new YouTubeAPI(YOUTUBE_API_KEY);
 
 module.exports = {
