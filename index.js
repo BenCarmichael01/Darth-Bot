@@ -55,26 +55,18 @@ i18n.configure({
 
 client.on('ready', async () => {
 	new wokcommands(client, {
-		// The name of the local folder for your command files
 		commandsDir: path.join(__dirname, 'commands'),
 		testServers: ['756990417630789744', '856658520270307339'],
 		botOwners: '337710838469230592',
+		mongoUri: process.env.MONGO_URI,
 		
 	  })
 	  .setDefaultPrefix('!');
-	console.log(`Logged in as ${client.user.username} (${client.user.id})`);
-	client.user.setActivity('Crimes', { type: 'STREAMING' });
-	// console.log(client.stores.commands);
-	/* client.registry
-		.registerGroups([
-			['fun', 'Fun Commands'],
-			['moderation', 'Moderation Command Group'],
-			['music', 'Music Command Group'],
-			['misc', 'Miscelanious Commands'],
-		])
-		.registerDefaults()
-		.registerCommandsIn(path.join(__dirname, 'commands'));
 
+	console.log(`Logged in as ${client.user.username} (${client.user.id})`);
+	client.user.setActivity('with your mum');
+	// console.log(client.stores.commands);
+	/*
 	await client.setProvider(sqlite.open({ filename: './data/commandoData.db', driver: sqlite3.cached.Database })
 		.then((thedb) => new Commando.SQLiteProvider(thedb)))
 		.catch(console.error);
