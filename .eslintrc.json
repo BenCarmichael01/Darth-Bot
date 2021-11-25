@@ -19,6 +19,7 @@
       2,
       { "caseSensitive": false }
     ],
+	"import/no-dynamic-require": 0,
     "indent": [
       "error",
       "tab",
