@@ -1,4 +1,5 @@
-require('dotenv').config()
+/* global __base */
+require('dotenv').config();
 exports.canModifyQueue = (member) => {
 	const { channelID } = member.voice;
 	const botChannel = member.guild.voice.channelID;
@@ -13,7 +14,7 @@ exports.canModifyQueue = (member) => {
 let config;
 
 try {
-	config = require('../config.json');
+	config = require(`${__base}config.json`);
 } catch (error) {
 	config = null;
 }
