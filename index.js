@@ -1,13 +1,14 @@
+/* global __base */
 const path = require('path');
-global.__base = path.join(__dirname, '/');
 const i18n = require('i18n');
 const discordjs = require('discord.js');
-const wokcommands = require('wokcommands');
-const sqlite3 = require('sqlite3');
-const sqlite = require('sqlite');
+const WOKCommands = require('wokcommands');
+
+global.__base = path.join(__dirname, '/');
 const { Intents } = discordjs;
-const { MSGTIMEOUT } = require(`${__base}/util/utils`);
+const { MSGTIMEOUT } = require(`${__base}/include/utils`);
 const { npMessage } = require(`${__base}/include/npmessage`);
+const { findById } = require(`${__base}/include/findById`);
 require('dotenv').config();
 
 const client = new discordjs.Client({
@@ -54,23 +55,28 @@ i18n.configure({
 });
 
 client.on('ready', async () => {
-	new wokcommands(client, {
+	console.log(`Logged in as ${client.user.username} (${client.user.id})`);
+	client.user.setActivity('with your mum');
+
+	const wok = new WOKCommands(client, {
 		commandsDir: path.join(__dirname, 'commands'),
 		testServers: ['756990417630789744', '856658520270307339'],
 		botOwners: '337710838469230592',
 		mongoUri: process.env.MONGO_URI,
-		
-	  })
-	  .setDefaultPrefix('!');
 
-	console.log(`Logged in as ${client.user.username} (${client.user.id})`);
-	client.user.setActivity('with your mum');
-	// console.log(client.stores.commands);
+	});
+
+	wok.on('databaseConnected', async () => {
+		// const model = connection.models['wokcommands-languages']
+		// console.log(wok);
+		// const results = await model.countDocuments()
+		console.log('MongoDB Connected');
+	});
+	console.log(wok.client);
 	/*
 	await client.setProvider(sqlite.open({ filename: './data/commandoData.db', driver: sqlite3.cached.Database })
 		.then((thedb) => new Commando.SQLiteProvider(thedb)))
 		.catch(console.error);
-		
 	// Creates inhibitor to restrict music commands to music channel
 	client.dispatcher.addInhibitor((msg) => {
 		const musicChannel = msg.guild.settings.get('musicChannel');
@@ -124,10 +130,11 @@ client.on('ready', async () => {
 	*/
 });
 
-client.on('message', async (message) => {
+client.on('messageCreate', async (message) => {
 	// console.log(message);
 	if (message.author.bot) return;
-	let MUSIC_CHANNEL_ID = await message.guild.settings.get('musicChannel');
+	let MUSIC_CHANNEL_ID = (await findById(message.guild.id)).musicChannel;
+	// console.log(MUSIC_CHANNEL_ID);
 
 	if (!MUSIC_CHANNEL_ID) {
 		MUSIC_CHANNEL_ID = '';
@@ -140,7 +147,7 @@ client.on('message', async (message) => {
 			return;
 		} catch (error) {
 			console.error(error);
-			message.reply(i18n.__('errorCommand')).then((msg) => {
+			message.reply(i18n.__('common.errorCommand')).then((msg) => {
 				msg.delete({ timeout: MSGTIMEOUT });
 			})
 				.catch(console.error);
