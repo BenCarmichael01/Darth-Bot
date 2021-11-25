@@ -3,7 +3,7 @@ const i18n = require('i18n');
 const { LOCALE } = require(`${__base}include/utils`);
 
 i18n.setLocale(LOCALE);
-
+// TODO update npmessage when prefix is changed
 module.exports = {
 	async npMessage(args) {
 		const {
@@ -12,7 +12,7 @@ module.exports = {
 			npSong,
 			guildIdParam,
 		} = args;
-
+// TODO need to pass wok instance to this to retrieve prefix from _prefixes array.
 		const guildId = (guildIdParam ? guildIdParam : message.guild.id);
 		const prefix = (message ? message.guild.commandPrefix : client.guilds.cache.get(guildId).commandPrefix);
 		const MUSIC_CHANNEL_ID = (await message ? await message.guild : await client.guilds.cache.get(guildId)).settings.get('musicChannel');
@@ -63,7 +63,7 @@ module.exports = {
 				const outputArr = [];
 				outputArr[0] = await messages.get(playingMessageId);
 				// Change now playing message to match current song
-				outputArr[0].edit(outputQueue, newEmbed);
+				outputArr[0].edit({ content: outputQueue, embeds: [newEmbed] });
 				// outputArr[0].edit({ content: outputQueue, embeds: [newEmbed] });
 				return outputArr;
 			})
@@ -71,7 +71,8 @@ module.exports = {
 				const filter = (reaction, user) => user.id !== (message ? message.client : client).user.id;
 
 				const outputVar = outputArr;
-				outputVar[1] = outputArr[0].createReactionCollector(filter, {
+				outputVar[1] = outputArr[0].createReactionCollector({
+					filter,
 					time: npSong === undefined || npSong.duration < 0 ? 600000 : npSong.duration * 1000,
 				});
 
