@@ -35,15 +35,15 @@ module.exports = {
 			return message
 				.reply(i18n.__mf('play.errorNotInSameChannel', { user: message.client.user }))
 				.then((msg) => {
-					msg.delete({ timeout: MSGTIMEOUT });
-				}).catch(console.error);
+								setTimeout(() => msg.delete(), 10000);
+							}).catch(console.error);
 		}
 		if (!args.length) {
 			return message
 				.reply(i18n.__mf('play.usageReply', { prefix }))
 				.then((msg) => {
-					msg.delete({ timeout: MSGTIMEOUT });
-				}).catch(console.error);
+								setTimeout(() => msg.delete(), 10000);
+							}).catch(console.error);
 		}
 		const permissions = channel.permissionsFor(message.client.user);
 		if (!permissions.has('CONNECT')) {
@@ -121,8 +121,8 @@ module.exports = {
 			} catch (error) {
 				console.error(error);
 				return message.reply(error.message).then((msg) => {
-					msg.delete({ timeout: MSGTIMEOUT });
-				}).catch(console.error);
+								setTimeout(() => msg.delete(), 10000);
+							}).catch(console.error);
 			}
 		} else if (scRegex.test(url)) {
 			try {
@@ -135,8 +135,8 @@ module.exports = {
 			} catch (error) {
 				console.error(error);
 				return message.reply(error.message).then((msg) => {
-					msg.delete({ timeout: MSGTIMEOUT });
-				}).catch(console.error);
+								setTimeout(() => msg.delete(), 10000);
+							}).catch(console.error);
 			}
 		} else {
 			try {
@@ -152,8 +152,8 @@ module.exports = {
 			} catch (error) {
 				console.error(error);
 				return message.reply(error.message).then((msg) => {
-					msg.delete({ timeout: MSGTIMEOUT });
-				}).catch(console.error);
+								setTimeout(() => msg.delete(), 10000);
+							}).catch(console.error);
 			}
 		}
 
@@ -163,8 +163,8 @@ module.exports = {
 			return serverQueue.textChannel
 				.send(i18n.__mf('play.queueAdded', { title: song.title, author: message.author }))
 				.then((msg) => {
-					msg.delete({ timeout: MSGTIMEOUT });
-				}).catch(console.error);
+								setTimeout(() => msg.delete(), 10000);
+							}).catch(console.error);
 		}
 
 		queueConstruct.songs.push(song);
