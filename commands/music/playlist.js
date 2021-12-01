@@ -1,3 +1,4 @@
+/* global __base */
 const { play } = require(`${__base}include/play`);
 const { npMessage } = require(`${__base}include/npmessage`);
 const YouTubeAPI = require('simple-youtube-api');
@@ -17,22 +18,23 @@ i18n.setLocale(LOCALE);
 const youtube = new YouTubeAPI(YOUTUBE_API_KEY);
 
 module.exports = {
-			name: 'playlist',
-			category: 'music',
-			description: i18n.__('playlist.description'),
-			guildOnly: 'true',
-			/*args: [{
-				key: 'playlist',
-				prompt: i18n.__('playlist.prompt'),
-				type: 'string',
-			}],
-			argsType: 'multiple', */
+	name: 'playlist',
+	category: 'music',
+	description: i18n.__('playlist.description'),
+	guildOnly: 'true',
+	/* args: [{
+		key: 'playlist',
+		prompt: i18n.__('playlist.prompt'),
+		type: 'string',
+	}],
+	argsType: 'multiple', */
 
-	async callback({message, args}) {
+	// TODO MSGTIMEOUT
+	async callback({ message, args }) {
 		message.delete({ TIMEOUT: MSGTIMEOUT });
 		const { channel } = message.member.voice;
 		const serverQueue = message.client.queue.get(message.guild.id);
-		
+
 		if (!args.playlist) {
 			return message
 				.reply(i18n.__mf('playlist.usageReply', { prefix: message.guild.commandPrefix }))
@@ -137,5 +139,5 @@ module.exports = {
 		}
 		// TODO this used to return 1 but i cant remember why so i've removed it
 		return;
-	}
+	},
 };

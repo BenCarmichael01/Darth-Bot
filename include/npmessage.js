@@ -1,18 +1,20 @@
-﻿const { MessageEmbed } = require('discord.js');
+﻿/* global __base */
 const i18n = require('i18n');
+const { MessageEmbed } = require('discord.js');
+
 const { LOCALE } = require(`${__base}include/utils`);
 
 i18n.setLocale(LOCALE);
 // TODO update npmessage when prefix is changed
 module.exports = {
-	async npMessage(args) {
+	async npMessage({ args }) {
 		const {
 			client,
 			message,
 			npSong,
 			guildIdParam,
 		} = args;
-// TODO need to pass wok instance to this to retrieve prefix from _prefixes array.
+		// TODO need to pass wok instance to this to retrieve prefix from _prefixes array.
 		const guildId = (guildIdParam ? guildIdParam : message.guild.id);
 		const prefix = (message ? message.guild.commandPrefix : client.guilds.cache.get(guildId).commandPrefix);
 		const MUSIC_CHANNEL_ID = (await message ? await message.guild : await client.guilds.cache.get(guildId)).settings.get('musicChannel');
