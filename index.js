@@ -54,25 +54,21 @@ i18n.configure({
 	},
 });
 
+const wok = new WOKCommands(client, {
+	commandsDir: path.join(__dirname, 'commands'),
+	testServers: ['756990417630789744', '856658520270307339'],
+	botOwners: '337710838469230592',
+	mongoUri: process.env.MONGO_URI,
+
+});
+
+wok.on('databaseConnected', async () => {
+	console.log('MongoDB Connected');
+});
+
 client.on('ready', async () => {
 	console.log(`Logged in as ${client.user.username} (${client.user.id})`);
 	client.user.setActivity('with your mum');
-
-	const wok = new WOKCommands(client, {
-		commandsDir: path.join(__dirname, 'commands'),
-		testServers: ['756990417630789744', '856658520270307339'],
-		botOwners: '337710838469230592',
-		mongoUri: process.env.MONGO_URI,
-
-	});
-
-	wok.on('databaseConnected', async () => {
-		// const model = connection.models['wokcommands-languages']
-		// console.log(wok);
-		// const results = await model.countDocuments()
-		console.log('MongoDB Connected');
-	});
-	console.log(wok.client);
 	/*
 	await client.setProvider(sqlite.open({ filename: './data/commandoData.db', driver: sqlite3.cached.Database })
 		.then((thedb) => new Commando.SQLiteProvider(thedb)))
@@ -131,19 +127,20 @@ client.on('ready', async () => {
 });
 
 client.on('messageCreate', async (message) => {
-	// console.log(message);
+	const { guildId } = message;
 	if (message.author.bot) return;
-	let MUSIC_CHANNEL_ID = (await findById(message.guild.id)).musicChannel;
-	// console.log(MUSIC_CHANNEL_ID);
+	let MUSIC_CHANNEL_ID = (await findById(guildId)).musicChannel;
+	console.log(wok._prefixes[guildId]);
 
 	if (!MUSIC_CHANNEL_ID) {
 		MUSIC_CHANNEL_ID = '';
 	}
 
-	if (!message.isCommand && (message.channel.id === MUSIC_CHANNEL_ID)) {
+	if (!message.content.startsWith(wok._prefixes[guildId]) && (message.channelId === MUSIC_CHANNEL_ID)) {
+		console.log('test');
 		const args = message.content.trim().split(/ +/);
 		try {
-			client.registry.resolveCommand('play').run(message, args);
+			wok.commandHandler._commands.get('play').callback({ message, args });
 			return;
 		} catch (error) {
 			console.error(error);
