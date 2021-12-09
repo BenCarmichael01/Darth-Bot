@@ -16,6 +16,7 @@ const client = new discordjs.Client({
 		Intents.FLAGS.GUILDS,
 		Intents.FLAGS.GUILD_MESSAGES,
 		Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
+		Intents.FLAGS.GUILD_VOICE_STATES,
 	],
 	// owner: '337710838469230592',
 
@@ -130,14 +131,11 @@ client.on('messageCreate', async (message) => {
 	const { guildId } = message;
 	if (message.author.bot) return;
 	let MUSIC_CHANNEL_ID = (await findById(guildId)).musicChannel;
-	console.log(wok._prefixes[guildId]);
-
 	if (!MUSIC_CHANNEL_ID) {
 		MUSIC_CHANNEL_ID = '';
 	}
 
 	if (!message.content.startsWith(wok._prefixes[guildId]) && (message.channelId === MUSIC_CHANNEL_ID)) {
-		console.log('test');
 		const args = message.content.trim().split(/ +/);
 		try {
 			wok.commandHandler._commands.get('play').callback({ message, args });
