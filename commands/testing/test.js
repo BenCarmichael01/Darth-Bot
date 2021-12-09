@@ -3,6 +3,7 @@ const { findById } = require(`${__base}include/findById`);
 
 module.exports = {
 	name: 'test',
+	description: 'test',
 	category: 'testing',
 	testOnly: true,
 
