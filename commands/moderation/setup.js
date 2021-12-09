@@ -43,9 +43,9 @@ module.exports = {
 				const playingMessage = await musicChannel.send({ content: outputQueue, embeds: [newEmbed] });
 				await playingMessage.react('⏯');
 				await playingMessage.react('⏭');
-				await playingMessage.react('🔇');
+				/* await playingMessage.react('🔇');
 				await playingMessage.react('🔉');
-				await playingMessage.react('🔊');
+				await playingMessage.react('🔊'); */
 				await playingMessage.react('🔁');
 				await playingMessage.react('⏹');
 
