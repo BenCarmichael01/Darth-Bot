@@ -4,7 +4,6 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node .",
     "dev": "nodemon index.js --trace-warnings",
     "exit": " process.kill(process.pid)"
@@ -22,9 +21,9 @@
     "ffmpeg": "0.0.4",
     "fluent-ffmpeg": "^2.1.2",
     "i18n": "^0.13.3",
+    "libsodium-wrappers": "^0.7.9",
     "mongoose": "^6.0.13",
     "node-gyp": "^8.1.0",
-    "opusscript": "^0.0.8",
     "simple-youtube-api": "^5.2.1",
     "soundcloud-downloader": "^1.0.0",
     "string-progressbar": "^1.0.4",
@@ -56,6 +55,7 @@
     "eslint-plugin-import": "^2.24.0",
     "eslint-plugin-promise": "^5.1.0",
     "eslint-plugin-react": "^7.24.0",
-    "nodemon": "^2.0.12"
+    "nodemon": "^2.0.12",
+    "prettier": "^2.5.1"
   }
 }
