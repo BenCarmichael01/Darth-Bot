@@ -1,10 +1,10 @@
 /* global __base */
 require('dotenv').config();
 exports.canModifyQueue = (member) => {
-	const { channelID } = member.voice;
-	const botChannel = member.guild.voice.channelID;
+	const { channelId } = member.voice;
+	const botChannel = member.guild.me.voice.channelId;
 
-	if (channelID !== botChannel) {
+	if (channelId !== botChannel) {
 		return;
 	}
 
