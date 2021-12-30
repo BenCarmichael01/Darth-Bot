@@ -27,7 +27,9 @@ module.exports = {
 		}
 		if (!song) {
 			setTimeout(() => {
+				console.log('test1');
 				if (connection && message.guild.me.voice.channel) return;
+				console.log('test2');
 				connection.destroy();
 				queue.textChannel.send(i18n.__('play.leaveChannel'))
 					.then((msg) => {
@@ -38,8 +40,9 @@ module.exports = {
 				.then((msg) => {
 					setTimeout(() => msg.delete(), MSGTIMEOUT);
 				}).catch(console.error);
-			return message.client.queue.delete(message.guild.id);
+			return message.client.queue.delete(message.guildId);
 		}
+
 		let stream = null;
 		let streamType = song.url.includes('youtube.com') ? 'opus' : 'ogg/opus';
 
@@ -77,79 +80,23 @@ module.exports = {
 				setTimeout(() => msg.delete(), MSGTIMEOUT);
 			}).catch(console.error);
 		}
+		console.log('test3');
+		queue.connection.on('disconnect', () => {
+			message.client.queue.delete(message.guild.id);
+			// Should connection.destroy be run here?
+		});
 
-		queue.connection.on('disconnect', () => message.client.queue.delete(message.guild.id));
-		let collector;
 		const { VoiceConnectionStatus, AudioPlayerStatus } = voice;
 
 		const resource = voice.createAudioResource(stream);
 		const player = voice.createAudioPlayer({ behaviors: { noSubscriber: voice.NoSubscriberBehavior.Pause } });
 		// pass stream to audio player
 		player.play(resource);
-		player.on(AudioPlayerStatus.Idle, () => {
-			if (collector && !collector.ended) collector.stop();
-			console.log(queue.loop);
-			if (queue.loop) {
-				// if loop is on, push the song to the end of the queue
-				// so it can repeat endlessly
-				const lastSong = queue.songs.shift();
-				queue.songs.push(lastSong);
-				module.exports.play(queue.songs[0], message, prefix);
-			} else {
-				// Recursively play the next song
-				queue.songs.shift();
-				module.exports.play(queue.songs[0], message, prefix);
-			}
+		player.on(AudioPlayerStatus.Playing, () => {
+			console.log('playing state');
 		});
-		player.on('error', (error) => {
-			console.error(`Error: ${error.message} with resource`);
-		});
-
-		connection.on(VoiceConnectionStatus.Ready, () => {
-			console.log('connection ready');
-
-			const subsciption = connection.subscribe(player);
-		});
-
-		// Check if disconnect is real or is moving to another channel
-		connection.on(VoiceConnectionStatus.Disconnected, async (oldState, newState) => {
-			try {
-				await Promise.race([
-					voice.entersState(connection, VoiceConnectionStatus.Signalling, 5_000),
-					voice.entersState(connection, VoiceConnectionStatus.Connecting, 5_000),
-				]);
-				// Seems to be reconnecting to a new channel - ignore disconnect
-			} catch (error) {
-				// Seems to be a real disconnect which SHOULDN'T be recovered from
-				connection.destroy();
-			}
-		});
-		/* const dispatcher = queue.connection
-			.play(stream, { type: streamType })
-			.on('finish', () => {
-				if (collector && !collector.ended) collector.stop();
-
-				if (queue.loop) {
-					// if loop is on, push the song back at the end of the queue
-					// so it can repeat endlessly
-					const lastSong = queue.songs.shift();
-					queue.songs.push(lastSong);
-					module.exports.play(queue.songs[0], message);
-				} else {
-					// Recursively play the next song
-					queue.songs.shift();
-					module.exports.play(queue.songs[0], message);
-				}
-			})
-			.on('error', err => {
-				console.error(err);
-				queue.songs.shift();
-				module.exports.play(queue.songs[0], message);
-			});
-		dispatcher.setVolumeLogarithmic(queue.volume / 100);
-		 */
 		// vvv Do not remove comma!! it is to skip the first item in the array
-		[, collector] = await npMessage({ message, npSong: song });
+		const [, collector] = await npMessage({ message, npSong: song });
 
 		collector.on('collect', (reaction, user) => {
 			if (!queue) return;
@@ -199,7 +146,127 @@ module.exports = {
 						}).catch(console.error);
 					collector.stop();
 					break;
-				/* case '🔇':
+
+				case '🔁':
+					reaction.users.remove(user).catch(console.error);
+					if (!canModifyQueue(member)) return i18n.__('common.errorNotChannel');
+					queue.loop = !queue.loop;
+					queue.textChannel
+						.send(
+							i18n.__mf('play.loopSong', {
+								author: user,
+								loop: queue.loop ? i18n.__('common.on') : i18n.__('common.off'),
+							}),
+						).then((msg) => {
+							setTimeout(() => msg.delete(), MSGTIMEOUT);
+						}).catch(console.error);
+					break;
+
+				case '⏹':
+					reaction.users.remove(user).catch(console.error);
+					if (!canModifyQueue(member)) return i18n.__('common.errorNotChannel');
+					queue.songs = [];
+					queue.textChannel
+						.send(i18n.__mf('play.stopSong', { author: user }))
+						.then((msg) => {
+							setTimeout(() => msg.delete(), MSGTIMEOUT);
+						}).catch(console.error);
+					try {
+						player.stop();
+						// queue.connection.dispatcher.end();
+						npMessage({ message });
+					} catch (error) {
+						console.error(error);
+						connection.disconnect();
+						// queue.connection.disconnect();
+					}
+					// collector.stop();
+					break;
+
+				default:
+					// reaction.users.remove(user).catch(console.error);
+					break;
+			}
+		});
+
+		collector.on('end', () => {
+			/* playingMessage.reactions.removeAll().catch(console.error);
+			if (PRUNING && playingMessage && !playingMessage.deleted) {
+				playingMessage.delete({ timeout: 3000 }).catch(console.error);
+			} */
+			//
+		});
+		// need to check is listeners already exist i.e. when playing through queue, to prevent exceeding max listeners
+		connection.once(VoiceConnectionStatus.Ready, () => {
+			console.log('connection ready');
+
+			const subsciption = connection.subscribe(player);
+		});
+
+		// Check if disconnect is real or is moving to another channel
+		connection.on(VoiceConnectionStatus.Disconnected, async (oldState, newState) => {
+			try {
+				await Promise.race([
+					voice.entersState(connection, VoiceConnectionStatus.Signalling, 5_000),
+					voice.entersState(connection, VoiceConnectionStatus.Connecting, 5_000),
+				]);
+				// Seems to be reconnecting to a new channel - ignore disconnect
+			} catch (error) {
+				// Seems to be a real disconnect which SHOULDN'T be recovered from
+				connection.destroy();
+			}
+		});
+
+		player.on('error', (error) => {
+			console.error(`Error: ${error.message} with resource`);
+		});
+
+		player.on(AudioPlayerStatus.Idle, () => {
+			console.log('player status Idle');
+			if (collector && !collector.ended) collector.stop();
+			console.log(queue.loop);
+			if (queue.loop) {
+				// if loop is on, push the song to the end of the queue
+				// so it can repeat endlessly
+				const lastSong = queue.songs.shift();
+				queue.songs.push(lastSong);
+				module.exports.play(queue.songs[0], message, prefix);
+			} else {
+				// Recursively play the next song
+				queue.songs.shift();
+				console.log('playing next song');
+				module.exports.play(queue.songs[0], message, prefix);
+			}
+		});
+
+		/* const dispatcher = queue.connection
+			.play(stream, { type: streamType })
+			.on('finish', () => {
+				if (collector && !collector.ended) collector.stop();
+
+				if (queue.loop) {
+					// if loop is on, push the song back at the end of the queue
+					// so it can repeat endlessly
+					const lastSong = queue.songs.shift();
+					queue.songs.push(lastSong);
+					module.exports.play(queue.songs[0], message);
+				} else {
+					// Recursively play the next song
+					queue.songs.shift();
+					module.exports.play(queue.songs[0], message);
+				}
+			})
+			.on('error', err => {
+				console.error(err);
+				queue.songs.shift();
+				module.exports.play(queue.songs[0], message);
+			});
+		dispatcher.setVolumeLogarithmic(queue.volume / 100);
+		 */
+	},
+};
+
+/* case '🔇':
 					reaction.users.remove(user).catch(console.error);
 					if (!canModifyQueue(member)) return i18n.__('common.errorNotChannel');
 					if (queue.volume <= 0) {
@@ -257,54 +324,3 @@ module.exports = {
 						}).catch(console.error);
 					break;
 */
-				case '🔁':
-					reaction.users.remove(user).catch(console.error);
-					if (!canModifyQueue(member)) return i18n.__('common.errorNotChannel');
-					queue.loop = !queue.loop;
-					queue.textChannel
-						.send(
-							i18n.__mf('play.loopSong', {
-								author: user,
-								loop: queue.loop ? i18n.__('common.on') : i18n.__('common.off'),
-							}),
-						).then((msg) => {
-							setTimeout(() => msg.delete(), MSGTIMEOUT);
-						}).catch(console.error);
-					break;
-
-				case '⏹':
-					reaction.users.remove(user).catch(console.error);
-					if (!canModifyQueue(member)) return i18n.__('common.errorNotChannel');
-					queue.songs = [];
-					queue.textChannel
-						.send(i18n.__mf('play.stopSong', { author: user }))
-						.then((msg) => {
-							setTimeout(() => msg.delete(), MSGTIMEOUT);
-						}).catch(console.error);
-					try {
-						player.stop();
-						// queue.connection.dispatcher.end();
-						npMessage({ message });
-					} catch (error) {
-						console.error(error);
-						connection.disconnect();
-						// queue.connection.disconnect();
-					}
-					// collector.stop();
-					break;
-
-				default:
-					// reaction.users.remove(user).catch(console.error);
-					break;
-			}
-		});
-
-		collector.on('end', () => {
-			/* playingMessage.reactions.removeAll().catch(console.error);
-			if (PRUNING && playingMessage && !playingMessage.deleted) {
-				playingMessage.delete({ timeout: 3000 }).catch(console.error);
-			} */
-			//
-		});
-	},
-};

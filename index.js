@@ -25,7 +25,7 @@ const client = new discordjs.Client({
 client.login(process.env.DISCORD_TOKEN_DEV);
 client.queue = new Map();
 // client.commands = new Discord.Collection();
-// client.on('debug', console.log);
+client.on('debug', console.log);
 client.on('warn', (info) => console.log(info));
 client.on('error', console.error);
 
