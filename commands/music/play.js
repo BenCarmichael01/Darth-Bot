@@ -34,11 +34,13 @@ module.exports = {
 		const { channel } = message.member.voice;
 		// message.delete();
 		const serverQueue = message.client.queue.get(message.guild.id);
+
+		// Try switch case? to remove repetition of message.delete();
 		if (!channel) {
 			return message
 				.reply(i18n.__('play.errorNotChannel'))
 				.then((msg) => {
-					setTimeout(() => msg.delete(), MSGTIMEOUT);
+					setTimeout(() => { msg.delete(); message.delete(); }, MSGTIMEOUT);
 				})
 				.catch(console.error);
 		}
@@ -48,7 +50,7 @@ module.exports = {
 					i18n.__mf('play.errorNotInSameChannel', { user: message.client.user }),
 				)
 				.then((msg) => {
-					setTimeout(() => msg.delete(), MSGTIMEOUT);
+					setTimeout(() => { msg.delete(); message.delete(); }, MSGTIMEOUT);
 				})
 				.catch(console.error);
 		}
@@ -56,7 +58,7 @@ module.exports = {
 			return message
 				.reply(i18n.__mf('play.usageReply', { prefix }))
 				.then((msg) => {
-					setTimeout(() => msg.delete(), MSGTIMEOUT);
+					setTimeout(() => { msg.delete(); message.delete(); }, MSGTIMEOUT);
 				})
 				.catch(console.error);
 		}
@@ -65,7 +67,7 @@ module.exports = {
 			return message
 				.reply(i18n.__('play.missingPermissionConnect'))
 				.then((msg) => {
-					setTimeout(() => msg.delete(), MSGTIMEOUT);
+					setTimeout(() => { msg.delete(); message.delete(); }, MSGTIMEOUT);
 				})
 				.catch(console.error);
 		}
@@ -73,7 +75,7 @@ module.exports = {
 			return message
 				.reply(i18n.__('play.missingPermissionSpeak'))
 				.then((msg) => {
-					setTimeout(() => msg.delete(), MSGTIMEOUT);
+					setTimeout(() => { msg.delete(); message.delete(); }, MSGTIMEOUT);
 				})
 				.catch(console.error);
 		}
@@ -92,6 +94,7 @@ module.exports = {
 			return instance._commandHandler._commands
 				.get('playlist')
 				.callback({ message, args, prefix });
+			// TODO COMMAND CALL ABOVE DOESNT WORK
 			// return message.client.registry.resolveCommand('playlist').run(message, args);
 		}
 		/* if (scdl.isValidUrl(url) && url.includes('/sets/')) {
@@ -223,12 +226,14 @@ module.exports = {
 		queueConstruct.songs.push(song);
 		message.client.queue.set(message.guild.id, queueConstruct);
 		try {
-			queueConstruct.connection = await voice.joinVoiceChannel({
-				channelId: channel.id,
-				guildId: channel.guild.id,
-				selfDeaf: true,
-				adapterCreator: channel.guild.voiceAdapterCreator,
-			});
+			if (!voice.getVoiceConnection(message.guildId)) {
+				queueConstruct.connection = await voice.joinVoiceChannel({
+					channelId: channel.id,
+					guildId: channel.guild.id,
+					selfDeaf: true,
+					adapterCreator: channel.guild.voiceAdapterCreator,
+				});
+			}
 			// await queueConstruct.connection.voice.setSelfDeaf(true);
 			console.log('test');
 			play(queueConstruct.songs[0], message, prefix);
