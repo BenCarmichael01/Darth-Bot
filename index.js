@@ -25,7 +25,7 @@ const client = new discordjs.Client({
 client.login(process.env.DISCORD_TOKEN_DEV);
 client.queue = new Map();
 // client.commands = new Discord.Collection();
-client.on('debug', console.log);
+// client.on('debug', console.log);
 client.on('warn', (info) => console.log(info));
 client.on('error', console.error);
 
@@ -70,6 +70,7 @@ wok.on('databaseConnected', async () => {
 client.on('ready', async () => {
 	console.log(`Logged in as ${client.user.username} (${client.user.id})`);
 	client.user.setActivity('with your mum');
+	// TODO Set queue.playing false on statup to ensure queue works correctly
 	/*
 	await client.setProvider(sqlite.open({ filename: './data/commandoData.db', driver: sqlite3.cached.Database })
 		.then((thedb) => new Commando.SQLiteProvider(thedb)))

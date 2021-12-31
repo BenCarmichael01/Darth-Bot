@@ -1,3 +1,4 @@
+/* global __base */
 const ytdl = require('ytdl-core-discord');
 const scdl = require('soundcloud-downloader').default;
 
@@ -17,6 +18,53 @@ i18n.setLocale(LOCALE);
 const { npMessage } = require(`${__base}include/npmessage`);
 
 module.exports = {
+	async getResource(message, queue) {
+		const song = queue.songs[0];
+
+		// Get stream from song Url //
+		let stream = null;
+		// let streamType = song.url.includes('youtube.com') ? 'opus' : 'ogg/opus';
+
+		try {
+			if (song.url.includes('youtube.com')) {
+				stream = await ytdl(song.url, { highWaterMark: 1 << 25 });
+			} else if (song.url.includes('soundcloud.com')) {
+				try {
+					stream = await scdl.downloadFormat(
+						song.url,
+						scdl.FORMATS.OPUS,
+						SOUNDCLOUD_CLIENT_ID
+					);
+				} catch (error) {
+					stream = await scdl.downloadFormat(
+						song.url,
+						scdl.FORMATS.MP3,
+						SOUNDCLOUD_CLIENT_ID
+					);
+					streamType = 'unknown';
+				}
+			}
+		} catch (error) {
+			if (queue) {
+				module.exports.getResource(message, queue);
+			}
+
+			console.error(error);
+			return message.channel
+				.send(
+					i18n.__mf('play.queueError', {
+						error: error.message ? error.message : error,
+					})
+				)
+				.then((msg) => {
+					setTimeout(() => msg.delete(), MSGTIMEOUT);
+				})
+				.catch(console.error);
+		}
+
+		const resource = voice.createAudioResource(stream);
+		return resource;
+	},
 	async play(song, message, prefix) {
 		const queue = message.client.queue.get(message.guildId);
 		const connection = voice.getVoiceConnection(message.guildId);
@@ -27,60 +75,24 @@ module.exports = {
 		}
 		if (!song) {
 			setTimeout(() => {
-				console.log('test1');
 				if (connection && message.guild.me.voice.channel) return;
-				console.log('test2');
 				connection.destroy();
-				queue.textChannel.send(i18n.__('play.leaveChannel'))
+				queue.textChannel
+					.send(i18n.__('play.leaveChannel'))
 					.then((msg) => {
 						setTimeout(() => msg.delete(), MSGTIMEOUT);
-					}).catch(console.error);
+					})
+					.catch(console.error);
 			}, STAY_TIME * 1000);
-			queue.textChannel.send(i18n.__('play.queueEnded'))
+			queue.textChannel
+				.send(i18n.__('play.queueEnded'))
 				.then((msg) => {
 					setTimeout(() => msg.delete(), MSGTIMEOUT);
-				}).catch(console.error);
+				})
+				.catch(console.error);
 			return message.client.queue.delete(message.guildId);
 		}
 
-		let stream = null;
-		let streamType = song.url.includes('youtube.com') ? 'opus' : 'ogg/opus';
-
-		try {
-			if (song.url.includes('youtube.com')) {
-				stream = await ytdl(song.url, { highWaterMark: 1 << 25 });
-			} else if (song.url.includes('soundcloud.com')) {
-				try {
-					stream = await scdl.downloadFormat(
-						song.url,
-						scdl.FORMATS.OPUS,
-						SOUNDCLOUD_CLIENT_ID,
-					);
-				} catch (error) {
-					stream = await scdl.downloadFormat(
-						song.url,
-						scdl.FORMATS.MP3,
-						SOUNDCLOUD_CLIENT_ID,
-					);
-					streamType = 'unknown';
-				}
-			}
-		} catch (error) {
-			if (queue) {
-				queue.songs.shift();
-				module.exports.play(queue.songs[0], message, prefix);
-			}
-
-			console.error(error);
-			return message.channel.send(
-				i18n.__mf('play.queueError', {
-					error: error.message ? error.message : error,
-				}),
-			).then((msg) => {
-				setTimeout(() => msg.delete(), MSGTIMEOUT);
-			}).catch(console.error);
-		}
-		console.log('test3');
 		queue.connection.on('disconnect', () => {
 			message.client.queue.delete(message.guild.id);
 			// Should connection.destroy be run here?
@@ -88,66 +100,86 @@ module.exports = {
 
 		const { VoiceConnectionStatus, AudioPlayerStatus } = voice;
 
-		const resource = voice.createAudioResource(stream);
-		const player = voice.createAudioPlayer({ behaviors: { noSubscriber: voice.NoSubscriberBehavior.Pause } });
+		const resource = await module.exports.getResource(message, queue);
+		const player = voice.createAudioPlayer({
+			behaviors: { noSubscriber: voice.NoSubscriberBehavior.Pause },
+		});
+
+		player.on('error', (error) => {
+			console.error(`Error: ${error.message} with resource`);
+		});
 		// pass stream to audio player
 		player.play(resource);
-		player.on(AudioPlayerStatus.Playing, () => {
+		// let collector = {};
+		player.on(AudioPlayerStatus.Playing, async (player) => {
+			// queue.playing = true;
 			console.log('playing state');
+			console.log(player);
 		});
+
 		// vvv Do not remove comma!! it is to skip the first item in the array
 		const [, collector] = await npMessage({ message, npSong: song });
 
-		collector.on('collect', (reaction, user) => {
+		collector.on('collect', async (reaction, user) => {
 			if (!queue) return;
 			const member = message.guild.members.cache.get(user.id);
 
 			switch (reaction.emoji.name) {
-				case '⏯':
+				case '⏯': {
 					reaction.users.remove(user).catch(console.error);
-					if (!canModifyQueue(member)) return i18n.__('common.errorNotChannel');
+					if (!canModifyQueue(member)) {
+						return reaction.message.channel.send(i18n.__('common.errorNotChannel'));
+					}
 					if (queue.playing) {
-						queue.playing = !queue.playing;
+						queue.playing = false;
 						player.pause();
 						// queue.connection.dispatcher.pause(true);
 						queue.textChannel
 							.send(i18n.__mf('play.pauseSong', { author: user }))
 							.then((msg) => {
 								setTimeout(() => msg.delete(), MSGTIMEOUT);
-							}).catch(console.error);
+							})
+							.catch(console.error);
 					} else {
-						queue.playing = !queue.playing;
+						queue.playing = true;
 						player.unpause();
 						// queue.connection.dispatcher.resume();
 						queue.textChannel
 							.send(i18n.__mf('play.resumeSong', { author: user }))
 							.then((msg) => {
 								setTimeout(() => msg.delete(), MSGTIMEOUT);
-							}).catch(console.error);
+							})
+							.catch(console.error);
 					}
 					break;
-
-				case '⏭':
-					queue.playing = true;
+				}
+				case '⏭': {
+					// queue.playing = true;
 					reaction.users.remove(user).catch(console.error);
 					if (!canModifyQueue(member)) {
 						return queue.textChannel
 							.send(i18n.__('common.errorNotChannel'))
 							.then((msg) => {
 								setTimeout(() => msg.delete(), MSGTIMEOUT);
-							}).catch(console.error);
+							})
+							.catch(console.error);
 					}
-					player.stop();
-					// queue.connection.dispatcher.end();
 					queue.textChannel
 						.send(i18n.__mf('play.skipSong', { author: user }))
 						.then((msg) => {
 							setTimeout(() => msg.delete(), MSGTIMEOUT);
-						}).catch(console.error);
-					collector.stop();
+						})
+						.catch(console.error);
+					queue.songs.shift();
+					// const nextResource = await module.exports.getResource(message, queue);
+					player.removeAllListeners();
+					player.stop();
+					module.exports.play(queue.songs[0], message, prefix);
+					// player.play(nextResource);
+					// queue.connection.dispatcher.end();
 					break;
-
-				case '🔁':
+				}
+				case '🔁': {
 					reaction.users.remove(user).catch(console.error);
 					if (!canModifyQueue(member)) return i18n.__('common.errorNotChannel');
 					queue.loop = !queue.loop;
@@ -156,13 +188,15 @@ module.exports = {
 							i18n.__mf('play.loopSong', {
 								author: user,
 								loop: queue.loop ? i18n.__('common.on') : i18n.__('common.off'),
-							}),
-						).then((msg) => {
+							})
+						)
+						.then((msg) => {
 							setTimeout(() => msg.delete(), MSGTIMEOUT);
-						}).catch(console.error);
+						})
+						.catch(console.error);
 					break;
-
-				case '⏹':
+				}
+				case '⏹': {
 					reaction.users.remove(user).catch(console.error);
 					if (!canModifyQueue(member)) return i18n.__('common.errorNotChannel');
 					queue.songs = [];
@@ -170,7 +204,8 @@ module.exports = {
 						.send(i18n.__mf('play.stopSong', { author: user }))
 						.then((msg) => {
 							setTimeout(() => msg.delete(), MSGTIMEOUT);
-						}).catch(console.error);
+						})
+						.catch(console.error);
 					try {
 						player.stop();
 						// queue.connection.dispatcher.end();
@@ -182,18 +217,19 @@ module.exports = {
 					}
 					// collector.stop();
 					break;
-
-				default:
+				}
+				default: {
 					// reaction.users.remove(user).catch(console.error);
 					break;
+				}
 			}
 		});
 
 		collector.on('end', () => {
 			/* playingMessage.reactions.removeAll().catch(console.error);
-			if (PRUNING && playingMessage && !playingMessage.deleted) {
-				playingMessage.delete({ timeout: 3000 }).catch(console.error);
-			} */
+				if (PRUNING && playingMessage && !playingMessage.deleted) {
+					playingMessage.delete({ timeout: 3000 }).catch(console.error);
+				} */
 			//
 		});
 		// need to check is listeners already exist i.e. when playing through queue, to prevent exceeding max listeners
@@ -204,38 +240,71 @@ module.exports = {
 		});
 
 		// Check if disconnect is real or is moving to another channel
-		connection.on(VoiceConnectionStatus.Disconnected, async (oldState, newState) => {
+		connection.on(
+			VoiceConnectionStatus.Disconnected,
+			async (oldState, newState) => {
+				try {
+					await Promise.race([
+						voice.entersState(
+							connection,
+							VoiceConnectionStatus.Signalling,
+							5_000,
+						),
+						voice.entersState(
+							connection,
+							VoiceConnectionStatus.Connecting,
+							5_000,
+						),
+					]);
+					// Seems to be reconnecting to a new channel - ignore disconnect
+				} catch (error) {
+					// Seems to be a real disconnect which SHOULDN'T be recovered from
+					connection.destroy();
+				}
+			}
+		);
+		player.on(AudioPlayerStatus.Idle, async () => {
+			console.log('player status Idle');
 			try {
 				await Promise.race([
-					voice.entersState(connection, VoiceConnectionStatus.Signalling, 5_000),
-					voice.entersState(connection, VoiceConnectionStatus.Connecting, 5_000),
+					voice.entersState(
+						player,
+						AudioPlayerStatus.Playing,
+						2_000,
+					),
+					voice.entersState(
+						player,
+						AudioPlayerStatus.Buffering,
+						2_000,
+					),
+					voice.entersState(
+						player,
+						AudioPlayerStatus.AutoPaused,
+						2_000,
+					),
+					voice.entersState(
+						player,
+						AudioPlayerStatus.Paused,
+						2_000,
+					),
 				]);
-				// Seems to be reconnecting to a new channel - ignore disconnect
+				// Seems to be transitioning to another resource - ignore idle
 			} catch (error) {
-				// Seems to be a real disconnect which SHOULDN'T be recovered from
-				connection.destroy();
-			}
-		});
-
-		player.on('error', (error) => {
-			console.error(`Error: ${error.message} with resource`);
-		});
-
-		player.on(AudioPlayerStatus.Idle, () => {
-			console.log('player status Idle');
-			if (collector && !collector.ended) collector.stop();
-			console.log(queue.loop);
-			if (queue.loop) {
-				// if loop is on, push the song to the end of the queue
-				// so it can repeat endlessly
-				const lastSong = queue.songs.shift();
-				queue.songs.push(lastSong);
-				module.exports.play(queue.songs[0], message, prefix);
-			} else {
-				// Recursively play the next song
-				queue.songs.shift();
-				console.log('playing next song');
-				module.exports.play(queue.songs[0], message, prefix);
+				// apears to be finished queue
+				if (collector && !collector.ended) collector.stop();
+				if (queue.loop) {
+					// if loop is on, push the song to the end of the queue
+					// so it can repeat endlessly
+					const lastSong = queue.songs.shift();
+					queue.songs.push(lastSong);
+					// const nextResource = module.exports.getNextResource(message, queue);
+					// player.play(nextResource);
+				} else {
+					// Recursively play the next song
+					queue.songs.shift();
+					console.log('playing next song');
+					module.exports.play(queue.songs[0], message, prefix);
+				}
 			}
 		});
 
