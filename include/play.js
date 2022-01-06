@@ -23,6 +23,7 @@ module.exports = {
 
 		// Get stream from song Url //
 		let stream = null;
+		// TODO streamline by adding streamType
 		// let streamType = song.url.includes('youtube.com') ? 'opus' : 'ogg/opus';
 
 		try {
@@ -33,13 +34,13 @@ module.exports = {
 					stream = await scdl.downloadFormat(
 						song.url,
 						scdl.FORMATS.OPUS,
-						SOUNDCLOUD_CLIENT_ID
+						SOUNDCLOUD_CLIENT_ID,
 					);
 				} catch (error) {
 					stream = await scdl.downloadFormat(
 						song.url,
 						scdl.FORMATS.MP3,
-						SOUNDCLOUD_CLIENT_ID
+						SOUNDCLOUD_CLIENT_ID,
 					);
 					streamType = 'unknown';
 				}
@@ -73,30 +74,27 @@ module.exports = {
 			const npSong = queue.songs[0];
 			npMessage({ message, npSong, prefix });
 		}
+		// TODO this timeout part doesn't look like it works at all but haven't tested yet
 		if (!song) {
 			setTimeout(() => {
-				if (connection && message.guild.me.voice.channel) return;
+				// if (connection && message.guild.me.voice.channel) return;
 				connection.destroy();
+				queue.textChannel
+					.send(i18n.__('play.queueEnded'))
+					.then((msg) => {
+						setTimeout(() => msg.delete(), MSGTIMEOUT);
+					})
+					.catch(console.error);
 				queue.textChannel
 					.send(i18n.__('play.leaveChannel'))
 					.then((msg) => {
 						setTimeout(() => msg.delete(), MSGTIMEOUT);
 					})
 					.catch(console.error);
-			}, STAY_TIME * 1000);
-			queue.textChannel
-				.send(i18n.__('play.queueEnded'))
-				.then((msg) => {
-					setTimeout(() => msg.delete(), MSGTIMEOUT);
-				})
-				.catch(console.error);
+			}, STAY_TIME * 1_000);
+
 			return message.client.queue.delete(message.guildId);
 		}
-
-		queue.connection.on('disconnect', () => {
-			message.client.queue.delete(message.guild.id);
-			// Should connection.destroy be run here?
-		});
 
 		const { VoiceConnectionStatus, AudioPlayerStatus } = voice;
 
@@ -110,12 +108,11 @@ module.exports = {
 		});
 		// pass stream to audio player
 		player.play(resource);
+		connection.subscribe(player);
 		// let collector = {};
-		player.on(AudioPlayerStatus.Playing, async (player) => {
-			// queue.playing = true;
-			console.log('playing state');
-			console.log(player);
-		});
+		// player.on(AudioPlayerStatus.Playing, async () => {
+		// 	console.log('playing state');
+		// });
 
 		// vvv Do not remove comma!! it is to skip the first item in the array
 		const [, collector] = await npMessage({ message, npSong: song });
@@ -128,7 +125,9 @@ module.exports = {
 				case '⏯': {
 					reaction.users.remove(user).catch(console.error);
 					if (!canModifyQueue(member)) {
-						return reaction.message.channel.send(i18n.__('common.errorNotChannel'));
+						return reaction.message.channel.send(
+							i18n.__('common.errorNotChannel'),
+						);
 					}
 					if (queue.playing) {
 						queue.playing = false;
@@ -172,9 +171,11 @@ module.exports = {
 						.catch(console.error);
 					queue.songs.shift();
 					// const nextResource = await module.exports.getResource(message, queue);
+					collector.stop('skipSong');
+					connection.removeAllListeners();
 					player.removeAllListeners();
 					player.stop();
-					module.exports.play(queue.songs[0], message, prefix);
+					module.exports.play(queue.songs[0], reaction.message, prefix);
 					// player.play(nextResource);
 					// queue.connection.dispatcher.end();
 					break;
@@ -188,7 +189,7 @@ module.exports = {
 							i18n.__mf('play.loopSong', {
 								author: user,
 								loop: queue.loop ? i18n.__('common.on') : i18n.__('common.off'),
-							})
+							}),
 						)
 						.then((msg) => {
 							setTimeout(() => msg.delete(), MSGTIMEOUT);
@@ -212,14 +213,14 @@ module.exports = {
 						npMessage({ message });
 					} catch (error) {
 						console.error(error);
-						connection.disconnect();
+						connection.destroy();
 						// queue.connection.disconnect();
 					}
 					// collector.stop();
 					break;
 				}
 				default: {
-					// reaction.users.remove(user).catch(console.error);
+					reaction.users.remove(user).catch(console.error);
 					break;
 				}
 			}
@@ -232,11 +233,10 @@ module.exports = {
 				} */
 			//
 		});
-		// need to check is listeners already exist i.e. when playing through queue, to prevent exceeding max listeners
+		// need to check if listeners already exist i.e. when playing through queue, to prevent exceeding max listeners
 		connection.once(VoiceConnectionStatus.Ready, () => {
 			console.log('connection ready');
-
-			const subsciption = connection.subscribe(player);
+			// const subsciption = connection.subscribe(player);
 		});
 
 		// Check if disconnect is real or is moving to another channel
@@ -260,43 +260,30 @@ module.exports = {
 				} catch (error) {
 					// Seems to be a real disconnect which SHOULDN'T be recovered from
 					connection.destroy();
+					message.client.queue.delete(message.guild.id);
 				}
-			}
+			},
 		);
 		player.on(AudioPlayerStatus.Idle, async () => {
 			console.log('player status Idle');
 			try {
 				await Promise.race([
-					voice.entersState(
-						player,
-						AudioPlayerStatus.Playing,
-						2_000,
-					),
-					voice.entersState(
-						player,
-						AudioPlayerStatus.Buffering,
-						2_000,
-					),
-					voice.entersState(
-						player,
-						AudioPlayerStatus.AutoPaused,
-						2_000,
-					),
-					voice.entersState(
-						player,
-						AudioPlayerStatus.Paused,
-						2_000,
-					),
+					voice.entersState(player, AudioPlayerStatus.Playing, 2_000),
+					voice.entersState(player, AudioPlayerStatus.Buffering, 2_000),
+					voice.entersState(player, AudioPlayerStatus.AutoPaused, 2_000),
+					voice.entersState(player, AudioPlayerStatus.Paused, 2_000),
 				]);
 				// Seems to be transitioning to another resource - ignore idle
 			} catch (error) {
 				// apears to be finished queue
-				if (collector && !collector.ended) collector.stop();
+				connection.removeAllListeners();
+				if (collector && !collector.ended) collector.stop('idleQueue');
 				if (queue.loop) {
 					// if loop is on, push the song to the end of the queue
 					// so it can repeat endlessly
 					const lastSong = queue.songs.shift();
 					queue.songs.push(lastSong);
+					module.exports.play(queue.songs[0], message, prefix);
 					// const nextResource = module.exports.getNextResource(message, queue);
 					// player.play(nextResource);
 				} else {
