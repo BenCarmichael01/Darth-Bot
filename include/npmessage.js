@@ -35,7 +35,7 @@ module.exports = {
 			queue = message.client.queue.get(message.guild.id).songs;
 		}
 
-		var outputQueue = '__**Up Next:**__:\nSend a url or a song name to start the queue';
+		var outputQueue = '__**Up Next:**__\nSend a url or a song name to start the queue';
 		var songsQueue = '';
 		if (queue) {
 			const currentQueue = queue.slice(1, 22);
@@ -45,7 +45,7 @@ module.exports = {
 				index = i + 1;
 				songsQueue = `**${index}.** ${currentQueue[i].title}\n ${songsQueue}`;
 			}
-			outputQueue = `__**Up Next:**__:\n ${songsQueue}`;
+			outputQueue = `__**Up Next:**__\n ${songsQueue}`;
 		}
 		let newEmbed = {};
 		if (npSong === undefined) {

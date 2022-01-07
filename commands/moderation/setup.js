@@ -33,7 +33,7 @@ module.exports = {
 			try {
 				const musicChannel = message.guild.channels.cache.get(channelTag);
 
-				const outputQueue = '__**Up Next:**__:\nSend a url or a song name to start the queue';
+				const outputQueue = '__**Up Next:**__\nSend a youtube url or a song name to start the queue';
 				const newEmbed = new MessageEmbed()
 					.setColor('#5865F2')
 					.setTitle('🎶 Nothing is playing right now')
