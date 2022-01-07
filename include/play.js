@@ -29,24 +29,10 @@ module.exports = {
 		try {
 			if (song.url.includes('youtube.com')) {
 				stream = await ytdl(song.url, { highWaterMark: 1 << 25 });
-			} else if (song.url.includes('soundcloud.com')) {
-				try {
-					stream = await scdl.downloadFormat(
-						song.url,
-						scdl.FORMATS.OPUS,
-						SOUNDCLOUD_CLIENT_ID,
-					);
-				} catch (error) {
-					stream = await scdl.downloadFormat(
-						song.url,
-						scdl.FORMATS.MP3,
-						SOUNDCLOUD_CLIENT_ID,
-					);
-					// streamType = 'unknown';
-				}
 			}
 		} catch (error) {
 			if (queue) {
+				queue.songs.shift();
 				module.exports.getResource(message, queue);
 			}
 
@@ -107,7 +93,11 @@ module.exports = {
 			console.error(`Error: ${error.message} with resource`);
 		});
 		// pass stream to audio player
-		player.play(resource);
+		try {
+			player.play(resource);
+		} catch (error) {
+			console.error(error);
+		}
 		connection.subscribe(player);
 		// let collector = {};
 
