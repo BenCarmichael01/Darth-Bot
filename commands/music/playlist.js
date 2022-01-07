@@ -4,6 +4,7 @@ const { npMessage } = require(`${__base}include/npmessage`);
 const YouTubeAPI = require('simple-youtube-api');
 const scdl = require('soundcloud-downloader').default;
 const i18n = require('i18n');
+const voice = require('@discordjs/voice');
 
 const {
 	YOUTUBE_API_KEY,
@@ -30,16 +31,15 @@ module.exports = {
 	argsType: 'multiple', */
 
 	// TODO MSGTIMEOUT
-	async callback({ message, args }) {
-		message.delete({ TIMEOUT: MSGTIMEOUT });
+	async callback({ message, args, prefix }) {
 		const { channel } = message.member.voice;
 		const serverQueue = message.client.queue.get(message.guild.id);
 
-		if (!args.playlist) {
-			return message
-				.reply(i18n.__mf('playlist.usageReply', { prefix: message.guild.commandPrefix }))
-				.catch(console.error);
-		}
+		// if (!args[0]) {
+		// 	return message
+		// 		.reply(i18n.__mf('playlist.usageReply', { prefix: message.guild.commandPrefix }))
+		// 		.catch(console.error);
+		// }
 		if (!channel) return message.reply(i18n.__('playlist.errorNotChannel')).catch(console.error);
 
 		const permissions = channel.permissionsFor(message.client.user);
@@ -51,11 +51,11 @@ module.exports = {
 				.reply(i18n.__mf('play.errorNotInSameChannel', { user: message.client.user }))
 				.catch(console.error);
 		}
-
+		message.delete();
 		const pattern = /^.*(youtu.be\/|list=)([^#&?]*).*/gi;
-		const url = args.playlist;
-		const urlValid = pattern.test(args.playlist);
-		const search = args.playlist;
+		const url = args[0];
+		const urlValid = pattern.test(args[0]);
+		const search = args[0];
 
 		const queueConstruct = {
 			textChannel: message.channel,
@@ -78,10 +78,10 @@ module.exports = {
 				console.error(error);
 				return message.reply(i18n.__('playlist.errorNotFoundPlaylist')).catch(console.error);
 			}
-		} else if (scdl.isValidUrl(args.playlist)) {
-			if (args.playlist.includes('/sets/')) {
+		} else if (scdl.isValidUrl(args[0])) {
+			if (args[0].includes('/sets/')) {
 				message.channel.send(i18n.__('playlist.fetchingPlaylist'));
-				playlist = await scdl.getSetInfo(args.playlist, SOUNDCLOUD_CLIENT_ID);
+				playlist = await scdl.getSetInfo(args[0], SOUNDCLOUD_CLIENT_ID);
 				videos = playlist.tracks.map((track) => ({
 					title: track.title,
 					url: track.permalink_url,
@@ -119,20 +119,29 @@ module.exports = {
 		}
 		// serverQueue ? serverQueue.songs.push(...newSongs) : queueConstruct.songs.push(...newSongs);
 		if (serverQueue) {
-			npMessage({ message, npSong: serverQueue.songs[0] });
+			npMessage({ message, npSong: serverQueue.songs[0], prefix });
 		}
 		if (!serverQueue) {
 			message.client.queue.set(message.guild.id, queueConstruct);
 
 			try {
-				queueConstruct.connection = await channel.join();
-				await queueConstruct.connection.voice.setSelfDeaf(true);
-				play(queueConstruct.songs[0], message, newSongs);
+				if (!voice.getVoiceConnection(message.guildId)) {
+					queueConstruct.connection = await voice.joinVoiceChannel({
+						channelId: channel.id,
+						guildId: channel.guildId,
+						selfDeaf: true,
+						adapterCreator: channel.guild.voiceAdapterCreator,
+					});
+				}
+				play(queueConstruct.songs[0], message, prefix);
 			} catch (error) {
 				console.error(error);
 				message.client.queue.delete(message.guild.id);
-				await channel.leave();
-				return message.channel.send(i18n.__('play.cantJoinChannel', { error })).catch(console.error);
+				await queueConstruct.connection.destroy();
+				return message.channel.send(i18n.__('play.cantJoinChannel', { error })).then((msg) => {
+					setTimeout(() => msg.delete(), MSGTIMEOUT);
+				})
+					.catch(console.error);
 			}
 		}
 		// TODO this used to return 1 but i cant remember why so i've removed it

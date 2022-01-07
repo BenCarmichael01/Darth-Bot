@@ -61,7 +61,7 @@ const wok = new WOKCommands(client, {
 	botOwners: '337710838469230592',
 	mongoUri: process.env.MONGO_URI,
 
-});
+})
 
 wok.on('databaseConnected', async () => {
 	console.log('MongoDB Connected');
@@ -135,11 +135,13 @@ client.on('messageCreate', async (message) => {
 	if (!MUSIC_CHANNEL_ID) {
 		MUSIC_CHANNEL_ID = '';
 	}
-
-	if (!message.content.startsWith(wok._prefixes[guildId]) && (message.channelId === MUSIC_CHANNEL_ID)) {
+	const prefix = wok._prefixes[guildId];
+	if (!message.content.startsWith(prefix) && (message.channelId === MUSIC_CHANNEL_ID)) {
 		const args = message.content.trim().split(/ +/);
 		try {
-			wok.commandHandler._commands.get('play').callback({ message, args });
+			wok.commandHandler._commands.get('play').callback({
+				message, args, instance: wok, prefix,
+			});
 			return;
 		} catch (error) {
 			console.error(error);

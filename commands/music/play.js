@@ -74,7 +74,6 @@ module.exports = {
 				})
 				.catch(console.error);
 		}
-		message.delete();
 		const search = args.join(' ');
 		const videoPattern =			/^(https?:\/\/)?(www\.)?(m\.)?(youtube\.com|youtu\.?be)\/.+$/gi;
 		const playlistPattern = /^.*(list=)([^#&?]*).*/gi;
@@ -86,13 +85,13 @@ module.exports = {
 		//  Start the playlist if playlist url was provided
 		if (!videoPattern.test(args[0]) && playlistPattern.test(args[0])) {
 			// args.playlist = args[0];
-			return instance._commandHandler._commands
-				.get('playlist')
+			return instance.commandHandler
+				.getCommand('playlist')
 				.callback({ message, args, prefix });
 			// TODO COMMAND CALL ABOVE DOESNT WORK
 			// return message.client.registry.resolveCommand('playlist').run(message, args);
 		}
-
+		message.delete();
 		const queueConstruct = {
 			textChannel: message.channel,
 			channel,
@@ -171,7 +170,7 @@ module.exports = {
 			if (!voice.getVoiceConnection(message.guildId)) {
 				queueConstruct.connection = await voice.joinVoiceChannel({
 					channelId: channel.id,
-					guildId: channel.guild.id,
+					guildId: channel.guildId,
 					selfDeaf: true,
 					adapterCreator: channel.guild.voiceAdapterCreator,
 				});
