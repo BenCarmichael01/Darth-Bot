@@ -18,6 +18,6 @@ module.exports = {
 		}
 
 		const output = Math.floor(Math.random() * (max - min + 1) + min); // returns a random integer from lowerLimit to upperLimit
-		message.channel.send(output);
+		message.channel.send(output.toString());
 	},
 };
