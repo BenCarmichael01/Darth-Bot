@@ -72,7 +72,6 @@ module.exports = {
 
 				// Check if db was updated correctly
 				const MUSIC_CHANNEL_ID = (await findById(guild.id)).musicChannel;
-				console.log(MUSIC_CHANNEL_ID);
 				if (MUSIC_CHANNEL_ID === channelTag) {
 					message.channel.send(`The music channel has been set to <#${MUSIC_CHANNEL_ID}> \n Setup Complete!`)
 						.then((msg) => {

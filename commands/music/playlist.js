@@ -112,7 +112,6 @@ module.exports = {
 				};
 				return song;
 			});
-		// console.log(newSongs);
 		if (serverQueue) {
 			serverQueue.songs.push(...newSongs);
 		} else {
@@ -129,7 +128,6 @@ module.exports = {
 				queueConstruct.connection = await channel.join();
 				await queueConstruct.connection.voice.setSelfDeaf(true);
 				play(queueConstruct.songs[0], message, newSongs);
-				// console.log(queueConstruct.songs[0]);
 			} catch (error) {
 				console.error(error);
 				message.client.queue.delete(message.guild.id);
@@ -138,6 +136,6 @@ module.exports = {
 			}
 		}
 		// TODO this used to return 1 but i cant remember why so i've removed it
-		return;
+		// return;
 	},
 };

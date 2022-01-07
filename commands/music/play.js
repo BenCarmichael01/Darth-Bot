@@ -3,14 +3,12 @@ const { play } = require(`${__base}include/play`);
 const ytdl = require('ytdl-core-discord');
 const YouTubeAPI = require('simple-youtube-api');
 // const scdl = require('soundcloud-downloader').default;
-const https = require('https');
 const i18n = require('i18n');
 const voice = require('@discordjs/voice');
 
 const { npMessage } = require(`${__base}/include/npmessage`);
 const {
 	YOUTUBE_API_KEY,
-	SOUNDCLOUD_CLIENT_ID,
 	LOCALE,
 	DEFAULT_VOLUME,
 	MSGTIMEOUT,
@@ -28,9 +26,6 @@ module.exports = {
 	async callback({
 		message, args, prefix, instance,
 	}) {
-		// const MUSIC_CHANNEL_ID = message.guild.settings.get('musicChannel');
-		// console.log(instance);
-		// console.log(instance._commandHandler._commands.get('playlist').callback());
 		const { channel } = message.member.voice;
 		// message.delete();
 		const serverQueue = message.client.queue.get(message.guild.id);
@@ -97,41 +92,6 @@ module.exports = {
 			// TODO COMMAND CALL ABOVE DOESNT WORK
 			// return message.client.registry.resolveCommand('playlist').run(message, args);
 		}
-		/* if (scdl.isValidUrl(url) && url.includes('/sets/')) {
-			return instance._commandHandler._commands
-				.get('playlist')
-				.callback({ message, args, prefix });
-		} */
-		// setTimeout(() => message.delete(), MSGTIMEOUT);
-		
-		/*
-		if (mobileScRegex.test(url)) {
-			try {
-				https.get(url, (res) => {
-					console.log(typeof (res.statusCode));
-					if (res.statusCode == '302') {
-						return instance._commandHandler._commands
-							.get('play')
-							.callback({ message, args: [res.headers.location] });
-					}
-					return message
-						.reply('No content could be found at that url.')
-						.then((msg) => {
-							setTimeout(() => msg.delete(), MSGTIMEOUT);
-						})
-						.catch(console.error);
-				});
-			} catch (error) {
-				console.error(error);
-				return message.reply(error.message).catch(console.error);
-			}
-			return message
-				.reply('Following url redirection...')
-				.then((msg) => {
-					setTimeout(() => msg.delete(), MSGTIMEOUT);
-				})
-				.catch(console.error);
-		} */
 
 		const queueConstruct = {
 			textChannel: message.channel,
@@ -156,7 +116,6 @@ module.exports = {
 					thumbUrl: thumbnails[thumbnails.length - 1].url,
 					duration: songInfo.lengthSeconds,
 				};
-				// console.log(song);
 			} catch (error) {
 				console.error(error);
 				return message
@@ -166,24 +125,7 @@ module.exports = {
 					})
 					.catch(console.error);
 			}
-		} /* else if (scRegex.test(url)) {
-			try {
-				const trackInfo = await scdl.getInfo(url, SOUNDCLOUD_CLIENT_ID);
-				song = {
-					title: trackInfo.title,
-					url: trackInfo.permalink_url,
-					duration: Math.ceil(trackInfo.duration / 1000),
-				};
-			} catch (error) {
-				console.error(error);
-				return message
-					.reply(error.message)
-					.then((msg) => {
-						setTimeout(() => msg.delete(), MSGTIMEOUT);
-					})
-					.catch(console.error);
-			}
-		} */ else {
+		} else {
 			try {
 				const results = await youtube.searchVideos(search, 1, {
 					part: 'snippet',
@@ -235,7 +177,6 @@ module.exports = {
 				});
 			}
 			// await queueConstruct.connection.voice.setSelfDeaf(true);
-			console.log('test');
 			play(queueConstruct.songs[0], message, prefix);
 		} catch (error) {
 			console.error(error);

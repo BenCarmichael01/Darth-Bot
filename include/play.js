@@ -42,7 +42,7 @@ module.exports = {
 						scdl.FORMATS.MP3,
 						SOUNDCLOUD_CLIENT_ID,
 					);
-					streamType = 'unknown';
+					// streamType = 'unknown';
 				}
 			}
 		} catch (error) {
@@ -55,7 +55,7 @@ module.exports = {
 				.send(
 					i18n.__mf('play.queueError', {
 						error: error.message ? error.message : error,
-					})
+					}),
 				)
 				.then((msg) => {
 					setTimeout(() => msg.delete(), MSGTIMEOUT);
@@ -110,9 +110,6 @@ module.exports = {
 		player.play(resource);
 		connection.subscribe(player);
 		// let collector = {};
-		// player.on(AudioPlayerStatus.Playing, async () => {
-		// 	console.log('playing state');
-		// });
 
 		// vvv Do not remove comma!! it is to skip the first item in the array
 		const [, collector] = await npMessage({ message, npSong: song });
@@ -242,7 +239,7 @@ module.exports = {
 		// Check if disconnect is real or is moving to another channel
 		connection.on(
 			VoiceConnectionStatus.Disconnected,
-			async (oldState, newState) => {
+			async () => {
 				try {
 					await Promise.race([
 						voice.entersState(

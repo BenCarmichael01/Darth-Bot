@@ -12,7 +12,8 @@ module.exports = {
 				playingMessage,
 			}, {
 				upsert: true,
-			}).then(console.log('upsert completed'));
+			});
+			// .then(console.log('upsert completed'));
 		} catch (error) {
 			console.error(error);
 			return 0;

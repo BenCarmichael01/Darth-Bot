@@ -7,14 +7,13 @@ module.exports = {
 	name: 'status',
 	description: 'Update bot status',
 	category: 'moderation',
+	ownerOnly: true,
 	// TODO status needs to be saved to mongoDB and re-set on startup to remain persistent
 	// TODO usage reply should also include <prefix>status at beginning
 	async callback({ message, args, client }) {
 		const statusTypes = ['PLAYING', 'WATCHING', 'STREAMING', 'LISTENING', 'COMPETING'];
 		const statusType = args.shift().toUpperCase();
 		const statusText = args.join(' ');
-		console.log(statusType);
-		console.log(statusText);
 		if (!statusText) {
 			return message.reply(i18n.__('moderation.status.noText') + i18n.__('moderation.status.usage')).then((msg) => {
 				setTimeout(() => { msg.delete(); message.delete(); }, MSGTIMEOUT);
