@@ -24,7 +24,10 @@ module.exports = {
 	guildOnly: 'true',
 
 	async callback({
-		message, args, prefix, instance,
+		message,
+		args,
+		prefix,
+		instance,
 	}) {
 		const { channel } = message.member.voice;
 		// message.delete();
@@ -35,17 +38,25 @@ module.exports = {
 			return message
 				.reply(i18n.__('play.errorNotChannel'))
 				.then((msg) => {
-					setTimeout(() => { msg.delete(); message.delete(); }, MSGTIMEOUT);
+					setTimeout(() => {
+						msg.delete();
+						message.delete();
+					}, MSGTIMEOUT);
 				})
 				.catch(console.error);
 		}
 		if (serverQueue && channel !== message.guild.me.voice.channel) {
 			return message
 				.reply(
-					i18n.__mf('play.errorNotInSameChannel', { user: message.client.user }),
+					i18n.__mf('play.errorNotInSameChannel', {
+						user: message.client.user,
+					}),
 				)
 				.then((msg) => {
-					setTimeout(() => { msg.delete(); message.delete(); }, MSGTIMEOUT);
+					setTimeout(() => {
+						msg.delete();
+						message.delete();
+					}, MSGTIMEOUT);
 				})
 				.catch(console.error);
 		}
@@ -53,7 +64,10 @@ module.exports = {
 			return message
 				.reply(i18n.__mf('play.usageReply', { prefix }))
 				.then((msg) => {
-					setTimeout(() => { msg.delete(); message.delete(); }, MSGTIMEOUT);
+					setTimeout(() => {
+						msg.delete();
+						message.delete();
+					}, MSGTIMEOUT);
 				})
 				.catch(console.error);
 		}
@@ -62,7 +76,10 @@ module.exports = {
 			return message
 				.reply(i18n.__('play.missingPermissionConnect'))
 				.then((msg) => {
-					setTimeout(() => { msg.delete(); message.delete(); }, MSGTIMEOUT);
+					setTimeout(() => {
+						msg.delete();
+						message.delete();
+					}, MSGTIMEOUT);
 				})
 				.catch(console.error);
 		}
@@ -70,12 +87,15 @@ module.exports = {
 			return message
 				.reply(i18n.__('play.missingPermissionSpeak'))
 				.then((msg) => {
-					setTimeout(() => { msg.delete(); message.delete(); }, MSGTIMEOUT);
+					setTimeout(() => {
+						msg.delete();
+						message.delete();
+					}, MSGTIMEOUT);
 				})
 				.catch(console.error);
 		}
 		const search = args.join(' ');
-		const videoPattern =			/^(https?:\/\/)?(www\.)?(m\.)?(youtube\.com|youtu\.?be)\/.+$/gi;
+		const videoPattern = /^(https?:\/\/)?(www\.)?(m\.)?(youtube\.com|youtu\.?be)\/.+$/gi;
 		const playlistPattern = /^.*(list=)([^#&?]*).*/gi;
 		// const scRegex = /^https?:\/\/(soundcloud\.com)\/(.*)$/;
 		// const mobileScRegex = /^https?:\/\/(soundcloud\.app\.goo\.gl)\/(.*)$/;
@@ -117,10 +137,14 @@ module.exports = {
 				};
 			} catch (error) {
 				console.error(error);
-				return message
-					.channel.send(error.message)
+				return message.channel
+					.send(
+						i18n.__mf('play.queueError', {
+							error: error.message ? error.message : error,
+						}),
+					)
 					.then((msg) => {
-						setTimeout(() => msg.delete(), MSGTIMEOUT);
+						setTimeout(() => msg.delete(), MSGTIMEOUT + 1_500);
 					})
 					.catch(console.error);
 			}
@@ -139,10 +163,14 @@ module.exports = {
 				};
 			} catch (error) {
 				console.error(error);
-				return message
-					.channel.send(error.message)
+				return message.channel
+					.send(
+						i18n.__mf('play.queueError', {
+							error: error.message ? error.message : error,
+						}),
+					)
 					.then((msg) => {
-						setTimeout(() => msg.delete(), MSGTIMEOUT);
+						setTimeout(() => msg.delete(), MSGTIMEOUT + 1_500);
 					})
 					.catch(console.error);
 			}
