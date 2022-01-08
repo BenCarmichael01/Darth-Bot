@@ -47,6 +47,7 @@ module.exports = {
 				await playingMessage.react('🔉');
 				await playingMessage.react('🔊'); */
 				await playingMessage.react('🔁');
+				await playingMessage.react('🔀');
 				await playingMessage.react('⏹');
 
 				// Creates temp collector to remove reactions before bot restarts and uses the one in 'on ready' event
