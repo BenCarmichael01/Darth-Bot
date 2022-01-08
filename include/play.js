@@ -1,13 +1,11 @@
 /* global __base */
 const ytdl = require('ytdl-core-discord');
-const scdl = require('soundcloud-downloader').default;
 
 const {
 	canModifyQueue,
 	STAY_TIME,
 	LOCALE,
 	MSGTIMEOUT,
-	SOUNDCLOUD_CLIENT_ID,
 } = require(`${__base}include/utils`);
 const i18n = require('i18n');
 const voice = require('@discordjs/voice');
@@ -23,32 +21,46 @@ module.exports = {
 
 		// Get stream from song Url //
 		let stream = null;
+		let info = null;
 		// TODO streamline by adding streamType
 		// let streamType = song.url.includes('youtube.com') ? 'opus' : 'ogg/opus';
-
-		try {
-			if (song.url.includes('youtube.com')) {
-				stream = await ytdl(song.url, { highWaterMark: 1 << 25 });
+		if (song.url.includes('youtube.com')) {
+			try {
+				info = await ytdl.getInfo(song.url);
+			} catch (error) {
+				console.error(error);
+				return message.channel
+					.send(
+						i18n.__mf('play.queueError', {
+							error: error.message ? error.message : error,
+						}),
+					)
+					.then((msg) => {
+						setTimeout(() => msg.delete(), MSGTIMEOUT + 1_500);
+					})
+					.catch(console.error);
 			}
-		} catch (error) {
-			if (queue) {
-				queue.songs.shift();
-				module.exports.getResource(message, queue);
-			}
 
-			console.error(error);
-			return message.channel
-				.send(
-					i18n.__mf('play.queueError', {
-						error: error.message ? error.message : error,
-					}),
-				)
-				.then((msg) => {
-					setTimeout(() => msg.delete(), MSGTIMEOUT);
-				})
-				.catch(console.error);
+			try {
+				stream = await ytdl.downloadFromInfo(info, { highWaterMark: 1 << 25 });
+			} catch (error) {
+				if (queue) {
+					queue.songs.shift();
+					module.exports.getResource(message, queue);
+				}
+				console.error(error);
+				return message.channel
+					.send(
+						i18n.__mf('play.queueError', {
+							error: error.message ? error.message : error,
+						}),
+					)
+					.then((msg) => {
+						setTimeout(() => msg.delete(), MSGTIMEOUT + 1_500);
+					})
+					.catch(console.error);
+			}
 		}
-
 		const resource = voice.createAudioResource(stream);
 		return resource;
 	},
@@ -184,6 +196,28 @@ module.exports = {
 						.catch(console.error);
 					break;
 				}
+				case '🔀': {
+					if (!queue) {
+						return message.channel
+							.send(i18n.__('shuffle.errorNotQueue'))
+							.catch(console.error);
+					}
+					if (!canModifyQueue(message.member)) {
+						return i18n.__('common.errorNotChannel');
+					}
+					const { songs } = queue;
+					for (let i = songs.length - 1; i > 1; i--) {
+						let j = 1 + Math.floor(Math.random() * i);
+						[songs[i], songs[j]] = [songs[j], songs[i]];
+					}
+					queue.songs = songs;
+					message.client.queue.set(message.guild.id, queue);
+					npMessage({ message, npSong: song });
+					queue.textChannel
+						.send(i18n.__mf('shuffle.result', { author: message.author.id }))
+						.catch(console.error);
+					break;
+				}
 				case '⏹': {
 					reaction.users.remove(user).catch(console.error);
 					if (!canModifyQueue(member)) return i18n.__('common.errorNotChannel');
@@ -227,30 +261,27 @@ module.exports = {
 		});
 
 		// Check if disconnect is real or is moving to another channel
-		connection.on(
-			VoiceConnectionStatus.Disconnected,
-			async () => {
-				try {
-					await Promise.race([
-						voice.entersState(
-							connection,
-							VoiceConnectionStatus.Signalling,
-							5_000,
-						),
-						voice.entersState(
-							connection,
-							VoiceConnectionStatus.Connecting,
-							5_000,
-						),
-					]);
-					// Seems to be reconnecting to a new channel - ignore disconnect
-				} catch (error) {
-					// Seems to be a real disconnect which SHOULDN'T be recovered from
-					connection.destroy();
-					message.client.queue.delete(message.guild.id);
-				}
-			},
-		);
+		connection.on(VoiceConnectionStatus.Disconnected, async () => {
+			try {
+				await Promise.race([
+					voice.entersState(
+						connection,
+						VoiceConnectionStatus.Signalling,
+						5_000,
+					),
+					voice.entersState(
+						connection,
+						VoiceConnectionStatus.Connecting,
+						5_000,
+					),
+				]);
+				// Seems to be reconnecting to a new channel - ignore disconnect
+			} catch (error) {
+				// Seems to be a real disconnect which SHOULDN'T be recovered from
+				connection.destroy();
+				message.client.queue.delete(message.guild.id);
+			}
+		});
 		player.on(AudioPlayerStatus.Idle, async () => {
 			console.log('player status Idle');
 			try {
