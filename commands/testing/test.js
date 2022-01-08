@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /* global __base */
 const { findById } = require(`${__base}include/findById`);
 const ytdl = require('ytdl-core-discord');
@@ -8,9 +9,14 @@ module.exports = {
 	category: 'testing',
 	testOnly: true,
 
-	async callback({ message, guild, instance, client }) {
+	async callback({
+		message,
+		guild,
+		instance,
+		client,
+	}) {
 		try {
-			const output = await ytdl.getInfo('https://www.youtube.com/watch?v=slZdwc4T89k');
+			const output = await ytdl('https://www.youtube.com/watch?v=yDpjI66ae6c');
 			console.log(output);
 		} catch (error) {
 			console.error(error);
@@ -18,3 +24,4 @@ module.exports = {
 		message.delete();
 	},
 };
+// https://www.youtube.com/watch?v=slZdwc4T89k
