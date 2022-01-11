@@ -40,15 +40,41 @@ module.exports = {
 		// 		.reply(i18n.__mf('playlist.usageReply', { prefix: message.guild.commandPrefix }))
 		// 		.catch(console.error);
 		// }
-		if (!channel) return message.reply(i18n.__('playlist.errorNotChannel')).catch(console.error);
-
+		if (!channel) {
+			return message
+				.reply(i18n.__('playlist.errorNotChannel'))
+				.then((msg) => {
+					setTimeout(() => msg.delete(), MSGTIMEOUT);
+				})
+				.catch(console.error);
+		}
 		const permissions = channel.permissionsFor(message.client.user);
-		if (!permissions.has('CONNECT')) return message.reply(i18n.__('playlist.missingPermissionConnect'));
-		if (!permissions.has('SPEAK')) return message.reply(i18n.__('missingPermissionSpeak'));
-
+		if (!permissions.has('CONNECT')) {
+			return message
+				.reply(i18n.__('playlist.missingPermissionConnect'))
+				.then((msg) => {
+					setTimeout(() => msg.delete(), MSGTIMEOUT);
+				})
+				.catch(console.error);
+		}
+		if (!permissions.has('SPEAK')) {
+			return message
+				.reply(i18n.__('missingPermissionSpeak'))
+				.then((msg) => {
+					setTimeout(() => msg.delete(), MSGTIMEOUT);
+				})
+				.catch(console.error);
+		}
 		if (serverQueue && channel !== message.guild.me.voice.channel) {
 			return message
-				.reply(i18n.__mf('play.errorNotInSameChannel', { user: message.client.user }))
+				.reply(
+					i18n.__mf('play.errorNotInSameChannel', {
+						user: message.client.user,
+					}),
+				)
+				.then((msg) => {
+					setTimeout(() => msg.delete(), MSGTIMEOUT);
+				})
 				.catch(console.error);
 		}
 		message.delete();
@@ -73,10 +99,22 @@ module.exports = {
 		if (urlValid) {
 			try {
 				playlist = await youtube.getPlaylist(url, { part: 'snippet' });
-				videos = await playlist.getVideos(MAX_PLAYLIST_SIZE || 10, { part: 'snippet' });
+				videos = await playlist.getVideos(MAX_PLAYLIST_SIZE || 50, {
+					part: 'snippet',
+				});
+				if (videos.length + 1 > MAX_PLAYLIST_SIZE) {
+					message.channel
+						.send(i18n.__mf('playlist.maxSize', { maxSize: MAX_PLAYLIST_SIZE }))
+						.then((msg) => {
+							setTimeout(() => msg.delete(), MSGTIMEOUT);
+						})
+						.catch(console.error);
+				}
 			} catch (error) {
 				console.error(error);
-				return message.reply(i18n.__('playlist.errorNotFoundPlaylist')).catch(console.error);
+				return message
+					.reply(i18n.__('playlist.errorNotFoundPlaylist'))
+					.catch(console.error);
 			}
 		} else if (scdl.isValidUrl(args[0])) {
 			if (args[0].includes('/sets/')) {
@@ -90,9 +128,13 @@ module.exports = {
 			}
 		} else {
 			try {
-				const results = await youtube.searchPlaylists(search, 1, { part: 'snippet' });
+				const results = await youtube.searchPlaylists(search, 1, {
+					part: 'snippet',
+				});
 				[playlist] = results;
-				videos = await playlist.getVideos(MAX_PLAYLIST_SIZE || 10, { part: 'snippet' });
+				videos = await playlist.getVideos(MAX_PLAYLIST_SIZE || 50, {
+					part: 'snippet',
+				});
 			} catch (error) {
 				console.error(error);
 				return message.reply(error.message).catch(console.error);
@@ -100,7 +142,10 @@ module.exports = {
 		}
 
 		const newSongs = videos
-			.filter((video) => video.title !== 'Private video' && video.title !== 'Deleted video')
+			.filter(
+				(video) =>
+					video.title !== 'Private video' && video.title !== 'Deleted video',
+			)
 			.map((video) => {
 				const { thumbnails } = video;
 				const thumbIndex = Object.keys(thumbnails).length - 1;
@@ -138,9 +183,11 @@ module.exports = {
 				console.error(error);
 				message.client.queue.delete(message.guild.id);
 				await queueConstruct.connection.destroy();
-				return message.channel.send(i18n.__('play.cantJoinChannel', { error })).then((msg) => {
-					setTimeout(() => msg.delete(), MSGTIMEOUT);
-				})
+				return message.channel
+					.send(i18n.__('play.cantJoinChannel', { error }))
+					.then((msg) => {
+						setTimeout(() => msg.delete(), MSGTIMEOUT);
+					})
 					.catch(console.error);
 			}
 		}

@@ -86,7 +86,8 @@
 		"startedPlaylist": "<@{author}> Started a playlist",
 		"cantJoinChannel": "Could not join the channel: {error}",
 		"prompt": "Please send a YouTube playlist link",
-		"notPlaylist": "Hmm that doesn't seem like a playlist url"
+		"notPlaylist": "Hmm that doesn't seem like a playlist url",
+		"maxSize": "That playlist is very large so only the first {maxSize} songs have been added to the queue"
 	},
 	"pruning": {
 		"description": "Toggle pruning of bot messages",
