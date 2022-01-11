@@ -42,7 +42,8 @@ module.exports = {
 			}
 
 			try {
-				stream = await ytdl.downloadFromInfo(info, { highWaterMark: 1 << 25 });
+				stream = await ytdl.downloadFromInfo(info, { filter: 'audioonly', quality: 'highestaudio', highWaterMark: 1 << 25 });
+				// stream = await ytdl.downloadFromInfo(info, { filter: 'audioonly' });
 			} catch (error) {
 				if (queue) {
 					queue.songs.shift();
@@ -197,16 +198,26 @@ module.exports = {
 					break;
 				}
 				case '🔀': {
+					reaction.users.remove(user).catch(console.error);
 					if (!queue) {
 						return message.channel
 							.send(i18n.__('shuffle.errorNotQueue'))
+							.then((msg) => {
+								setTimeout(() => msg.delete(), MSGTIMEOUT);
+							})
 							.catch(console.error);
 					}
 					if (!canModifyQueue(message.member)) {
-						return i18n.__('common.errorNotChannel');
+						return message.channel
+							.send(i18n.__('common.errorNotChannel'))
+							.then((msg) => {
+								setTimeout(() => msg.delete(), MSGTIMEOUT);
+							})
+							.catch(console.error);
 					}
 					const { songs } = queue;
 					for (let i = songs.length - 1; i > 1; i--) {
+						// eslint-disable-next-line prefer-const
 						let j = 1 + Math.floor(Math.random() * i);
 						[songs[i], songs[j]] = [songs[j], songs[i]];
 					}
@@ -215,12 +226,22 @@ module.exports = {
 					npMessage({ message, npSong: song });
 					queue.textChannel
 						.send(i18n.__mf('shuffle.result', { author: message.author.id }))
+						.then((msg) => {
+							setTimeout(() => msg.delete(), MSGTIMEOUT);
+						})
 						.catch(console.error);
 					break;
 				}
 				case '⏹': {
 					reaction.users.remove(user).catch(console.error);
-					if (!canModifyQueue(member)) return i18n.__('common.errorNotChannel');
+					if (!canModifyQueue(member)) {
+						return message.channel
+							.send(i18n.__('common.errorNotChannel'))
+							.then((msg) => {
+								setTimeout(() => msg.delete(), MSGTIMEOUT);
+							})
+							.catch(console.error);
+					}
 					queue.songs = [];
 					queue.textChannel
 						.send(i18n.__mf('play.stopSong', { author: user }))
