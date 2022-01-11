@@ -38,12 +38,16 @@ module.exports = {
 		var outputQueue = '__**Up Next:**__\nSend a url or a song name to start the queue';
 		var songsQueue = '';
 		if (queue) {
-			const currentQueue = queue.slice(1, 22);
+			const currentQueue = queue.slice(1, 21);
 
 			let index = 0;
 			for (let i = 0; i < currentQueue.length; i++) {
 				index = i + 1;
 				songsQueue = `**${index}.** ${currentQueue[i].title}\n ${songsQueue}`;
+				if (i === (currentQueue.length - 1) && queue.length > currentQueue.length) {
+					const overflow = queue.length - currentQueue.length;
+					songsQueue = `**${overflow}** more songs in queue..\n${songsQueue}`;
+				}
 			}
 			outputQueue = `__**Up Next:**__\n ${songsQueue}`;
 		}
