@@ -54,13 +54,14 @@ i18n.configure({
 		disable: false,
 	},
 });
-async function messageStartup(musicGuilds) {
+async function messageStartup(musicGuilds, wok) {
 	for (let i = 0; i <= musicGuilds.length - 1; i++) {
 		const npMessageObj = [];
 		const collectors = [];
 		[npMessageObj[i], collectors[i]] = await npMessage({
 			client,
 			guildIdParam: musicGuilds[i],
+			prefix: wok._prefixes[musicGuilds[i]],
 		});
 		collectors[i].on('collect', (reaction, user) => {
 			const queue = reaction.message.client.queue.get(
@@ -79,7 +80,7 @@ async function messageStartup(musicGuilds) {
 	}
 }
 
-var wok = {};
+let wok = {};
 client.on('ready', async () => {
 	console.log(`Logged in as ${client.user.username} (${client.user.id})`);
 	client.user.setActivity('with your mum');
@@ -112,7 +113,7 @@ client.on('ready', async () => {
 				});
 			});
 		});
-		setTimeout(() => messageStartup(musicGuilds), 3_000);
+		setTimeout(() => messageStartup(musicGuilds, wok), 3_000);
 		// console.log(client.db);
 		// console.log(musicGuilds);
 	});

@@ -16,6 +16,12 @@ i18n.setLocale(LOCALE);
 const { npMessage } = require(`${__base}include/npmessage`);
 
 module.exports = {
+	/**
+	 * 
+	 * @param {discordMessage} message
+	 * @param {object} queue
+	 * @returns discordJsAudioResource
+	 */
 	async getResource(message, queue) {
 		const song = queue.songs[0];
 
@@ -65,14 +71,21 @@ module.exports = {
 		const resource = voice.createAudioResource(stream);
 		return resource;
 	},
+	/**
+	 * @name play
+	 * @param {} song
+	 * @param {object} message
+	 * @param {*} prefix
+	 * @returns nothing
+	 */
 	async play(song, message, prefix) {
 		const queue = message.client.queue.get(message.guildId);
 		const connection = voice.getVoiceConnection(message.guildId);
-
-		if (queue) {
-			const npSong = queue.songs[0];
-			npMessage({ message, npSong, prefix });
-		}
+		// TODO comented out this if and it doesnt seem to affect anything but must double check
+		// if (queue) {
+		// 	const npSong = queue.songs[0];
+		// 	npMessage({ message, npSong, prefix });
+		// }
 		// TODO this timeout part doesn't look like it works at all but haven't tested yet
 		if (!song) {
 			setTimeout(() => {
@@ -115,7 +128,7 @@ module.exports = {
 		// let collector = {};
 
 		// vvv Do not remove comma!! it is to skip the first item in the array
-		const [, collector] = await npMessage({ message, npSong: song });
+		const [, collector] = await npMessage({ message, npSong: song, prefix });
 
 		collector.on('collect', async (reaction, user) => {
 			if (!queue) return;
