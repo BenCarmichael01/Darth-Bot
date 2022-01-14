@@ -236,7 +236,7 @@ module.exports = {
 					}
 					queue.songs = songs;
 					message.client.queue.set(message.guild.id, queue);
-					npMessage({ message, npSong: song });
+					npMessage({ message, npSong: song, prefix });
 					queue.textChannel
 						.send(i18n.__mf('shuffle.result', { author: message.author.id }))
 						.then((msg) => {
