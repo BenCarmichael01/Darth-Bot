@@ -123,8 +123,8 @@
 		"resultEmbedDesc": "Results for: {search}"
 	},
 	"shuffle": {
-		"description": "Shuffle queue",
-		"errorNotQueue": "There is no queue.",
+		"description": "Shuffles the queue",
+		"errorNotQueue": "There is no queue to shuffle.",
 		"result": "<@{author}> has shuffled the queue"
 	},
 	"skip": {
