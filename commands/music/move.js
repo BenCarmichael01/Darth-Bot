@@ -2,7 +2,12 @@
 const move = require('array-move');
 const i18n = require('i18n');
 
-const { canModifyQueue, LOCALE, MSGTIMEOUT } = require(`${__base}/include/utils`);
+const {
+	canModifyQueue,
+	LOCALE,
+	MSGTIMEOUT,
+} = require(`${__base}/include/utils`);
+const { npMessage } = require(`${__base}include/npmessage`);
 
 i18n.setLocale(LOCALE);
 
@@ -12,38 +17,56 @@ module.exports = {
 	category: 'music',
 	description: i18n.__('move.description'),
 	guildOnly: 'true',
-	// argsType: 'multiple',
+	usage: i18n.__('move.usagesReply'),
 
-	callback({ message, args }) {
+	callback({ message, args, prefix }) {
 		const queue = message.client.queue.get(message.guild.id);
 		if (!queue) {
-			return message.channel.send(i18n.__('move.errorNotQueue')).then((msg) => {
-				setTimeout(() => msg.delete(), (MSGTIMEOUT));
-			}).catch(console.error);
+			return message
+				.reply(i18n.__('move.errorNotQueue'))
+				.then((msg) => {
+					setTimeout(() => msg.delete(), MSGTIMEOUT);
+				})
+				.catch(console.error);
 		}
 		if (!canModifyQueue(message.member)) return;
 
 		if (!args.length) {
-			return message.reply(i18n.__mf('move.usagesReply', { prefix: message.client.prefix })).then((msg) => {
-				setTimeout(() => msg.delete(), (MSGTIMEOUT));
-			}).catch(console.error);
+			return message
+				.reply(i18n.__mf('move.usagesReply', { prefix }))
+				.then((msg) => {
+					setTimeout(() => msg.delete(), MSGTIMEOUT);
+				})
+				.catch(console.error);
 		}
-		if (Number.isNaN(args[0]) || args[0] <= 1) {
-			return message.reply(i18n.__mf('move.usagesReply', { prefix: message.client.prefix })).then((msg) => {
-				setTimeout(() => msg.delete(), (MSGTIMEOUT));
-			}).catch(console.error);
+		if (Number.isNaN(args[0]) || args[0] < 1) {
+			return message
+				.reply(i18n.__mf('move.usagesReply', { prefix }))
+				.then((msg) => {
+					setTimeout(() => msg.delete(), MSGTIMEOUT);
+				})
+				.catch(console.error);
 		}
-		const song = queue.songs[args[0] - 1];
+		const song = queue.songs[args[0]];
+		const currentPos = args[0];
+		const newPos = args[1];
 
-		queue.songs = move(queue.songs, args[0] - 1, args[1] === 1 ? 1 : args[1] - 1);
-		queue.textChannel.send(
-			i18n.__mf('move.result', {
-				author: message.author,
-				title: song.title,
-				index: args[1] === 1 ? 1 : args[1],
-			}),
-		).then((msg) => {
-			setTimeout(() => msg.delete(), (MSGTIMEOUT));
-		}).catch(console.error);
+		queue.songs = move(queue.songs, currentPos, newPos);
+		npMessage({ message, npSong: queue.songs[0], prefix });
+		message.channel
+			.send(
+				i18n.__mf('move.result', {
+					author: message.author.id,
+					title: song.title,
+					index: newPos,
+				}),
+			)
+			.then((msg) => {
+				setTimeout(() => {
+					msg.delete();
+				}, MSGTIMEOUT);
+			})
+			.catch(console.error);
+		message.delete();
 	},
 };
