@@ -17,7 +17,7 @@ const { npMessage } = require(`${__base}include/npmessage`);
 
 module.exports = {
 	/**
-	 * 
+	 *
 	 * @param {discordMessage} message
 	 * @param {object} queue
 	 * @returns discordJsAudioResource
@@ -30,7 +30,7 @@ module.exports = {
 		let info = null;
 		// TODO streamline by adding streamType
 		// let streamType = song.url.includes('youtube.com') ? 'opus' : 'ogg/opus';
-		if (song.url.includes('youtube.com')) {
+		if (song?.url.includes('youtube.com')) {
 			try {
 				info = await ytdl.getInfo(song.url);
 			} catch (error) {
@@ -48,10 +48,14 @@ module.exports = {
 			}
 
 			try {
-				stream = await ytdl.downloadFromInfo(info, { filter: 'audioonly', quality: 'highestaudio', highWaterMark: 1 << 25 });
+				stream = await ytdl.downloadFromInfo(info, {
+					filter: 'audioonly',
+					quality: 'highestaudio',
+					highWaterMark: 1 << 25,
+				});
 				// stream = await ytdl.downloadFromInfo(info, { filter: 'audioonly' });
 			} catch (error) {
-				if (queue) {
+				if (queue.songs.length > 1) {
 					queue.songs.shift();
 					module.exports.getResource(message, queue);
 				}
@@ -81,33 +85,6 @@ module.exports = {
 	async play(song, message, prefix) {
 		const queue = message.client.queue.get(message.guildId);
 		const connection = voice.getVoiceConnection(message.guildId);
-		// TODO comented out this if and it doesnt seem to affect anything but must double check
-		// if (queue) {
-		// 	const npSong = queue.songs[0];
-		// 	npMessage({ message, npSong, prefix });
-		// }
-		// TODO this timeout part doesn't look like it works at all but haven't tested yet
-		if (!song) {
-			setTimeout(() => {
-				// if (connection && message.guild.me.voice.channel) return;
-				connection.destroy();
-				queue.textChannel
-					.send(i18n.__('play.queueEnded'))
-					.then((msg) => {
-						setTimeout(() => msg.delete(), MSGTIMEOUT);
-					})
-					.catch(console.error);
-				queue.textChannel
-					.send(i18n.__('play.leaveChannel'))
-					.then((msg) => {
-						setTimeout(() => msg.delete(), MSGTIMEOUT);
-					})
-					.catch(console.error);
-			}, STAY_TIME * 1_000);
-
-			return message.client.queue.delete(message.guildId);
-		}
-
 		const { VoiceConnectionStatus, AudioPlayerStatus } = voice;
 
 		const resource = await module.exports.getResource(message, queue);
@@ -247,16 +224,18 @@ module.exports = {
 				}
 				case '⏹': {
 					reaction.users.remove(user).catch(console.error);
-					if (!canModifyQueue(member)) {
-						return message.channel
-							.send(i18n.__('common.errorNotChannel'))
-							.then((msg) => {
-								setTimeout(() => msg.delete(), MSGTIMEOUT);
-							})
-							.catch(console.error);
+					if (!member.permissions.has('ADMINISTRATOR')) {
+						if (!canModifyQueue(member)) {
+							return reaction.message.channel
+								.send(i18n.__('common.errorNotChannel'))
+								.then((msg) => {
+									setTimeout(() => msg.delete(), MSGTIMEOUT);
+								})
+								.catch(console.error);
+						}
 					}
 					queue.songs = [];
-					queue.textChannel
+					reaction.message.channel
 						.send(i18n.__mf('play.stopSong', { author: user }))
 						.then((msg) => {
 							setTimeout(() => msg.delete(), MSGTIMEOUT);
@@ -265,7 +244,7 @@ module.exports = {
 					try {
 						player.stop();
 						// queue.connection.dispatcher.end();
-						npMessage({ message });
+						npMessage({ message, prefix });
 					} catch (error) {
 						console.error(error);
 						connection.destroy();
@@ -281,13 +260,6 @@ module.exports = {
 			}
 		});
 
-		collector.on('end', () => {
-			/* playingMessage.reactions.removeAll().catch(console.error);
-				if (PRUNING && playingMessage && !playingMessage.deleted) {
-					playingMessage.delete({ timeout: 3000 }).catch(console.error);
-				} */
-			//
-		});
 		// need to check if listeners already exist i.e. when playing through queue, to prevent exceeding max listeners
 		connection.once(VoiceConnectionStatus.Ready, () => {
 			console.log('connection ready');
@@ -320,25 +292,47 @@ module.exports = {
 			console.log('player status Idle');
 			try {
 				await Promise.race([
-					voice.entersState(player, AudioPlayerStatus.Playing, 2_000),
-					voice.entersState(player, AudioPlayerStatus.Buffering, 2_000),
-					voice.entersState(player, AudioPlayerStatus.AutoPaused, 2_000),
-					voice.entersState(player, AudioPlayerStatus.Paused, 2_000),
+					voice.entersState(player, AudioPlayerStatus.Playing, 1_000),
+					voice.entersState(player, AudioPlayerStatus.Buffering, 1_000),
+					voice.entersState(player, AudioPlayerStatus.Paused, 1_000),
 				]);
 				// Seems to be transitioning to another resource - ignore idle
 			} catch (error) {
-				// apears to be finished queue
+				// apears to be finished current song
 				connection.removeAllListeners();
 				if (collector && !collector.ended) collector.stop('idleQueue');
-				if (queue.loop) {
+
+				if (queue.songs.length <= 1) {
+					// If there are no more songs in the queue then wait 30s before leaving vc
+					// unless a song was added before 30s is up
+					npMessage({ message, prefix });
+					setTimeout(() => {
+						if (queue.songs.length > 1) return;
+						// if (connection && message.guild.me.voice.channel) return;
+						if (connection) {
+							connection.destroy();
+						}
+						queue.textChannel
+							.send(i18n.__('play.queueEnded'))
+							.then((msg) => {
+								setTimeout(() => msg.delete(), MSGTIMEOUT);
+							})
+							.catch(console.error);
+						queue.textChannel
+							.send(i18n.__('play.leaveChannel'))
+							.then((msg) => {
+								setTimeout(() => msg.delete(), MSGTIMEOUT);
+							})
+							.catch(console.error);
+						return message.client.queue.delete(message.guildId);
+					}, STAY_TIME * 1_000);
+				} else if (queue.loop) {
 					// if loop is on, push the song to the end of the queue
 					// so it can repeat endlessly
 					const lastSong = queue.songs.shift();
 					queue.songs.push(lastSong);
 					module.exports.play(queue.songs[0], message, prefix);
-					// const nextResource = module.exports.getNextResource(message, queue);
-					// player.play(nextResource);
-				} else {
+				} else if (!queue.loop) {
 					// Recursively play the next song
 					queue.songs.shift();
 					console.log('playing next song');
@@ -346,7 +340,36 @@ module.exports = {
 				}
 			}
 		});
-
+		player.on(AudioPlayerStatus.AutoPaused, async () => {
+			try {
+				await Promise.race([
+					voice.entersState(player, AudioPlayerStatus.Playing, 30_000),
+					voice.entersState(player, AudioPlayerStatus.Buffering, 30_000),
+					voice.entersState(player, AudioPlayerStatus.Paused, 30_000),
+				]);
+				// Seems to be transitioning to another resource - ignore idle
+			} catch (error) {
+				// if (queue.songs.length > 1) return;
+				// if (connection && message.guild.me.voice.channel) return;
+				if (connection) {
+					connection.destroy();
+				}
+				player.stop();
+				queue.textChannel
+					.send(i18n.__('play.queueEnded'))
+					.then((msg) => {
+						setTimeout(() => msg.delete(), MSGTIMEOUT);
+					})
+					.catch(console.error);
+				queue.textChannel
+					.send(i18n.__('play.leaveChannel'))
+					.then((msg) => {
+						setTimeout(() => msg.delete(), MSGTIMEOUT);
+					})
+					.catch(console.error);
+				return message.client.queue.delete(message.guildId);
+			}
+		});
 		/* const dispatcher = queue.connection
 			.play(stream, { type: streamType })
 			.on('finish', () => {
