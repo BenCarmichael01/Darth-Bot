@@ -8,17 +8,21 @@ const { findById } = require(`${__base}/include/findById`);
 i18n.setLocale(LOCALE);
 // TODO update npmessage when prefix is changed
 module.exports = {
+	/**
+	 * 
+	 * @param {object} args
+	 * @param {DiscordClient} args.client 
+	 * @param {DiscordMessage} args.message
+	 * @param {object} args.npSong
+	 * @param {String} args.guildIdParam
+	 * @param {String} args.prefix
+	 * @returns {[DiscordMessage, MessageReactionCollector]} An array where the first item is the sent message object and the second is the reaction collector
+	 */
 	async npMessage(args) {
-		const {
-			client,
-			message,
-			npSong,
-			guildIdParam,
-			prefix,
-		} = args;
+		const { client, message, npSong, guildIdParam, prefix } = args;
 		// TODO need to pass wok instance to this to retrieve prefix from _prefixes array.
-		const guildId = (guildIdParam ? guildIdParam : message.guild.id);
-		const settings = await findById((message ? message.guildId : guildIdParam));
+		const guildId = guildIdParam ? guildIdParam : message.guild.id;
+		const settings = await findById(message ? message.guildId : guildIdParam);
 		const MUSIC_CHANNEL_ID = settings.musicChannel;
 		// const MUSIC_CHANNEL_ID = (await message ? await message.guild : await client.guilds.cache.get(guildId)).settings.get('musicChannel');
 		const playingMessageId = settings.playingMessage;
@@ -26,7 +30,9 @@ module.exports = {
 
 		let musicChannel = '';
 		if (message === undefined) {
-			musicChannel = await client.guilds.cache.get(guildId).channels.cache.get(MUSIC_CHANNEL_ID);
+			musicChannel = await client.guilds.cache
+				.get(guildId)
+				.channels.cache.get(MUSIC_CHANNEL_ID);
 		} else {
 			musicChannel = await message.client.channels.cache.get(MUSIC_CHANNEL_ID);
 		}
@@ -35,7 +41,8 @@ module.exports = {
 			queue = message.client.queue.get(message.guild.id).songs;
 		}
 
-		var outputQueue = '__**Up Next:**__\nSend a url or a song name to start the queue';
+		var outputQueue =
+			'__**Up Next:**__\nSend a url or a song name to start the queue';
 		var songsQueue = '';
 		if (queue) {
 			const currentQueue = queue.slice(1, 21);
@@ -44,7 +51,10 @@ module.exports = {
 			for (let i = 0; i < currentQueue.length; i++) {
 				index = i + 1;
 				songsQueue = `**${index}.** ${currentQueue[i].title}\n ${songsQueue}`;
-				if (i === (currentQueue.length - 1) && queue.length > currentQueue.length) {
+				if (
+					i === currentQueue.length - 1 &&
+					queue.length > currentQueue.length
+				) {
 					const overflow = queue.length - currentQueue.length;
 					songsQueue = `**${overflow}** more songs in queue..\n${songsQueue}`;
 				}
@@ -68,7 +78,8 @@ module.exports = {
 				.setFooter(`The prefix for this server is ${prefix}`);
 		}
 
-		const output1 = await musicChannel.messages.fetch({ limit: 10 })
+		const output1 = await musicChannel.messages
+			.fetch({ limit: 10 })
 			.then(async (messages) => {
 				const outputArr = [];
 				outputArr[0] = await messages.get(playingMessageId);
@@ -78,16 +89,21 @@ module.exports = {
 				return outputArr;
 			})
 			.then(async (outputArr) => {
-				const filter = (reaction, user) => user.id !== (message ? message.client : client).user.id;
+				const filter = (reaction, user) =>
+					user.id !== (message ? message.client : client).user.id;
 
 				const outputVar = outputArr;
 				outputVar[1] = outputArr[0].createReactionCollector({
 					filter,
-					time: npSong === undefined || npSong.duration < 0 ? 600000 : npSong.duration * 1000,
+					time:
+						npSong === undefined || npSong.duration < 0
+							? 600000
+							: npSong.duration * 1000,
 				});
 
 				return outputVar;
-			}).catch(console.error);
+			})
+			.catch(console.error);
 
 		return output1;
 		// outputs an arrray with the first item being the playingMessage and the second being the reaction collector

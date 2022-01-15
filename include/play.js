@@ -18,9 +18,9 @@ const { npMessage } = require(`${__base}include/npmessage`);
 module.exports = {
 	/**
 	 *
-	 * @param {discordMessage} message
+	 * @param {DiscordMessage} message
 	 * @param {object} queue
-	 * @returns discordJsAudioResource
+	 * @returns {DiscordAudioResource} DiscordAudioResource of the first song in the queue
 	 */
 	async getResource(message, queue) {
 		const song = queue.songs[0];
@@ -77,9 +77,9 @@ module.exports = {
 	},
 	/**
 	 * @name play
-	 * @param {} song
-	 * @param {object} message
-	 * @param {*} prefix
+	 * @param {object} song
+	 * @param {DiscordMessage} message
+	 * @param {String} prefix
 	 * @returns nothing
 	 */
 	async play(song, message, prefix) {
