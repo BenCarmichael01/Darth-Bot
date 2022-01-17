@@ -15,7 +15,7 @@ const client = new Commando.Client({
 	owner: '337710838469230592',
 	commandPrefix: '!',
 });
-client.login();
+client.login(process.env.DISCORD_TOKEN_DEV);
 client.queue = new Map();
 // client.commands = new Discord.Collection();
 // client.on('debug', console.log);
