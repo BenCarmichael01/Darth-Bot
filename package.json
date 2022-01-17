@@ -9,7 +9,7 @@
     "exit": " process.kill(process.pid)"
   },
   "engines": {
-	"node": ">=16.6"
+    "node": ">=16.6"
   },
   "author": "",
   "license": "ISC",
