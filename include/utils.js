@@ -1,11 +1,16 @@
 /* global __base */
 require('dotenv').config();
+/**
+ * Determines if the member is in the same voice channel as the bot
+ * @param {discordMember} member
+ * @returns True or False
+ */
 exports.canModifyQueue = (member) => {
 	const { channelId } = member.voice;
 	const botChannel = member.guild.me.voice.channelId;
 
 	if (channelId !== botChannel) {
-		return;
+		return false;
 	}
 
 	return true;

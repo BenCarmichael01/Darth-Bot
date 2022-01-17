@@ -17,7 +17,7 @@ const { npMessage } = require(`${__base}include/npmessage`);
 
 module.exports = {
 	/**
-	 * 
+	 *
 	 * @param {discordMessage} message
 	 * @param {object} queue
 	 * @returns discordJsAudioResource
