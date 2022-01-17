@@ -53,7 +53,6 @@ module.exports = {
 					quality: 'highestaudio',
 					highWaterMark: 1 << 25,
 				});
-				// stream = await ytdl.downloadFromInfo(info, { filter: 'audioonly' });
 			} catch (error) {
 				if (queue.songs.length > 1) {
 					queue.songs.shift();
@@ -77,7 +76,7 @@ module.exports = {
 	},
 	/**
 	 * @name play
-	 * @param {object} song
+	 * @param {*} song
 	 * @param {DiscordMessage} message
 	 * @param {String} prefix
 	 * @returns nothing
@@ -109,7 +108,7 @@ module.exports = {
 
 		collector.on('collect', async (reaction, user) => {
 			if (!queue) return;
-			const member = message.guild.members.cache.get(user.id);
+			const member = reaction.message.guild.members.cache.get(user.id);
 
 			switch (reaction.emoji.name) {
 				case '⏯': {
@@ -117,13 +116,16 @@ module.exports = {
 					if (!canModifyQueue(member)) {
 						return reaction.message.channel.send(
 							i18n.__('common.errorNotChannel'),
-						);
+						).then((msg) => {
+							setTimeout(() => msg.delete(), MSGTIMEOUT);
+						})
+							.catch(console.error);
 					}
 					if (queue.playing) {
 						queue.playing = false;
 						player.pause();
 						// queue.connection.dispatcher.pause(true);
-						queue.textChannel
+						reaction.message.channel
 							.send(i18n.__mf('play.pauseSong', { author: user }))
 							.then((msg) => {
 								setTimeout(() => msg.delete(), MSGTIMEOUT);
@@ -133,7 +135,7 @@ module.exports = {
 						queue.playing = true;
 						player.unpause();
 						// queue.connection.dispatcher.resume();
-						queue.textChannel
+						reaction.message.channel
 							.send(i18n.__mf('play.resumeSong', { author: user }))
 							.then((msg) => {
 								setTimeout(() => msg.delete(), MSGTIMEOUT);
@@ -146,14 +148,14 @@ module.exports = {
 					// queue.playing = true;
 					reaction.users.remove(user).catch(console.error);
 					if (!canModifyQueue(member)) {
-						return queue.textChannel
+						return reaction.message.channel
 							.send(i18n.__('common.errorNotChannel'))
 							.then((msg) => {
 								setTimeout(() => msg.delete(), MSGTIMEOUT);
 							})
 							.catch(console.error);
 					}
-					queue.textChannel
+					reaction.message.channel
 						.send(i18n.__mf('play.skipSong', { author: user }))
 						.then((msg) => {
 							setTimeout(() => msg.delete(), MSGTIMEOUT);
@@ -172,7 +174,14 @@ module.exports = {
 				}
 				case '🔁': {
 					reaction.users.remove(user).catch(console.error);
-					if (!canModifyQueue(member)) return i18n.__('common.errorNotChannel');
+					if (!canModifyQueue(member)) {
+						return reaction.message.channel
+							.send(i18n.__('common.errorNotChannel'))
+							.then((msg) => {
+								setTimeout(() => msg.delete(), MSGTIMEOUT);
+							})
+							.catch(console.error);
+					}
 					queue.loop = !queue.loop;
 					queue.textChannel
 						.send(
@@ -190,7 +199,7 @@ module.exports = {
 				case '🔀': {
 					reaction.users.remove(user).catch(console.error);
 					if (!queue) {
-						return message.channel
+						return reaction.message.channel
 							.send(i18n.__('shuffle.errorNotQueue'))
 							.then((msg) => {
 								setTimeout(() => msg.delete(), MSGTIMEOUT);
@@ -198,7 +207,7 @@ module.exports = {
 							.catch(console.error);
 					}
 					if (!canModifyQueue(message.member)) {
-						return message.channel
+						return reaction.message.channel
 							.send(i18n.__('common.errorNotChannel'))
 							.then((msg) => {
 								setTimeout(() => msg.delete(), MSGTIMEOUT);
@@ -247,7 +256,9 @@ module.exports = {
 						npMessage({ message, prefix });
 					} catch (error) {
 						console.error(error);
-						connection.destroy();
+						if (connection?.state?.status !== VoiceConnectionStatus.Destroyed) {
+							connection.destroy();
+						}
 						// queue.connection.disconnect();
 					}
 					// collector.stop();
@@ -284,7 +295,9 @@ module.exports = {
 				// Seems to be reconnecting to a new channel - ignore disconnect
 			} catch (error) {
 				// Seems to be a real disconnect which SHOULDN'T be recovered from
-				connection.destroy();
+				if (connection?.state?.status !== VoiceConnectionStatus.Destroyed) {
+					connection.destroy();
+				}
 				message.client.queue.delete(message.guild.id);
 			}
 		});
@@ -299,8 +312,11 @@ module.exports = {
 				// Seems to be transitioning to another resource - ignore idle
 			} catch (error) {
 				// apears to be finished current song
+				// must remove these listeners before we call play function again to avoid memory leak and maxListeners exceeded error
 				connection.removeAllListeners();
-				if (collector && !collector.ended) collector.stop('idleQueue');
+
+				// stop for same reason as connection above
+				if (collector && !collector.ended) collector.stop(['idleQueue']);
 
 				if (queue.songs.length <= 1) {
 					// If there are no more songs in the queue then wait 30s before leaving vc
@@ -340,118 +356,45 @@ module.exports = {
 				}
 			}
 		});
+		// player only autopauses when not subscribed to a channel so this listener checks if the player is actually moving to another resource
+		// or if the voice connection has been destroyed.
+		// Cleans up after destroying connection and player
 		player.on(AudioPlayerStatus.AutoPaused, async () => {
 			try {
 				await Promise.race([
-					voice.entersState(player, AudioPlayerStatus.Playing, 30_000),
-					voice.entersState(player, AudioPlayerStatus.Buffering, 30_000),
-					voice.entersState(player, AudioPlayerStatus.Paused, 30_000),
+					voice.entersState(player, AudioPlayerStatus.Playing, 5_000),
+					voice.entersState(player, AudioPlayerStatus.Buffering, 5_000),
+					voice.entersState(player, AudioPlayerStatus.Paused, 5_000),
 				]);
 				// Seems to be transitioning to another resource - ignore idle
 			} catch (error) {
-				// if (queue.songs.length > 1) return;
-				// if (connection && message.guild.me.voice.channel) return;
-				if (connection) {
-					connection.destroy();
+				// 
+				try {
+					if (connection?.state?.status !== VoiceConnectionStatus.Destroyed) {
+						connection.destroy();
+						throw new Error('Test Error')
+					}
+					if (player) {
+						player.stop();
+					}
 				}
-				player.stop();
-				queue.textChannel
-					.send(i18n.__('play.queueEnded'))
-					.then((msg) => {
-						setTimeout(() => msg.delete(), MSGTIMEOUT);
-					})
-					.catch(console.error);
-				queue.textChannel
-					.send(i18n.__('play.leaveChannel'))
-					.then((msg) => {
-						setTimeout(() => msg.delete(), MSGTIMEOUT);
-					})
-					.catch(console.error);
-				return message.client.queue.delete(message.guildId);
+				finally {
+					message.channel
+						.send(i18n.__('play.queueEnded'))
+						.then((msg) => {
+							setTimeout(() => msg.delete(), MSGTIMEOUT);
+						})
+						.catch(console.error);
+					message.channel
+						.send(i18n.__('play.leaveChannel'))
+						.then((msg) => {
+							setTimeout(() => msg.delete(), MSGTIMEOUT);
+						})
+						.catch(console.error);
+					message.client.queue.delete(message.guildId);
+					npMessage({ message, prefix });
+				}
 			}
 		});
-		/* const dispatcher = queue.connection
-			.play(stream, { type: streamType })
-			.on('finish', () => {
-				if (collector && !collector.ended) collector.stop();
-
-				if (queue.loop) {
-					// if loop is on, push the song back at the end of the queue
-					// so it can repeat endlessly
-					const lastSong = queue.songs.shift();
-					queue.songs.push(lastSong);
-					module.exports.play(queue.songs[0], message);
-				} else {
-					// Recursively play the next song
-					queue.songs.shift();
-					module.exports.play(queue.songs[0], message);
-				}
-			})
-			.on('error', err => {
-				console.error(err);
-				queue.songs.shift();
-				module.exports.play(queue.songs[0], message);
-			});
-		dispatcher.setVolumeLogarithmic(queue.volume / 100);
-		 */
-	},
-};
-
-/* case '🔇':
-					reaction.users.remove(user).catch(console.error);
-					if (!canModifyQueue(member)) return i18n.__('common.errorNotChannel');
-					if (queue.volume <= 0) {
-						queue.volume = 100;
-						queue.connection.dispatcher.setVolumeLogarithmic(100 / 100);
-						queue.textChannel
-							.send(i18n.__mf('play.unmutedSong', { author: user }))
-							.then((msg) => {
-								setTimeout(() => msg.delete(), MSGTIMEOUT);
-							}).catch(console.error);
-					} else {
-						queue.volume = 0;
-						queue.connection.dispatcher.setVolumeLogarithmic(0);
-						queue.textChannel
-							.send(i18n.__mf('play.mutedSong', { author: user }))
-							.then((msg) => {
-								setTimeout(() => msg.delete(), MSGTIMEOUT);
-							}).catch(console.error);
-					}
-					break;
-
-				case '🔉':
-					reaction.users.remove(user).catch(console.error);
-					if (queue.volume == 0) return;
-					if (!canModifyQueue(member)) return i18n.__('common.errorNotChannel');
-					if (queue.volume - 10 <= 0) queue.volume = 0;
-					else queue.volume = queue.volume - 10;
-					queue.connection.dispatcher.setVolumeLogarithmic(queue.volume / 100);
-					queue.textChannel
-						.send(
-							i18n.__mf('play.decreasedVolume', {
-								author: user,
-								volume: queue.volume
-							})
-						).then((msg) => {
-							setTimeout(() => msg.delete(), MSGTIMEOUT);
-						}).catch(console.error);
-					break;
-
-				case '🔊':
-					reaction.users.remove(user).catch(console.error);
-					if (queue.volume == 100) return;
-					if (!canModifyQueue(member)) return i18n.__('common.errorNotChannel');
-					if (queue.volume + 10 >= 100) queue.volume = 100;
-					else queue.volume = queue.volume + 10;
-					queue.connection.dispatcher.setVolumeLogarithmic(queue.volume / 100);
-					queue.textChannel
-						.send(
-							i18n.__mf('play.increasedVolume', {
-								author: user,
-								volume: queue.volume
-							})
-						).then((msg) => {
-							setTimeout(() => msg.delete(), MSGTIMEOUT);
-						}).catch(console.error);
-					break;
-*/
+	}
+}
