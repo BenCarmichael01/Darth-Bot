@@ -30,8 +30,8 @@
 	"move": {
 		"description": "Move songs around in the queue",
 		"errorNotQueue": "There is no queue.",
-		"usagesReply": "Usage: {prefix}move <Queue Number>",
-		"result": "<@{author}> moved **{title}** to {index} in the queue."
+		"usagesReply": "Usage: {prefix}move <from queue number> <to queue number>",
+		"result": "<@{author}> moved **{title}** to position **{index}** in the queue."
 	},
 	"nowplaying": {
 		"description": "Show now playing song",
@@ -123,8 +123,8 @@
 		"resultEmbedDesc": "Results for: {search}"
 	},
 	"shuffle": {
-		"description": "Shuffle queue",
-		"errorNotQueue": "There is no queue.",
+		"description": "Shuffles the queue",
+		"errorNotQueue": "There is no queue to shuffle.",
 		"result": "<@{author}> has shuffled the queue"
 	},
 	"skip": {
