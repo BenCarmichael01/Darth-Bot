@@ -4,9 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node .",
+    "start": "node index.js",
     "dev": "nodemon index.js --trace-warnings",
     "exit": " process.kill(process.pid)"
+  },
+  "engines": {
+	"node": ">=16.6"
   },
   "author": "",
   "license": "ISC",
@@ -17,7 +20,6 @@
     "discord.js": "^13.1.0",
     "dotenv": "^8.6.0",
     "edit-json-file": "^1.6.0",
-    "eslint-plugin-node": "^11.1.0",
     "ffmpeg": "0.0.4",
     "ffmpeg-static": "^4.4.1",
     "fluent-ffmpeg": "^2.1.2",
@@ -55,6 +57,7 @@
     "eslint": "^7.32.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.24.0",
+    "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^5.1.0",
     "eslint-plugin-react": "^7.24.0",
     "nodemon": "^2.0.12",
