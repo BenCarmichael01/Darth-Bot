@@ -15,13 +15,6 @@ module.exports = {
 		instance,
 		client,
 	}) {
-		try {
-			const output = await ytdl('https://www.youtube.com/watch?v=yDpjI66ae6c');
-			console.log(output);
-		} catch (error) {
-			console.error(error);
-		}
-		message.delete();
+		throw console.error();
 	},
 };
-// https://www.youtube.com/watch?v=slZdwc4T89k
