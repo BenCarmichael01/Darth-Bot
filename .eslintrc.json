@@ -5,7 +5,9 @@
     "node": true
   },
   "extends": [
-    "airbnb-base"
+	"eslint:recommended",
+    "airbnb-base",
+	"plugin:node/recommended"
   ],
   "parserOptions": {
     "ecmaVersion": 12
