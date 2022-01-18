@@ -271,10 +271,7 @@ module.exports = {
 			}
 		});
 
-		// need to check if listeners already exist i.e. when playing through queue, to prevent exceeding max listeners
 		connection.once(VoiceConnectionStatus.Ready, () => {
-			console.log('connection ready');
-			// const subsciption = connection.subscribe(player);
 		});
 
 		// Check if disconnect is real or is moving to another channel
@@ -302,7 +299,6 @@ module.exports = {
 			}
 		});
 		player.on(AudioPlayerStatus.Idle, async () => {
-			console.log('player status Idle');
 			try {
 				await Promise.race([
 					voice.entersState(player, AudioPlayerStatus.Playing, 1_000),
@@ -312,6 +308,7 @@ module.exports = {
 				// Seems to be transitioning to another resource - ignore idle
 			} catch (error) {
 				// apears to be finished current song
+
 				// must remove these listeners before we call play function again to avoid memory leak and maxListeners exceeded error
 				connection.removeAllListeners();
 
@@ -320,11 +317,11 @@ module.exports = {
 
 				if (queue.songs.length <= 1) {
 					// If there are no more songs in the queue then wait 30s before leaving vc
-					// unless a song was added before 30s is up
+					// unless a song was added during the timeout
 					npMessage({ message, prefix });
 					setTimeout(() => {
 						if (queue.songs.length > 1) return;
-						// if (connection && message.guild.me.voice.channel) return;
+						
 						if (connection) {
 							connection.destroy();
 						}
@@ -351,7 +348,6 @@ module.exports = {
 				} else if (!queue.loop) {
 					// Recursively play the next song
 					queue.songs.shift();
-					console.log('playing next song');
 					module.exports.play(queue.songs[0], message, prefix);
 				}
 			}
