@@ -2,7 +2,6 @@
 const { canModifyQueue, LOCALE, MSGTIMEOUT } = require(`${__base}include/utils`);
 const { npMessage } = require(`${__base}include/npmessage`);
 const i18n = require('i18n');
-const { kindMismatchError } = require('soundcloud-downloader/src/util');
 
 i18n.setLocale(LOCALE);
 
@@ -50,7 +49,8 @@ module.exports = {
 				if (songs.find((songIndex) => songIndex === index)) {
 					removed.push(item);
 					return false;
-				} else return true;
+				}
+				return true;
 			});
 			npMessage({ message, prefix, npSong: queue.songs[0] });
 			message.channel
