@@ -285,7 +285,7 @@ module.exports = {
 			}
 		});
 
-		connection.once(VoiceConnectionStatus.Ready, () => {});
+		// connection.once(VoiceConnectionStatus.Ready, () => {});
 
 		// Check if disconnect is real or is moving to another channel
 		connection.on(VoiceConnectionStatus.Disconnected, async () => {
