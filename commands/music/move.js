@@ -21,6 +21,9 @@ module.exports = {
 
 	callback({ message, args, prefix }) {
 		const queue = message.client.queue.get(message.guild.id);
+		setTimeout(() => {
+			message.delete();
+		}, 3_000);
 		if (!queue) {
 			return message
 				.reply(i18n.__('move.errorNotQueue'))
@@ -47,10 +50,21 @@ module.exports = {
 				})
 				.catch(console.error);
 		}
-		const song = queue.songs[args[0]];
+
 		const currentPos = args[0];
 		const newPos = args[1];
-
+		const song = queue.songs[newPos];
+		if (
+			currentPos > queue.songs.length - 1 ||
+			newPos > queue.songs.length - 1
+		) {
+			return message
+				.reply(i18n.__('move.range'))
+				.then((msg) => {
+					setTimeout(() => msg.delete(), MSGTIMEOUT);
+				})
+				.catch(console.error);
+		}
 		queue.songs = move(queue.songs, currentPos, newPos);
 		npMessage({ message, npSong: queue.songs[0], prefix });
 		message.channel
