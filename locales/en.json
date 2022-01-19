@@ -31,7 +31,8 @@
 		"description": "Move songs around in the queue",
 		"errorNotQueue": "There is no queue.",
 		"usagesReply": "Usage: {prefix}move <from queue number> <to queue number>",
-		"result": "<@{author}> moved **{title}** to position **{index}** in the queue."
+		"result": "<@{author}> moved **{title}** to position **{index}** in the queue.",
+		"range": "Those values are larger than the size of the queue.\n Make sure you have entered the correct queue numbers"
 	},
 	"nowplaying": {
 		"description": "Show now playing song",
