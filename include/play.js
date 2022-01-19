@@ -24,7 +24,6 @@ module.exports = {
 	 */
 	async getResource(message, queue) {
 		const song = queue.songs[0];
-
 		// Get stream from song Url //
 		let stream = null;
 		let info = null;
@@ -35,7 +34,7 @@ module.exports = {
 				info = await ytdl.getInfo(song.url);
 			} catch (error) {
 				console.error(error);
-				return message.channel
+				message.channel
 					.send(
 						i18n.__mf('play.queueError', {
 							error: error.message ? error.message : error,
@@ -45,6 +44,7 @@ module.exports = {
 						setTimeout(() => msg.delete(), MSGTIMEOUT + 1_500);
 					})
 					.catch(console.error);
+				return false;
 			}
 
 			try {
@@ -54,12 +54,8 @@ module.exports = {
 					highWaterMark: 1 << 25,
 				});
 			} catch (error) {
-				if (queue.songs.length > 1) {
-					queue.songs.shift();
-					module.exports.getResource(message, queue);
-				}
 				console.error(error);
-				return message.channel
+				message.channel
 					.send(
 						i18n.__mf('play.queueError', {
 							error: error.message ? error.message : error,
@@ -69,6 +65,7 @@ module.exports = {
 						setTimeout(() => msg.delete(), MSGTIMEOUT + 1_500);
 					})
 					.catch(console.error);
+				return false;
 			}
 		}
 		const resource = voice.createAudioResource(stream);
@@ -86,7 +83,24 @@ module.exports = {
 		const connection = voice.getVoiceConnection(message.guildId);
 		const { VoiceConnectionStatus, AudioPlayerStatus } = voice;
 
-		const resource = await module.exports.getResource(message, queue);
+		var resource = {};
+		while (queue.songs.length >= 1) {
+			resource = await module.exports.getResource(message, queue);
+			if (resource) {
+				break;
+			} else {
+				queue.songs.shift();
+				message.channel
+					.send(
+						i18n.__mf('play.queueError'),
+					)
+					.then((msg) => {
+						setTimeout(() => msg.delete(), MSGTIMEOUT + 1_500);
+					})
+					.catch(console.error);
+			}
+		}
+		// const resource = await module.exports.getResource(message, queue);
 		const player = voice.createAudioPlayer({
 			behaviors: { noSubscriber: voice.NoSubscriberBehavior.Pause },
 		});
@@ -114,11 +128,11 @@ module.exports = {
 				case '⏯': {
 					reaction.users.remove(user).catch(console.error);
 					if (!canModifyQueue(member)) {
-						return reaction.message.channel.send(
-							i18n.__('common.errorNotChannel'),
-						).then((msg) => {
-							setTimeout(() => msg.delete(), MSGTIMEOUT);
-						})
+						return reaction.message.channel
+							.send(i18n.__('common.errorNotChannel'))
+							.then((msg) => {
+								setTimeout(() => msg.delete(), MSGTIMEOUT);
+							})
 							.catch(console.error);
 					}
 					if (queue.playing) {
@@ -271,8 +285,7 @@ module.exports = {
 			}
 		});
 
-		connection.once(VoiceConnectionStatus.Ready, () => {
-		});
+		connection.once(VoiceConnectionStatus.Ready, () => {});
 
 		// Check if disconnect is real or is moving to another channel
 		connection.on(VoiceConnectionStatus.Disconnected, async () => {
@@ -321,7 +334,7 @@ module.exports = {
 					npMessage({ message, prefix });
 					setTimeout(() => {
 						if (queue.songs.length > 1) return;
-						
+
 						if (connection) {
 							connection.destroy();
 						}
@@ -364,17 +377,16 @@ module.exports = {
 				]);
 				// Seems to be transitioning to another resource - ignore idle
 			} catch (error) {
-				// 
+				//
 				try {
 					if (connection?.state?.status !== VoiceConnectionStatus.Destroyed) {
 						connection.destroy();
-						throw new Error('Test Error')
+						throw new Error('Test Error');
 					}
 					if (player) {
 						player.stop();
 					}
-				}
-				finally {
+				} finally {
 					message.channel
 						.send(i18n.__('play.queueEnded'))
 						.then((msg) => {
@@ -392,5 +404,5 @@ module.exports = {
 				}
 			}
 		});
-	}
-}
+	},
+};
