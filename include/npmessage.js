@@ -45,7 +45,7 @@ module.exports = {
 			'__**Up Next:**__\nSend a url or a song name to start the queue';
 		var songsQueue = '';
 		if (queue) {
-			const currentQueue = queue.slice(1, 21);
+			const currentQueue = queue.slice(1, 10);
 
 			let index = 0;
 			for (let i = 0; i < currentQueue.length; i++) {
@@ -53,9 +53,9 @@ module.exports = {
 				songsQueue = `**${index}.** ${currentQueue[i].title}\n ${songsQueue}`;
 				if (
 					i === currentQueue.length - 1 &&
-					queue.length > currentQueue.length
+					(queue.length -1) > currentQueue.length
 				) {
-					const overflow = queue.length - currentQueue.length;
+					const overflow = queue.length - currentQueue.length - 1;
 					songsQueue = `**${overflow}** more songs in queue..\n${songsQueue}`;
 				}
 			}
