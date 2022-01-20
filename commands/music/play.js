@@ -2,6 +2,7 @@
 const { play } = require(`${__base}include/play`);
 const ytdl = require('ytdl-core-discord');
 const YouTubeAPI = require('simple-youtube-api');
+const playdl = require('play-dl');
 // const scdl = require('soundcloud-downloader').default;
 const i18n = require('i18n');
 const voice = require('@discordjs/voice');
@@ -23,12 +24,7 @@ module.exports = {
 	description: i18n.__('play.description'),
 	guildOnly: 'true',
 
-	async callback({
-		message,
-		args,
-		prefix,
-		instance,
-	}) {
+	async callback({ message, args, prefix, instance }) {
 		const { channel } = message.member.voice;
 		// message.delete();
 		const serverQueue = message.client.queue.get(message.guild.id);
@@ -95,15 +91,22 @@ module.exports = {
 				.catch(console.error);
 		}
 		const search = args.join(' ');
-		const videoPattern = /^(https?:\/\/)?(www\.)?(m\.)?(youtube\.com|youtu\.?be)\/.+$/gi;
-		const playlistPattern = /^.*(list=)([^#&?]*).*/gi;
+		const ytVideoPattern =
+			/^(https?:\/\/)?(www\.)?(m\.)?(youtube\.com|youtu\.?be)\/.+$/gi;
+		const ytPlaylistPattern = /^.*(list=)([^#&?]*).*/gi;
+		const spotVideoPattern =
+			/^https?:\/\/(?:open|play)\.spotify\.com\/track\/[\w\d]+$/i;
+		const spotPlaylistPattern =
+		/^https?:\/\/(?:open|play)\.spotify\.com\/playlist\/.+$/i
 		// const scRegex = /^https?:\/\/(soundcloud\.com)\/(.*)$/;
 		// const mobileScRegex = /^https?:\/\/(soundcloud\.app\.goo\.gl)\/(.*)$/;
 		const url = args[0];
-		const urlValid = videoPattern.test(args[0]);
+		const isYtUrl = ytVideoPattern.test(url);
+		const isSpotifyTrack = spotVideoPattern.test(url);
+		const isSpotifyPlaylist = spotPlaylistPattern.test(url);
 
 		//  Start the playlist if playlist url was provided
-		if (!videoPattern.test(args[0]) && playlistPattern.test(args[0])) {
+		if (!ytVideoPattern.test(url) && ytPlaylistPattern.test(url)) {
 			// args.playlist = args[0];
 			return instance.commandHandler
 				.getCommand('playlist')
@@ -111,6 +114,12 @@ module.exports = {
 			// TODO COMMAND CALL ABOVE DOESNT WORK
 			// return message.client.registry.resolveCommand('playlist').run(message, args);
 		}
+		if (!isSpotifyTrack && isSpotifyPlaylist) {
+			return instance.commandHandler
+				.getCommand('playlist')
+				.callback({ message, args, prefix });
+		}
+
 		message.delete();
 		const queueConstruct = {
 			textChannel: message.channel,
@@ -125,7 +134,7 @@ module.exports = {
 		let songInfo = null;
 		let song = null;
 
-		if (urlValid) {
+		if (isYtUrl) {
 			try {
 				songInfo = (await ytdl.getBasicInfo(url)).videoDetails;
 				const { thumbnails } = songInfo;
@@ -135,6 +144,36 @@ module.exports = {
 					thumbUrl: thumbnails[thumbnails.length - 1].url,
 					duration: songInfo.lengthSeconds,
 				};
+			} catch (error) {
+				console.error(error);
+				return message.channel
+					.send(
+						i18n.__mf('play.queueError', {
+							error: error.message ? error.message : error,
+						}),
+					)
+					.then((msg) => {
+						setTimeout(() => msg.delete(), MSGTIMEOUT + 1_500);
+					})
+					.catch(console.error);
+			}
+		} else if (isSpotifyTrack) {
+			try {
+				const spot = await playdl.spotify(url);
+
+				if (spot.type === 'track') {
+					const results = await youtube.searchVideos(spot.name, 1, {
+						part: 'snippet',
+					});
+					songInfo = (await ytdl.getBasicInfo(results[0].url)).videoDetails;
+					const { thumbnails } = songInfo;
+					song = {
+						title: spot.name,
+						url: songInfo.video_url,
+						thumbUrl: thumbnails[thumbnails.length - 1].url,
+						duration: songInfo.lengthSeconds,
+					};
+				}
 			} catch (error) {
 				console.error(error);
 				return message.channel
