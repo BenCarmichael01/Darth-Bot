@@ -4,42 +4,23 @@
 		"es2021": true,
 		"node": true
 	},
-	"extends": ["prettier"],
-	"plugins":["import"],
+	"extends": ["eslint:recommended", "plugin:prettier/recommended"],
+	"plugins":["import", "prettier"],
 	"parserOptions": {
 		"ecmaVersion": 12
 	},
 	"rules": {
-		"no-await-in-loop": 0,
-		"class-methods-use-this": "off",
-		"no-unneeded-ternary": "off",
-		"linebreak-style": ["error", "windows"],
-		"import/no-unresolved": [2, { "caseSensitive": false, "commonjs": true }],
-		"import/no-dynamic-require": 0,
-		"indent": ["error", "tab", { "SwitchCase": 1 }],
-		"no-tabs": 0,
-		"no-console": 0,
-		"no-plusplus": ["error", { "allowForLoopAfterthoughts": true }],
-		"import/extensions": [
-			0,
+		"prettier/prettier": [
+			"error",
 			{
-				"js": "ignorePackages",
-				"json": "ignorePackages"
+				"trailingComma": "all",
+				"tabWidth": 4,
+				"singleQuote": true,
+				"endOfLine": "crlf",
+				"useTabs": true
+
 			}
-		],
-		"no-underscore-dangle": 0,
-		"max-len": [
-			0,
-			{
-				"ignoreComments": true,
-				"code": 110
-			}
-		],
-		"consistent-return": "off",
-		"no-bitwise": "off",
-		"no-var": "off",
-		"vars-on-top": "off",
-		"implicit-arrow-linebreak": "off"
+		]
 	},
 	"settings": {
 		"import/resolver": {
