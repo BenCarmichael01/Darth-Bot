@@ -91,9 +91,7 @@ module.exports = {
 			} else {
 				queue.songs.shift();
 				message.channel
-					.send(
-						i18n.__mf('play.queueError'),
-					)
+					.send(i18n.__mf('play.queueError'))
 					.then((msg) => {
 						setTimeout(() => msg.delete(), MSGTIMEOUT + 1_500);
 					})
@@ -118,7 +116,11 @@ module.exports = {
 		// let collector = {};
 
 		// vvv Do not remove comma!! it is to skip the first item in the array
-		const [, collector] = await npMessage({ message, npSong: song, prefix });
+		const [, collector] = await npMessage({
+			message,
+			npSong: song,
+			prefix,
+		});
 
 		collector.on('collect', async (reaction, user) => {
 			if (!queue) return;
@@ -150,7 +152,9 @@ module.exports = {
 						player.unpause();
 						// queue.connection.dispatcher.resume();
 						reaction.message.channel
-							.send(i18n.__mf('play.resumeSong', { author: user }))
+							.send(
+								i18n.__mf('play.resumeSong', { author: user }),
+							)
 							.then((msg) => {
 								setTimeout(() => msg.delete(), MSGTIMEOUT);
 							})
@@ -181,7 +185,11 @@ module.exports = {
 					connection.removeAllListeners();
 					player.removeAllListeners();
 					player.stop();
-					module.exports.play(queue.songs[0], reaction.message, prefix);
+					module.exports.play(
+						queue.songs[0],
+						reaction.message,
+						prefix,
+					);
 					// player.play(nextResource);
 					// queue.connection.dispatcher.end();
 					break;
@@ -201,7 +209,9 @@ module.exports = {
 						.send(
 							i18n.__mf('play.loopSong', {
 								author: user,
-								loop: queue.loop ? i18n.__('common.on') : i18n.__('common.off'),
+								loop: queue.loop
+									? i18n.__('common.on')
+									: i18n.__('common.off'),
 							}),
 						)
 						.then((msg) => {
@@ -238,7 +248,11 @@ module.exports = {
 					message.client.queue.set(message.guild.id, queue);
 					npMessage({ message, npSong: song, prefix });
 					queue.textChannel
-						.send(i18n.__mf('shuffle.result', { author: message.author.id }))
+						.send(
+							i18n.__mf('shuffle.result', {
+								author: message.author.id,
+							}),
+						)
 						.then((msg) => {
 							setTimeout(() => msg.delete(), MSGTIMEOUT);
 						})
@@ -270,7 +284,10 @@ module.exports = {
 						npMessage({ message, prefix });
 					} catch (error) {
 						console.error(error);
-						if (connection?.state?.status !== VoiceConnectionStatus.Destroyed) {
+						if (
+							connection?.state?.status !==
+							VoiceConnectionStatus.Destroyed
+						) {
 							connection.destroy();
 						}
 						// queue.connection.disconnect();
@@ -305,7 +322,10 @@ module.exports = {
 				// Seems to be reconnecting to a new channel - ignore disconnect
 			} catch (error) {
 				// Seems to be a real disconnect which SHOULDN'T be recovered from
-				if (connection?.state?.status !== VoiceConnectionStatus.Destroyed) {
+				if (
+					connection?.state?.status !==
+					VoiceConnectionStatus.Destroyed
+				) {
 					connection.destroy();
 				}
 				message.client.queue.delete(message.guild.id);
@@ -315,7 +335,11 @@ module.exports = {
 			try {
 				await Promise.race([
 					voice.entersState(player, AudioPlayerStatus.Playing, 1_000),
-					voice.entersState(player, AudioPlayerStatus.Buffering, 1_000),
+					voice.entersState(
+						player,
+						AudioPlayerStatus.Buffering,
+						1_000,
+					),
 					voice.entersState(player, AudioPlayerStatus.Paused, 1_000),
 				]);
 				// Seems to be transitioning to another resource - ignore idle
@@ -326,7 +350,8 @@ module.exports = {
 				connection.removeAllListeners();
 
 				// stop for same reason as connection above
-				if (collector && !collector.ended) collector.stop(['idleQueue']);
+				if (collector && !collector.ended)
+					collector.stop(['idleQueue']);
 
 				if (queue.songs.length <= 1) {
 					// If there are no more songs in the queue then wait 30s before leaving vc
@@ -372,14 +397,21 @@ module.exports = {
 			try {
 				await Promise.race([
 					voice.entersState(player, AudioPlayerStatus.Playing, 5_000),
-					voice.entersState(player, AudioPlayerStatus.Buffering, 5_000),
+					voice.entersState(
+						player,
+						AudioPlayerStatus.Buffering,
+						5_000,
+					),
 					voice.entersState(player, AudioPlayerStatus.Paused, 5_000),
 				]);
 				// Seems to be transitioning to another resource - ignore idle
 			} catch (error) {
 				//
 				try {
-					if (connection?.state?.status !== VoiceConnectionStatus.Destroyed) {
+					if (
+						connection?.state?.status !==
+						VoiceConnectionStatus.Destroyed
+					) {
 						connection.destroy();
 						throw new Error('Test Error');
 					}
