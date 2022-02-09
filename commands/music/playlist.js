@@ -85,8 +85,7 @@ module.exports = {
 		message.delete();
 
 		const ytPlaylistPattern = /^.*(list=)([^#&?]*).*/gi;
-		const spotPlaylistPattern =
-			/^https?:\/\/(?:open|play)\.spotify\.com\/playlist\/.+$/i;
+		const spotPlaylistPattern = /^https?:\/\/(?:open|play)\.spotify\.com\/playlist\/.+$/i;
 
 		const search = args.join(' ');
 		const url = args[0];
@@ -115,25 +114,21 @@ module.exports = {
 
 				for (
 					let i = 0;
-					i <= (MAX_PLAYLIST_SIZE ? MAX_PLAYLIST_SIZE : 100) &&
-					i < playlist.videos.length;
+					i <= (MAX_PLAYLIST_SIZE ? MAX_PLAYLIST_SIZE : 100) && i < playlist.videos.length;
 					i++
 				) {
 					let video = playlist.videos[i];
 					let song = {
 						title: video.title,
 						url: video.url,
-						thumbUrl:
-							video.thumbnails[search.thumbnails.length - 1].url,
+						thumbUrl: video.thumbnails[search.thumbnails.length - 1].url,
 						duration: video.durationInSec,
 					};
 					videos.push(song);
 				}
 			} catch (error) {
 				console.error(error);
-				return message
-					.reply(i18n.__('playlist.errorNotFoundPlaylist'))
-					.catch(console.error);
+				return message.reply(i18n.__('playlist.errorNotFoundPlaylist')).catch(console.error);
 			}
 		} else if (isSpotifyPlaylist) {
 			try {
@@ -142,8 +137,7 @@ module.exports = {
 				// Need possible playlist.fetch() here
 				for (
 					let i = 0;
-					i <= (MAX_PLAYLIST_SIZE ? MAX_PLAYLIST_SIZE : 100) &&
-					i < tracks.length;
+					i <= (MAX_PLAYLIST_SIZE ? MAX_PLAYLIST_SIZE : 100) && i < tracks.length;
 					i++
 				) {
 					let [search] = await playdl.search(tracks[i].name, {
@@ -154,8 +148,7 @@ module.exports = {
 					let song = {
 						title: search.title,
 						url: search.url,
-						thumbUrl:
-							search.thumbnails[search.thumbnails.length - 1].url,
+						thumbUrl: search.thumbnails[search.thumbnails.length - 1].url,
 						duration: search.durationInSec,
 					};
 					videos.push(song);
@@ -178,16 +171,14 @@ module.exports = {
 				// [playlist] = results;
 				for (
 					let i = 0;
-					i <= (MAX_PLAYLIST_SIZE ? MAX_PLAYLIST_SIZE : 100) &&
-					i < playlist.videos.length;
+					i <= (MAX_PLAYLIST_SIZE ? MAX_PLAYLIST_SIZE : 100) && i < playlist.videos.length;
 					i++
 				) {
 					let video = playlist.videos[i];
 					let song = {
 						title: video.title,
 						url: video.url,
-						thumbUrl:
-							video.thumbnails[search.thumbnails.length - 1].url,
+						thumbUrl: video.thumbnails[search.thumbnails.length - 1].url,
 						duration: video.durationInSec,
 					};
 					videos.push(song);

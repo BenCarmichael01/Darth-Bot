@@ -15,19 +15,16 @@ module.exports = {
 	permissions: ['ADMINISTRATOR'],
 	// argsType: 'multiple',
 
-	async callback({
-		message,
-		args,
-		prefix,
-		guild,
-	}) {
+	async callback({ message, args, prefix, guild }) {
 		let channelTag = args[0];
 		channelTag = JSON.stringify(channelTag).replace(/[""#<>]/g, '');
 
-		message.channel.send(i18n.__mf('common.startSetup', { channel: channelTag }))
+		message.channel
+			.send(i18n.__mf('common.startSetup', { channel: channelTag }))
 			.then((msg) => {
-				setTimeout(() => msg.delete(), (MSGTIMEOUT + 2000));
-			}).catch(console.error);
+				setTimeout(() => msg.delete(), MSGTIMEOUT + 2000);
+			})
+			.catch(console.error);
 
 		if (message.guild.channels.cache.get(channelTag)) {
 			try {
@@ -54,13 +51,15 @@ module.exports = {
 				const filter = (reaction, user) => user.id !== message.client.user.id;
 				const collector = playingMessage.createReactionCollector({ filter });
 				collector.on('collect', (reaction, user) => {
-					const queue = reaction.message.client.queue.get(reaction.message.guild.id);// .songs
+					const queue = reaction.message.client.queue.get(reaction.message.guild.id); // .songs
 					if (!queue) {
 						reaction.users.remove(user).catch(console.error);
-						reaction.message.channel.send(i18n.__mf('nowplaying.errorNotQueue'))
+						reaction.message.channel
+							.send(i18n.__mf('nowplaying.errorNotQueue'))
 							.then((msg) => {
 								setTimeout(() => msg.delete(), MSGTIMEOUT);
-							}).catch(console.error);
+							})
+							.catch(console.error);
 					}
 				});
 
@@ -74,31 +73,39 @@ module.exports = {
 				// Check if db was updated correctly
 				const MUSIC_CHANNEL_ID = (await findById(guild.id)).musicChannel;
 				if (MUSIC_CHANNEL_ID === channelTag) {
-					message.channel.send(`The music channel has been set to <#${MUSIC_CHANNEL_ID}> \n Setup Complete!`)
+					message.channel
+						.send(`The music channel has been set to <#${MUSIC_CHANNEL_ID}> \n Setup Complete!`)
 						.then((msg) => {
 							setTimeout(() => msg.delete(), MSGTIMEOUT);
-						}).catch(console.error);
+						})
+						.catch(console.error);
 					message.delete();
 				} else {
-					message.channel.send('Sorry, it doesn\'t seem like that worked. Please try again')
+					message.channel
+						.send("Sorry, it doesn't seem like that worked. Please try again")
 						.then((msg) => {
 							setTimeout(() => msg.delete(), MSGTIMEOUT);
-						}).catch(console.error);
+						})
+						.catch(console.error);
 					message.delete();
 				}
 			} catch (error) {
 				console.error(error);
-				message.channel.send('Sorry there has been an error.')
+				message.channel
+					.send('Sorry there has been an error.')
 					.then((msg) => {
 						setTimeout(() => msg.delete(), MSGTIMEOUT);
-					}).catch(console.error);
+					})
+					.catch(console.error);
 				message.delete();
 			}
 		} else {
-			message.channel.send('Sorry, that is not a valid channel. Please tag the channel: #<music_channel>')
+			message.channel
+				.send('Sorry, that is not a valid channel. Please tag the channel: #<music_channel>')
 				.then((msg) => {
 					setTimeout(() => msg.delete(), MSGTIMEOUT);
-				}).catch(console.error);
+				})
+				.catch(console.error);
 			message.delete();
 		}
 	},

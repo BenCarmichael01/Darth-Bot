@@ -12,15 +12,19 @@ module.exports = {
 	 */
 	async upsert({ _id, musicChannel, playingMessage }) {
 		try {
-			await musicSchema.findOneAndUpdate({
-				_id,
-			}, {
-				_id,
-				musicChannel,
-				playingMessage,
-			}, {
-				upsert: true,
-			});
+			await musicSchema.findOneAndUpdate(
+				{
+					_id,
+				},
+				{
+					_id,
+					musicChannel,
+					playingMessage,
+				},
+				{
+					upsert: true,
+				},
+			);
 			return 1;
 			// .then(console.log('upsert completed'));
 		} catch (error) {

@@ -9,12 +9,7 @@ module.exports = {
 	category: 'testing',
 	testOnly: true,
 
-	async callback({
-		message,
-		guild,
-		instance,
-		client,
-	}) {
+	async callback({ message, guild, instance, client }) {
 		throw console.error();
 	},
 };

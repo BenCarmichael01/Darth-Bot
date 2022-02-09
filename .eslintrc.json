@@ -5,22 +5,12 @@
 		"node": true
 	},
 	"extends": ["eslint:recommended", "plugin:prettier/recommended"],
-	"plugins":["import", "prettier"],
+	"plugins": ["import", "prettier"],
 	"parserOptions": {
 		"ecmaVersion": 12
 	},
 	"rules": {
-		"prettier/prettier": [
-			"error",
-			{
-				"trailingComma": "all",
-				"tabWidth": 4,
-				"singleQuote": true,
-				"endOfLine": "crlf",
-				"useTabs": true
-
-			}
-		]
+		"prettier/prettier": "off"
 	},
 	"settings": {
 		"import/resolver": {

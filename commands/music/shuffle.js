@@ -1,9 +1,5 @@
 /* global __base */
-const {
-	canModifyQueue,
-	LOCALE,
-	MSGTIMEOUT,
-} = require(`${__base}include/utils`);
+const { canModifyQueue, LOCALE, MSGTIMEOUT } = require(`${__base}include/utils`);
 const { npMessage } = require(`${__base}include/npmessage`);
 const i18n = require('i18n');
 

@@ -1,13 +1,12 @@
 // const oneLine = require('common-tags').oneLine;
 module.exports = {
-			name: 'pingu',
-			category: 'fun',
-			description: 'Ping Pong',
+	name: 'pingu',
+	category: 'fun',
+	description: 'Ping Pong',
 
-
-	callback({message}) {
+	callback({ message }) {
 		message.channel.send('Pong');
-	}
+	},
 	/* {
 	name: 'ping',
 	description: 'Ping!',

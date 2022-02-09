@@ -64,9 +64,7 @@ async function messageStartup(musicGuilds, wok) {
 			prefix: wok._prefixes[musicGuilds[i]],
 		});
 		collectors[i].on('collect', (reaction, user) => {
-			const queue = reaction.message.client.queue.get(
-				reaction.message.guild.id,
-			);
+			const queue = reaction.message.client.queue.get(reaction.message.guild.id);
 			if (!queue) {
 				reaction.users.remove(user).catch(console.error);
 				reaction.message.channel
@@ -156,10 +154,7 @@ client.on('messageCreate', async (message) => {
 		MUSIC_CHANNEL_ID = '';
 	}
 	const prefix = wok._prefixes[guildId];
-	if (
-		!message.content.startsWith(prefix)
-		&& message.channelId === MUSIC_CHANNEL_ID
-	) {
+	if (!message.content.startsWith(prefix) && message.channelId === MUSIC_CHANNEL_ID) {
 		const args = message.content.trim().split(/ +/);
 		try {
 			wok.commandHandler._commands.get('play').callback({

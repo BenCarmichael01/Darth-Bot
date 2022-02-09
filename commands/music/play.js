@@ -8,12 +8,7 @@ const i18n = require('i18n');
 const voice = require('@discordjs/voice');
 
 const { npMessage } = require(`${__base}/include/npmessage`);
-const {
-	YOUTUBE_API_KEY,
-	LOCALE,
-	DEFAULT_VOLUME,
-	MSGTIMEOUT,
-} = require(`${__base}include/utils`);
+const { YOUTUBE_API_KEY, LOCALE, DEFAULT_VOLUME, MSGTIMEOUT } = require(`${__base}include/utils`);
 
 i18n.setLocale(LOCALE);
 const youtube = new YouTubeAPI(YOUTUBE_API_KEY);
@@ -26,9 +21,7 @@ module.exports = {
 
 	async callback({ message, args, prefix, instance }) {
 		// const { channel } = message.member.voice;
-		const channel = await message.guild.channels.fetch(
-			'856658520728141834',
-		);
+		const channel = await message.guild.channels.fetch('856658520728141834');
 		// message.delete();
 		const serverQueue = message.client.queue.get(message.guild.id);
 
@@ -94,13 +87,10 @@ module.exports = {
 				.catch(console.error);
 		}
 		const search = args.join(' ');
-		const ytVideoPattern =
-			/^(https?:\/\/)?(www\.)?(m\.)?(youtube\.com|youtu\.?be)\/.+$/gi;
+		const ytVideoPattern = /^(https?:\/\/)?(www\.)?(m\.)?(youtube\.com|youtu\.?be)\/.+$/gi;
 		const ytPlaylistPattern = /^.*(list=)([^#&?]*).*/gi;
-		const spotTrackPattern =
-			/^https?:\/\/(?:open|play)\.spotify\.com\/track\/[\w\d]+$/i;
-		const spotPlaylistPattern =
-			/^https?:\/\/(?:open|play)\.spotify\.com\/playlist\/.+$/i;
+		const spotTrackPattern = /^https?:\/\/(?:open|play)\.spotify\.com\/track\/[\w\d]+$/i;
+		const spotPlaylistPattern = /^https?:\/\/(?:open|play)\.spotify\.com\/playlist\/.+$/i;
 		// const scRegex = /^https?:\/\/(soundcloud\.com)\/(.*)$/;
 		// const mobileScRegex = /^https?:\/\/(soundcloud\.app\.goo\.gl)\/(.*)$/;
 		const url = args[0];
@@ -112,16 +102,12 @@ module.exports = {
 		//  Start the playlist if playlist url was provided
 		if (!isYtUrl && isYtPlaylist) {
 			// args.playlist = args[0];
-			return instance.commandHandler
-				.getCommand('playlist')
-				.callback({ message, args, prefix });
+			return instance.commandHandler.getCommand('playlist').callback({ message, args, prefix });
 			// TODO COMMAND CALL ABOVE DOESNT WORK
 			// return message.client.registry.resolveCommand('playlist').run(message, args);
 		}
 		if (!isSpotifyTrack && isSpotifyPlaylist) {
-			return instance.commandHandler
-				.getCommand('playlist')
-				.callback({ message, args, prefix });
+			return instance.commandHandler.getCommand('playlist').callback({ message, args, prefix });
 		}
 
 		if (playdl.is_expired()) {

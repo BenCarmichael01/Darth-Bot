@@ -15,21 +15,29 @@ module.exports = {
 		const statusType = args.shift().toUpperCase();
 		const statusText = args.join(' ');
 		if (!statusText) {
-			return message.reply(i18n.__('moderation.status.noText') + i18n.__('moderation.status.usage')).then((msg) => {
-				setTimeout(() => { msg.delete(); message.delete(); }, MSGTIMEOUT);
-			});
+			return message
+				.reply(i18n.__('moderation.status.noText') + i18n.__('moderation.status.usage'))
+				.then((msg) => {
+					setTimeout(() => {
+						msg.delete();
+						message.delete();
+					}, MSGTIMEOUT);
+				});
 		}
 		if (statusTypes.includes(statusType)) {
 			client.user.setActivity(statusText, { type: statusType });
-			message.channel.send(i18n.__('moderation.status.complete'))
-				.then((msg) => {
-					setTimeout(() => msg.delete(), MSGTIMEOUT);
-				});
+			message.channel.send(i18n.__('moderation.status.complete')).then((msg) => {
+				setTimeout(() => msg.delete(), MSGTIMEOUT);
+			});
 			message.delete();
 		} else {
-			message.reply(i18n.__('moderation.status.noType') + i18n.__('moderation.status.usage'))
+			message
+				.reply(i18n.__('moderation.status.noType') + i18n.__('moderation.status.usage'))
 				.then((msg) => {
-					setTimeout(() => { msg.delete(); message.delete(); }, 10000);
+					setTimeout(() => {
+						msg.delete();
+						message.delete();
+					}, 10000);
 				})
 				.catch(console.error);
 			// message.reply(i18n.__('moderation.status.usage')).then((msg) => {

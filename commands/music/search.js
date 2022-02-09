@@ -1,33 +1,43 @@
-const YouTubeAPI = require("simple-youtube-api");
+/* global __base */
+const YouTubeAPI = require('simple-youtube-api');
 const { YOUTUBE_API_KEY, LOCALE } = require(`${__base}include/utils`);
 const youtube = new YouTubeAPI(YOUTUBE_API_KEY);
-const i18n = require("i18n");
+const i18n = require('i18n');
 const { MessageEmbed } = require('discord.js');
-
 
 i18n.setLocale(LOCALE);
 
-module.exports = {
-			name: 'search',
-			category: 'music',
-			description: i18n.__("search.description"),
-			guildOnly: 'true',
+function filter(msg) {
+	const pattern = /^[0-9]{1,2}(\s*,\s*[0-9]{1,2})*$/;
+	return pattern.test(msg.content);
+}
 
-	async callback({message, args}) {
+module.exports = {
+	name: 'search',
+	category: 'music',
+	description: i18n.__('search.description'),
+	guildOnly: 'true',
+
+	async callback({ message, args }) {
 		if (!args.length)
 			return message
-				.reply(i18n.__mf("search.usageReply", { prefix: message.client.prefix, name: module.exports.name }))
+				.reply(
+					i18n.__mf('search.usageReply', {
+						prefix: message.client.prefix,
+						name: module.exports.name,
+					}),
+				)
 				.catch(console.error);
-		if (message.channel.activeCollector) return message.reply(i18n.__("search.errorAlreadyCollector"));
+		if (message.channel.activeCollector) return message.reply(i18n.__('search.errorAlreadyCollector'));
 		if (!message.member.voice.channel)
-			return message.reply(i18n.__("search.errorNotChannel")).catch(console.error);
+			return message.reply(i18n.__('search.errorNotChannel')).catch(console.error);
 
-		const search = args.join(" ");
+		const search = args.join(' ');
 
 		let resultsEmbed = new MessageEmbed()
-			.setTitle(i18n.__("search.resultEmbedTtile"))
-			.setDescription(i18n.__mf("search.resultEmbedDesc", { search: search }))
-			.setColor("#F8AA2A");
+			.setTitle(i18n.__('search.resultEmbedTtile'))
+			.setDescription(i18n.__mf('search.resultEmbedDesc', { search: search }))
+			.setColor('#F8AA2A');
 
 		try {
 			const results = await youtube.searchVideos(search, 10);
@@ -35,26 +45,25 @@ module.exports = {
 
 			let resultsMessage = await message.channel.send(resultsEmbed);
 
-			function filter(msg) {
-				const pattern = /^[0-9]{1,2}(\s*,\s*[0-9]{1,2})*$/;
-				return pattern.test(msg.content);
-			}
-
 			message.channel.activeCollector = true;
-			const response = await message.channel.awaitMessages(filter, { max: 1, time: 30000, errors: ["time"] });
+			const response = await message.channel.awaitMessages(filter, {
+				max: 1,
+				time: 30000,
+				errors: ['time'],
+			});
 			const reply = response.first().content;
 
-			if (reply.includes(",")) {
-				let songs = reply.split(",").map((str) => str.trim());
+			if (reply.includes(',')) {
+				let songs = reply.split(',').map((str) => str.trim());
 
 				for (let song of songs) {
 					await message.client.commands
-						.get("play")
+						.get('play')
 						.execute(message, [resultsEmbed.fields[parseInt(song) - 1].name]);
 				}
 			} else {
 				const choice = resultsEmbed.fields[parseInt(response.first()) - 1].name;
-				message.client.commands.get("play").execute(message, [choice]);
+				message.client.commands.get('play').execute(message, [choice]);
 			}
 
 			message.channel.activeCollector = false;
@@ -65,5 +74,5 @@ module.exports = {
 			message.channel.activeCollector = false;
 			message.reply(error.message).catch(console.error);
 		}
-	}
+	},
 };

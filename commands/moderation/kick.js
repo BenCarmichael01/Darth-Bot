@@ -4,15 +4,14 @@ const { LOCALE } = require(`${__base}/include/utils`);
 i18n.setLocale(LOCALE);
 
 module.exports = {
-		name: 'kick',
-		category: 'moderation',
-		description: i18n.__('moderation.kick.description'),
-		// clientPermissions: ['KICK_MEMBERS'],
-		permissions: ['KICK_MEMBERS'],
-		// args: [{ key: 'member', prompt: i18n.__('moderation.kick.prompt'), type: 'member' }],
+	name: 'kick',
+	category: 'moderation',
+	description: i18n.__('moderation.kick.description'),
+	// clientPermissions: ['KICK_MEMBERS'],
+	permissions: ['KICK_MEMBERS'],
+	// args: [{ key: 'member', prompt: i18n.__('moderation.kick.prompt'), type: 'member' }],
 
-	
-	callback({message, args}) {
+	callback({ message, args }) {
 		const { member } = args;
 		if (member.kickable) {
 			member.kick();
@@ -20,5 +19,5 @@ module.exports = {
 		} else {
 			message.reply(i18n.__mf('moderation.kick.fail', { member: member.user.username }));
 		}
-	}
+	},
 };

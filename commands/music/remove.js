@@ -63,11 +63,7 @@ module.exports = {
 					setTimeout(() => msg.delete(), MSGTIMEOUT);
 				})
 				.catch(console.error);
-		} else if (
-			!Number.isNaN(args[0]) &&
-			args[0] >= 1 &&
-			args[0] <= queue.songs.length
-		) {
+		} else if (!Number.isNaN(args[0]) && args[0] >= 1 && args[0] <= queue.songs.length) {
 			message.channel
 				.send(
 					`${message.author} ❌ removed **${

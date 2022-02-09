@@ -2,11 +2,7 @@
 const move = require('array-move');
 const i18n = require('i18n');
 
-const {
-	canModifyQueue,
-	LOCALE,
-	MSGTIMEOUT,
-} = require(`${__base}/include/utils`);
+const { canModifyQueue, LOCALE, MSGTIMEOUT } = require(`${__base}/include/utils`);
 const { npMessage } = require(`${__base}include/npmessage`);
 
 i18n.setLocale(LOCALE);
@@ -54,10 +50,7 @@ module.exports = {
 		const currentPos = args[0];
 		const newPos = args[1];
 		const song = queue.songs[newPos];
-		if (
-			currentPos > queue.songs.length - 1 ||
-			newPos > queue.songs.length - 1
-		) {
+		if (currentPos > queue.songs.length - 1 || newPos > queue.songs.length - 1) {
 			return message
 				.reply(i18n.__('move.range'))
 				.then((msg) => {

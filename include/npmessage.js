@@ -9,9 +9,9 @@ i18n.setLocale(LOCALE);
 // TODO update npmessage when prefix is changed
 module.exports = {
 	/**
-	 * 
+	 *
 	 * @param {object} args
-	 * @param {DiscordClient} args.client 
+	 * @param {DiscordClient} args.client
 	 * @param {DiscordMessage} args.message
 	 * @param {object} args.npSong
 	 * @param {String} args.guildIdParam
@@ -30,9 +30,7 @@ module.exports = {
 
 		let musicChannel = '';
 		if (message === undefined) {
-			musicChannel = await client.guilds.cache
-				.get(guildId)
-				.channels.cache.get(MUSIC_CHANNEL_ID);
+			musicChannel = await client.guilds.cache.get(guildId).channels.cache.get(MUSIC_CHANNEL_ID);
 		} else {
 			musicChannel = await message.client.channels.cache.get(MUSIC_CHANNEL_ID);
 		}
@@ -41,8 +39,7 @@ module.exports = {
 			queue = message.client.queue.get(message.guild.id).songs;
 		}
 
-		var outputQueue =
-			'__**Up Next:**__\nSend a url or a song name to start the queue';
+		var outputQueue = '__**Up Next:**__\nSend a url or a song name to start the queue';
 		var songsQueue = '';
 		if (queue) {
 			const currentQueue = queue.slice(1, 10);
@@ -51,10 +48,7 @@ module.exports = {
 			for (let i = 0; i < currentQueue.length; i++) {
 				index = i + 1;
 				songsQueue = `**${index}.** ${currentQueue[i].title}\n ${songsQueue}`;
-				if (
-					i === currentQueue.length - 1 &&
-					(queue.length -1) > currentQueue.length
-				) {
+				if (i === currentQueue.length - 1 && queue.length - 1 > currentQueue.length) {
 					const overflow = queue.length - currentQueue.length - 1;
 					songsQueue = `**${overflow}** more songs in queue..\n${songsQueue}`;
 				}
@@ -89,16 +83,12 @@ module.exports = {
 				return outputArr;
 			})
 			.then(async (outputArr) => {
-				const filter = (reaction, user) =>
-					user.id !== (message ? message.client : client).user.id;
+				const filter = (reaction, user) => user.id !== (message ? message.client : client).user.id;
 
 				const outputVar = outputArr;
 				outputVar[1] = outputArr[0].createReactionCollector({
 					filter,
-					time:
-						npSong === undefined || npSong.duration < 0
-							? 600000
-							: npSong.duration * 1000,
+					time: npSong === undefined || npSong.duration < 0 ? 600000 : npSong.duration * 1000,
 				});
 
 				return outputVar;

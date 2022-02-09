@@ -1,28 +1,37 @@
+/* global __base */
 const { canModifyQueue, LOCALE } = require(`${__base}include/utils`);
-const i18n = require("i18n");
+const i18n = require('i18n');
 
 i18n.setLocale(LOCALE);
 
 module.exports = {
-			name: 'skipto',
-			category: 'music',
-			description: i18n.__('skipto.description'),
-			guildOnly: 'true',
-			// argsType: 'multiple',
+	name: 'skipto',
+	category: 'music',
+	description: i18n.__('skipto.description'),
+	guildOnly: 'true',
+	// argsType: 'multiple',
 
-	callback({message, args}) {
-		
+	callback({ message, args }) {
 		if (!args.length || isNaN(args[0]))
 			return message
-				.reply(i18n.__mf("skipto.usageReply", { prefix: message.client.prefix, name: module.exports.name }))
+				.reply(
+					i18n.__mf('skipto.usageReply', {
+						prefix: message.client.prefix,
+						name: module.exports.name,
+					}),
+				)
 				.catch(console.error);
 
 		const queue = message.client.queue.get(message.guild.id);
-		if (!queue) return message.channel.send(i18n.__("skipto.errorNotQueue")).catch(console.error);
-		if (!canModifyQueue(message.member)) return i18n.__("common.errorNotChannel");
+		if (!queue) return message.channel.send(i18n.__('skipto.errorNotQueue')).catch(console.error);
+		if (!canModifyQueue(message.member)) return i18n.__('common.errorNotChannel');
 		if (args[0] > queue.songs.length)
 			return message
-				.reply(i18n.__mf("skipto.errorNotValid", { length: queue.songs.length }))
+				.reply(
+					i18n.__mf('skipto.errorNotValid', {
+						length: queue.songs.length,
+					}),
+				)
 				.catch(console.error);
 
 		queue.playing = true;
@@ -37,7 +46,12 @@ module.exports = {
 
 		queue.connection.dispatcher.end();
 		queue.textChannel
-			.send(i18n.__mf("skipto.result", { author: message.author, arg: args[0] - 1 }))
+			.send(
+				i18n.__mf('skipto.result', {
+					author: message.author,
+					arg: args[0] - 1,
+				}),
+			)
 			.catch(console.error);
-	}
+	},
 };
