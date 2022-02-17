@@ -20,7 +20,7 @@
     "discord.js": "12.5.3",
     "discord.js-commando": "^0.12.3",
     "dotenv": "^8.6.0",
-    "edit-json-file": "^1.6.2",
+    "edit-json-file": "^1.7.0",
     "eslint-plugin-node": "^11.1.0",
     "ffmpeg": "0.0.4",
     "fluent-ffmpeg": "^2.1.2",
