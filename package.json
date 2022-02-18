@@ -24,7 +24,7 @@
     "eslint-plugin-node": "^11.1.0",
     "ffmpeg": "0.0.4",
     "fluent-ffmpeg": "^2.1.2",
-    "i18n": "^0.13.4",
+    "i18n": "^0.14.0",
     "module-alias": "^2.2.2",
     "node-gyp": "^8.4.0",
     "opusscript": "^0.0.8",
