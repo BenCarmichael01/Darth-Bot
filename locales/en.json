@@ -88,7 +88,9 @@
 		"cantJoinChannel": "Could not join the channel: {error}",
 		"prompt": "Please send a YouTube playlist link",
 		"notPlaylist": "Hmm that doesn't seem like a playlist url",
-		"maxSize": "That playlist is very large so only the first {maxSize} songs have been added to the queue"
+		"maxSize": "That playlist is very large so only the first {maxSize} songs have been added to the queue",
+		"searching": "Searching for songs...",
+		"queueAdded": "✅ The playlist: {playlist} has been added to the queue by <@{author}>"
 	},
 	"pruning": {
 		"description": "Toggle pruning of bot messages",
@@ -178,7 +180,7 @@
 			"success": "{member} has been kicked",
 			"fail": "I cannot kick {member}, they are too powerful!"
 		},
-		"status":{
+		"status": {
 			"noType": "That activity type is not valid.\nPlease use one of the following: PLAYING, STREAMING, LISTENING, WATCHING, COMPETING\n",
 			"noText": "You need to provide a status message\n",
 			"usage": "Status command usage: <Activity Type> <Status Message>",
