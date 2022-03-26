@@ -86,32 +86,29 @@ module.exports = {
 				})
 				.catch(console.error);
 		}
+
+		if (playdl.is_expired()) {
+			await playdl.refreshToken(); // This will check if access token has expired or not. If yes, then refresh the token.
+		}
+
 		const search = args.join(' ');
-		const ytVideoPattern = /^(https?:\/\/)?(www\.)?(m\.)?(youtube\.com|youtu\.?be)\/.+$/gi;
-		const ytPlaylistPattern = /^.*(list=)([^#&?]*).*/gi;
-		const spotTrackPattern = /^https?:\/\/(?:open|play)\.spotify\.com\/track\/[\w\d]+$/i;
-		const spotPlaylistPattern = /^https?:\/\/(?:open|play)\.spotify\.com\/playlist\/.+$/i;
-		// const scRegex = /^https?:\/\/(soundcloud\.com)\/(.*)$/;
-		// const mobileScRegex = /^https?:\/\/(soundcloud\.app\.goo\.gl)\/(.*)$/;
 		const url = args[0];
-		const isYtUrl = ytVideoPattern.test(url);
-		const isYtPlaylist = ytPlaylistPattern.test(url);
-		const isSpotifyTrack = spotTrackPattern.test(url);
-		const isSpotifyPlaylist = spotPlaylistPattern.test(url);
+		const isSpotify = playdl.sp_validate(url);
+		const isYt = playdl.yt_validate(url);
+		// const ytVideoPattern = /^(https?:\/\/)?(www\.)?(m\.)?(youtube\.com|youtu\.?be)\/.+$/gi;
+		// const ytPlaylistPattern = /^.*(list=)([^#&?]*).*/gi;
+		// const spotTrackPattern = /^https?:\/\/(?:open|play)\.spotify\.com\/track\/[\w\d]+$/i;
+		// const spotPlaylistPattern = /^https?:\/\/(?:open|play)\.spotify\.com\/playlist\/.+$/i;
 
 		//  Start the playlist if playlist url was provided
-		if (!isYtUrl && isYtPlaylist) {
+		if (isYt === 'playlist') {
 			// args.playlist = args[0];
 			return instance.commandHandler.getCommand('playlist').callback({ message, args, prefix });
 			// TODO COMMAND CALL ABOVE DOESNT WORK
 			// return message.client.registry.resolveCommand('playlist').run(message, args);
 		}
-		if (!isSpotifyTrack && isSpotifyPlaylist) {
+		if (isSpotify === 'playlist') {
 			return instance.commandHandler.getCommand('playlist').callback({ message, args, prefix });
-		}
-
-		if (playdl.is_expired()) {
-			await playdl.refreshToken(); // This will check if access token has expired or not. If yes, then refresh the token.
 		}
 
 		message.delete();
@@ -128,7 +125,7 @@ module.exports = {
 		let songInfo = null;
 		let song = null;
 
-		if (isYtUrl) {
+		if (isYt === 'video' && url.startsWith('https')) {
 			try {
 				songInfo = (await ytdl.getBasicInfo(url)).videoDetails;
 				const { thumbnails } = songInfo;
@@ -151,7 +148,7 @@ module.exports = {
 					})
 					.catch(console.error);
 			}
-		} else if (isSpotifyTrack) {
+		} else if (isSpotify === 'track') {
 			try {
 				const spot = await playdl.spotify(url);
 				// TODO this part has not been tested due to yt api limit
