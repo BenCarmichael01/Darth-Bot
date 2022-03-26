@@ -33,8 +33,8 @@ module.exports = {
 				.catch(console.error);
 		}
 		if (!args.length) {
-			return message
-				.reply(i18n.__mf('remove.usageReply', { prefix }))
+			return message.channel
+				.send(i18n.__mf('remove.usageReply', { prefix }))
 				.then((msg) => {
 					setTimeout(() => msg.delete(), MSGTIMEOUT);
 				})
@@ -77,8 +77,8 @@ module.exports = {
 
 			return npMessage({ message, prefix, npSong: queue.songs[0] });
 		} else {
-			message
-				.reply(i18n.__mf('remove.usageReply', { prefix }))
+			message.channel
+				.send(i18n.__mf('remove.usageReply', { prefix }))
 				.then((msg) => {
 					setTimeout(() => msg.delete(), MSGTIMEOUT);
 				})
