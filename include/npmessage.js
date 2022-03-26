@@ -50,7 +50,7 @@ module.exports = {
 				songsQueue = `**${index}.** ${currentQueue[i].title}\n ${songsQueue}`;
 				if (i === currentQueue.length - 1 && queue.length - 1 > currentQueue.length) {
 					const overflow = queue.length - currentQueue.length - 1;
-					songsQueue = `**${overflow}** more songs in queue..\n${songsQueue}`;
+					songsQueue = `**${overflow}** more songs in queue..\n ${songsQueue}`;
 				}
 			}
 			outputQueue = `__**Up Next:**__\n ${songsQueue}`;
