@@ -78,12 +78,14 @@ module.exports = {
 		const connection = voice.getVoiceConnection(message.guildId);
 		const { VoiceConnectionStatus, AudioPlayerStatus } = voice;
 
+		let attempts = 0;
 		var resource = {};
-		while (queue.songs.length >= 1) {
+		while (!(queue.songs.length < 1 || attempts === 5)) {
 			resource = await module.exports.getResource(message, queue);
 			if (resource) {
 				break;
 			} else {
+				attempts++;
 				queue.songs.shift();
 				message.channel
 					.send(i18n.__mf('play.queueError'))
