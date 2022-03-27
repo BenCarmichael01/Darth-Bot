@@ -80,7 +80,7 @@ module.exports = {
 
 		let attempts = 0;
 		var resource = {};
-		while (!(queue.songs.length < 1 || attempts === 5)) {
+		while (!(queue.songs.length < 1 || attempts >= 5)) {
 			resource = await module.exports.getResource(message, queue);
 			if (resource) {
 				break;
