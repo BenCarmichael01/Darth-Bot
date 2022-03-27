@@ -88,6 +88,8 @@ client.on('ready', async () => {
 		testServers: ['756990417630789744', '856658520270307339'],
 		botOwners: '337710838469230592',
 		mongoUri: process.env.MONGO_URI,
+		delErrMsgCooldown: 5,
+		ephemeral: true,
 	});
 
 	wok.on('databaseConnected', async () => {
