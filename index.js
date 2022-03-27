@@ -114,38 +114,8 @@ client.on('ready', async () => {
 			});
 		});
 		setTimeout(() => messageStartup(musicGuilds, wok), 3_000);
-		// console.log(client.db);
-		// console.log(musicGuilds);
 	});
 	// TODO Set queue.playing false on statup to ensure queue works correctly
-
-	// // Creates inhibitor to restrict music commands to music channel
-	// client.dispatcher.addInhibitor((msg) => {
-	// 	const musicChannel = msg.guild.settings.get('musicChannel');
-	// 	const prefix = msg.guild.commandPrefix;
-	// 	// If no musicChannel, recommend run setup
-	// 	if (msg.command.groupID === 'music' && !musicChannel) {
-	// 		msg.delete({ timeout: MSGTIMEOUT });
-	// 		return {
-	// 			reason: 'nosetup',
-	// 			response: msg.reply(i18n.__mf('common.noSetup', { prefix }))
-	// 				.then((response) => {
-	// 					response.delete({ timeout: MSGTIMEOUT });
-	// 				}).catch(console.error),
-	// 		};
-	// 	}
-	// 	if (msg.command.groupID === 'music' && (musicChannel !== msg.channel.id)) {
-	// 		msg.delete({ timeout: MSGTIMEOUT });
-	// 		return {
-	// 			reason: 'wrongchannel',
-	// 			response: msg.reply(i18n.__mf('common.channelOnly', { channel: msg.guild.settings.get('musicChannel') }))
-	// 				.then((response) => {
-	// 					response.delete({ timeout: MSGTIMEOUT + 800 });
-	// 				})
-	// 				.catch(console.error),
-	// 		};
-	// 	}
-	// });
 });
 
 client.on('messageCreate', async (message) => {
@@ -175,5 +145,17 @@ client.on('messageCreate', async (message) => {
 				})
 				.catch(console.error);
 		}
+	}
+
+	const { commandHandler } = wok;
+	const command = message.content.substring(1);
+
+	if (!commandHandler._commands.has(command)) {
+		message.channel
+			.send(i18n.__mf('common.unknownCommand'))
+			.then((msg) => {
+				setTimeout(() => msg.delete(), MSGTIMEOUT);
+			})
+			.catch(console.error);
 	}
 });
