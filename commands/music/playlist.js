@@ -4,10 +4,12 @@ const { npMessage } = require(`${__base}include/npmessage`);
 const i18n = require('i18n');
 const voice = require('@discordjs/voice');
 const playdl = require('play-dl');
+const YouTubeAPI = require('simple-youtube-api');
 
 const { MAX_PLAYLIST_SIZE, DEFAULT_VOLUME, LOCALE, MSGTIMEOUT } = require(`${__base}/include/utils`);
 
 i18n.setLocale(LOCALE);
+const youtube = new YouTubeAPI(process.env.YOUTUBE_API_KEY);
 
 module.exports = {
 	name: 'playlist',
@@ -156,19 +158,23 @@ module.exports = {
 				// 	};
 				// 	videos.push(song);
 				// });
-				console.log('y');
 				for (let i = 0; i <= (MAX_PLAYLIST_SIZE ? MAX_PLAYLIST_SIZE : 20) && i < tracks.length; i++) {
-					console.time('ytSearch');
-					let [search] = await playdl.search(tracks[i].name, {
-						source: { youtube: 'video' },
-						limit: 1,
+					console.time('api');
+					const results = await youtube.searchVideos(tracks[i].name + tracks[i + 1].name, 1, {
+						part: 'snippet.title, snippet.maxRes, snippet.durationSeconds',
 					});
-					console.timeEnd('ytSearch');
+					console.timeEnd('api');
+					// let [search] = await playdl.search(tracks[i].name, {
+					// 	source: { youtube: 'video' },
+					// 	limit: 1,
+					// });
+					const searchResult = results[0];
 					let song = {
-						title: search.title,
-						url: search.url,
-						thumbUrl: search.thumbnails[search.thumbnails.length - 1].url,
-						duration: search.durationInSec,
+						title: searchResult.title,
+						url: searchResult.url,
+						thumbUrl: searchResult.maxRes.url,
+						// thumbUrl: search.thumbnails[search.thumbnails.length - 1].url,
+						duration: searchResult.durationInSec,
 					};
 					videos.push(song);
 				}
