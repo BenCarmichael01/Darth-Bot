@@ -171,7 +171,8 @@
 		"channelOnly": "This command can only be used in <#{channel}>",
 		"missingPerms": "You don't have permission to do that",
 		"noSetup": "You need to run {prefix}setup before you can use this command",
-		"startSetup": "Beginning setup in <#{channel}> ..."
+		"startSetup": "Beginning setup in <#{channel}> ...",
+		"unkownCommand": "That isn't a command. Try running {prefix}help to see a list of my commands"
 	},
 	"moderation": {
 		"kick": {

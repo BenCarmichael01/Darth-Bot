@@ -176,4 +176,16 @@ client.on('messageCreate', async (message) => {
 				.catch(console.error);
 		}
 	}
+
+	const { commandHandler } = wok;
+	const command = message.content.substring(1);
+
+	if (!commandHandler._commands.has(command)) {
+		message.channel
+			.send(i18n.__mf('common.unknownCommand', { prefix }))
+			.then((msg) => {
+				setTimeout(() => msg.delete(), MSGTIMEOUT);
+			})
+			.catch(console.error);
+	}
 });
