@@ -40,6 +40,7 @@ module.exports = {
 				.then((msg) => {
 					setTimeout(() => {
 						msg.delete();
+						message.delete();
 					}, MSGTIMEOUT);
 				})
 				.catch(console.error);
@@ -49,7 +50,10 @@ module.exports = {
 			return message.channel
 				.send(i18n.__('playlist.missingPermissionConnect'))
 				.then((msg) => {
-					setTimeout(() => msg.delete(), MSGTIMEOUT);
+					setTimeout(() => {
+						msg.delete();
+						message.delete();
+					}, MSGTIMEOUT);
 				})
 				.catch(console.error);
 		}
@@ -57,7 +61,10 @@ module.exports = {
 			return message.channel
 				.send(i18n.__('missingPermissionSpeak'))
 				.then((msg) => {
-					setTimeout(() => msg.delete(), MSGTIMEOUT);
+					setTimeout(() => {
+						msg.delete();
+						message.delete();
+					}, MSGTIMEOUT);
 				})
 				.catch(console.error);
 		}
@@ -69,7 +76,10 @@ module.exports = {
 					}),
 				)
 				.then((msg) => {
-					setTimeout(() => msg.delete(), MSGTIMEOUT);
+					setTimeout(() => {
+						msg.delete();
+						message.delete();
+					}, MSGTIMEOUT);
 				})
 				.catch(console.error);
 		}
@@ -142,8 +152,18 @@ module.exports = {
 		} else if (isSpotify === 'playlist') {
 			try {
 				let playlist = await playdl.spotify(url);
+				playlistTitle = playlist.name;
 				await playlist.fetch(MAX_PLAYLIST_SIZE);
 				const tracks = await playlist.fetched_tracks.get('1');
+
+				if (tracks.length > MAX_PLAYLIST_SIZE) {
+					message.channel
+						.send(i18n.__mf('playlist.maxSize', { maxSize: MAX_PLAYLIST_SIZE }))
+						.then((msg) => {
+							setTimeout(() => msg.delete(), MSGTIMEOUT);
+						})
+						.catch(console.error);
+				}
 				// await tracks.forEach(async (track) => {
 				// 	let term = track.name.concat(' ', track.artists[0].name);
 				// 	let [search] = await playdl.search(term, {
@@ -160,7 +180,9 @@ module.exports = {
 				// });
 				for (let i = 0; i <= (MAX_PLAYLIST_SIZE ? MAX_PLAYLIST_SIZE : 20) && i < tracks.length; i++) {
 					console.time('api');
-					const results = await youtube.searchVideos(tracks[i].name + tracks[i + 1].name, 1, {
+					let search = tracks[i].name + ' ' + tracks[i].artists[0].name;
+					console.log(search);
+					const results = await youtube.searchVideos(search, 1, {
 						part: 'snippet.title, snippet.maxRes, snippet.durationSeconds',
 					});
 					console.timeEnd('api');
@@ -169,12 +191,13 @@ module.exports = {
 					// 	limit: 1,
 					// });
 					const searchResult = results[0];
+					if (!searchResult) continue;
 					let song = {
-						title: searchResult.title,
-						url: searchResult.url,
-						thumbUrl: searchResult.maxRes.url,
+						title: searchResult?.title,
+						url: searchResult?.url,
+						thumbUrl: searchResult?.maxRes.url,
 						// thumbUrl: search.thumbnails[search.thumbnails.length - 1].url,
-						duration: searchResult.durationInSec,
+						duration: searchResult?.durationInSec,
 					};
 					videos.push(song);
 				}
@@ -227,23 +250,6 @@ module.exports = {
 					.catch(console.error);
 			}
 		}
-
-		// const newSongs = videos
-		// 	.filter(
-		// 		(video) =>
-		// 			video.title !== "Private video" && video.title !== "Deleted video"
-		// 	)
-		// 	.map((video) => {
-		// 		const { thumbnails } = video;
-		// 		const thumbIndex = Object.keys(thumbnails).length - 1;
-		// 		const song = {
-		// 			title: video.title,
-		// 			url: video.url,
-		// 			thumbUrl: thumbnails[Object.keys(thumbnails)[thumbIndex]].url,
-		// 			duration: video.durationSeconds
-		// 		};
-		// 		return song;
-		// 	});
 		if (serverQueue) {
 			serverQueue.songs.push(...videos);
 			npMessage({ message, npSong: serverQueue.songs[0], prefix });
