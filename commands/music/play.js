@@ -200,7 +200,7 @@ module.exports = {
 			}
 		}
 
-		if (serverQueue) {
+		if (serverQueue?.songs.length > 0) {
 			serverQueue.songs.push(song);
 			npMessage({ message, npSong: serverQueue.songs[0], prefix });
 			return serverQueue.textChannel

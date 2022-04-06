@@ -22,19 +22,9 @@ async function getResource(message, queue) {
 	let source = null;
 	if (song?.url.includes('youtube.com')) {
 		try {
-			source = await playdl.stream(song.url, { discordPlayerCompatibility: true });
+			source = await playdl.stream(song.url, { discordPlayerCompatibility: false });
 		} catch (error) {
 			console.error(error);
-			message.channel
-				.send(
-					i18n.__mf('play.queueError', {
-						error: error.message ? error.message : error,
-					}),
-				)
-				.then((msg) => {
-					setTimeout(() => msg.delete(), MSGTIMEOUT + 1_500);
-				})
-				.catch(console.error);
 			return false;
 		}
 	}
@@ -70,6 +60,14 @@ module.exports = {
 					})
 					.catch(console.error);
 			}
+		}
+		if (!resource) {
+			return message.channel
+				.send(i18n.__mf('play.queueFail'))
+				.then((msg) => {
+					setTimeout(() => msg.delete(), MSGTIMEOUT + 1_500);
+				})
+				.catch(console.error);
 		}
 		const player = voice.createAudioPlayer({
 			behaviors: { noSubscriber: voice.NoSubscriberBehavior.Pause },
@@ -228,6 +226,7 @@ module.exports = {
 						}
 					}
 					queue.songs = [];
+					message.client.queue.delete(message.guild.id);
 					reaction.message.channel
 						.send(i18n.__mf('play.stopSong', { author: user }))
 						.then((msg) => {
@@ -279,22 +278,30 @@ module.exports = {
 			} catch (error) {
 				// apears to be finished current song
 
-				// must remove these listeners before we call play function again to avoid memory leak and maxListeners exceeded error
-				connection.removeAllListeners();
-
-				// stop for same reason as connection above
-				if (collector && !collector.ended) collector.stop(['idleQueue']);
-
-				if (queue.songs.length <= 1) {
+				// decide what to do:
+				if (queue.songs.length > 1 && !queue.loop) {
+					// songs in queue and queue not looped so play next song
+					queue.songs.shift();
+					module.exports.play(queue.songs[0], message, prefix);
+				} else if (queue.songs.length >= 1 && queue.loop) {
+					// at least one song in queue and queue is looped so push finished
+					// song to back of queue then play next song
+					let lastSong = queue.songs.shift();
+					queue.songs.push(lastSong);
+					module.exports.play(queue.songs[0], message, prefix);
+				} else if (queue.songs.length === 1 && !queue.loop) {
 					// If there are no more songs in the queue then wait for STAY_TIME before leaving vc
 					// unless a song was added during the timeout
 					npMessage({ message, prefix });
+					queue.songs.shift();
 					setTimeout(() => {
-						if (queue.songs.length > 1) return;
-
-						if (connection) {
-							connection.destroy();
+						console.log('timeout');
+						if (queue.songs.length >= 1) {
+							module.exports.play(queue.songs[0], message, prefix);
+							return;
 						}
+						connection?.destroy();
+
 						queue.textChannel
 							.send(i18n.__('play.queueEnded'))
 							.then((msg) => {
@@ -309,16 +316,13 @@ module.exports = {
 							.catch(console.error);
 						return message.client.queue.delete(message.guildId);
 					}, STAY_TIME * 1_000);
-				} else if (queue.loop) {
-					// if loop is on, push the song to the end of the queue
-					// so it can repeat endlessly
-					const lastSong = queue.songs.shift();
-					queue.songs.push(lastSong);
-					module.exports.play(queue.songs[0], message, prefix);
-				} else if (!queue.loop) {
-					// Recursively play the next song
-					queue.songs.shift();
-					module.exports.play(queue.songs[0], message, prefix);
+				}
+				// must remove these listeners before we call play function again to avoid memory leak and maxListeners exceeded error
+				connection?.removeAllListeners();
+
+				// stop for same reason as connection above
+				if (collector && !collector.ended) {
+					collector.stop(['idleQueue']);
 				}
 			}
 		});
