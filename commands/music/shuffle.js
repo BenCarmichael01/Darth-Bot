@@ -45,7 +45,6 @@ module.exports = {
 				.catch(console.error);
 		}
 		const { songs } = queue;
-		// console.log(songs);
 		for (let i = songs.length - 1; i > 1; i--) {
 			const j = 1 + Math.floor(Math.random() * i);
 			[songs[i], songs[j]] = [songs[j], songs[i]];
@@ -67,9 +66,5 @@ module.exports = {
 				}, MSGTIMEOUT);
 			})
 			.catch(console.error);
-		// console.log(command.client.queue.get(command.guildId).songs);
-		// queue.textChannel
-		// 	.send(i18n.__mf('shuffle.result', { author: command.member.id }))
-		// 	.catch(console.error);
 	},
 };

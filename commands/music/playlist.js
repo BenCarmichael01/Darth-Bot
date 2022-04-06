@@ -109,11 +109,9 @@ module.exports = {
 		var playlistTitle = '';
 		if (isYt === 'playlist') {
 			try {
-				console.time('ytplay');
 				let playlist = await playdl.playlist_info(url);
 				playlistTitle = playlist.title;
 				await playlist.fetch(MAX_PLAYLIST_SIZE);
-				console.timeEnd('ytplay');
 				let vidInfo = playlist.videos;
 				vidInfo.forEach((video) => {
 					let song = {
@@ -179,13 +177,10 @@ module.exports = {
 				// 	videos.push(song);
 				// });
 				for (let i = 0; i <= (MAX_PLAYLIST_SIZE ? MAX_PLAYLIST_SIZE : 20) && i < tracks.length; i++) {
-					console.time('api');
 					let search = tracks[i].name + ' ' + tracks[i].artists[0].name;
-					console.log(search);
 					const results = await youtube.searchVideos(search, 1, {
 						part: 'snippet.title, snippet.maxRes, snippet.durationSeconds',
 					});
-					console.timeEnd('api');
 					// let [search] = await playdl.search(tracks[i].name, {
 					// 	source: { youtube: 'video' },
 					// 	limit: 1,
@@ -219,7 +214,6 @@ module.exports = {
 					limit: 1,
 				});
 				let vids = await playlist.all_videos();
-				console.log(vids);
 				// const results = await youtube.searchPlaylists(search, 1, {
 				// 	part: "snippet"
 				// });

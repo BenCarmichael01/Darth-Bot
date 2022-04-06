@@ -26,7 +26,6 @@ module.exports = {
 				},
 			);
 			return 1;
-			// .then(console.log('upsert completed'));
 		} catch (error) {
 			console.error(error);
 			return 0;

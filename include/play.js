@@ -295,7 +295,6 @@ module.exports = {
 					npMessage({ message, prefix });
 					queue.songs.shift();
 					setTimeout(() => {
-						console.log('timeout');
 						if (queue.songs.length >= 1) {
 							module.exports.play(queue.songs[0], message, prefix);
 							return;
