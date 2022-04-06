@@ -90,7 +90,7 @@
 		"prompt": "Please send a YouTube playlist link",
 		"notPlaylist": "Hmm that doesn't seem like a playlist url",
 		"maxSize": "That playlist is very large so only the first {maxSize} songs will be added to the queue",
-		"searching": "Searching for songs...",
+		"searching": ":mag: Searching for songs...\nThis may take a moment",
 		"queueAdded": "✅ The playlist: {playlist} has been added to the queue by <@{author}>"
 	},
 	"pruning": {
@@ -190,3 +190,4 @@
 		}
 	}
 }
+
