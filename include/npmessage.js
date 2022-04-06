@@ -42,7 +42,7 @@ module.exports = {
 		var outputQueue = '__**Up Next:**__\nSend a url or a song name to start the queue';
 		var songsQueue = '';
 		if (queue) {
-			const currentQueue = queue.slice(1, 10);
+			const currentQueue = queue.slice(1, 11);
 
 			let index = 0;
 			for (let i = 0; i < currentQueue.length; i++) {
