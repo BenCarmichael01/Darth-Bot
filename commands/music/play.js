@@ -107,7 +107,7 @@ module.exports = {
 			// TODO COMMAND CALL ABOVE DOESNT WORK
 			// return message.client.registry.resolveCommand('playlist').run(message, args);
 		}
-		if (isSpotify === 'playlist') {
+		if (isSpotify === 'playlist' || isSpotify === 'album') {
 			return instance.commandHandler.getCommand('playlist').callback({ message, args, prefix });
 		}
 

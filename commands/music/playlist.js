@@ -149,11 +149,11 @@ module.exports = {
 					})
 					.catch(console.error);
 			}
-		} else if (isSpotify === 'playlist') {
+		} else if (isSpotify === 'playlist' || isSpotify === 'album') {
 			try {
 				let playlist = await playdl.spotify(url);
-				playlistTitle = playlist.name;
 				await playlist.fetch(MAX_PLAYLIST_SIZE);
+				playlistTitle = playlist.name;
 				const tracks = await playlist.fetched_tracks.get('1');
 
 				if (tracks.length > MAX_PLAYLIST_SIZE) {
