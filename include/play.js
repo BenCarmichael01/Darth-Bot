@@ -225,7 +225,6 @@ module.exports = {
 								.catch(console.error);
 						}
 					}
-					queue.songs = [];
 					message.client.queue.delete(message.guild.id);
 					reaction.message.channel
 						.send(i18n.__mf('play.stopSong', { author: user }))
@@ -250,7 +249,15 @@ module.exports = {
 				}
 			}
 		});
-
+		connection.on('setup', () => {
+			try {
+				player.stop();
+			} catch (error) {
+				console.error(error);
+			}
+			connection.destroy();
+			message.client.queue.delete(message.guild.id);
+		});
 		// Check if disconnect is real or is moving to another channel
 		connection.on(VoiceConnectionStatus.Disconnected, async () => {
 			try {

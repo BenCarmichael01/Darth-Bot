@@ -5,6 +5,7 @@ const { MessageEmbed } = require('discord.js');
 const { MSGTIMEOUT, LOCALE } = require(`${__base}include/utils`);
 const { findById } = require(`${__base}include/findById`);
 const { upsert } = require(`${__base}include/upsert`);
+const voice = require('@discordjs/voice');
 
 i18n.setLocale(LOCALE);
 module.exports = {
@@ -25,6 +26,11 @@ module.exports = {
 				setTimeout(() => msg.delete(), MSGTIMEOUT + 2000);
 			})
 			.catch(console.error);
+
+		const connections = await voice.getVoiceConnections();
+		connections.forEach((connection) => {
+			connection.emit('setup');
+		});
 
 		if (message.guild.channels.cache.get(channelTag)) {
 			try {
