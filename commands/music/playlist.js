@@ -113,7 +113,7 @@ module.exports = {
 				playlistTitle = playlist.title;
 				await playlist.fetch(MAX_PLAYLIST_SIZE);
 				let vidInfo = playlist.videos;
-				vidInfo.forEach((video) => {
+				vidInfo.slice(0, MAX_PLAYLIST_SIZE + 1).forEach((video) => {
 					let song = {
 						title: video.title,
 						url: video.url,
@@ -213,7 +213,7 @@ module.exports = {
 					source: { youtube: 'playlist' },
 					limit: 1,
 				});
-				let vids = await playlist.all_videos();
+				await playlist.all_videos();
 				// const results = await youtube.searchPlaylists(search, 1, {
 				// 	part: "snippet"
 				// });
