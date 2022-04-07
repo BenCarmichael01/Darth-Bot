@@ -39,10 +39,10 @@ module.exports = {
 			queue = message.client.queue.get(message.guild.id).songs;
 		}
 
-		var outputQueue = '__**Up Next:**__\nSend a url or a song name to start the queue';
+		var outputQueue = i18n.__('npmessage.emptyQueue');
 		var songsQueue = '';
 		if (queue) {
-			const currentQueue = queue.slice(1, 11);
+			const currentQueue = queue.slice(1, 10);
 
 			let index = 0;
 			for (let i = 0; i < currentQueue.length; i++) {
@@ -50,26 +50,32 @@ module.exports = {
 				songsQueue = `**${index}.** ${currentQueue[i].title}\n ${songsQueue}`;
 				if (i === currentQueue.length - 1 && queue.length - 1 > currentQueue.length) {
 					const overflow = queue.length - currentQueue.length - 1;
-					songsQueue = `**${overflow}** more songs in queue..\n ${songsQueue}`;
+					if (overflow === 1) {
+						continue;
+					} else if (overflow > 1) {
+						// songsQueue = `There are **${overflow}** more songs in the queue..\n ${songsQueue}`;
+						songsQueue = i18n.__mf('npmessage.overflow', { overflow, songsQueue });
+					}
 				}
 			}
-			outputQueue = `__**Up Next:**__\n ${songsQueue}`;
+			// outputQueue = `__**Up Next:**__\n ${songsQueue}`;
+			outputQueue = i18n.__mf('npmessage.outputQueue', { songsQueue });
 		}
 		let newEmbed = {};
 		if (npSong === undefined) {
 			newEmbed = new MessageEmbed()
 				.setColor('#5865F2')
-				.setTitle('🎶 Nothing is playing right now')
+				.setTitle(i18n.__('npmessage.title'))
 				.setURL('')
 				.setImage('https://i.imgur.com/TObp4E6.jpg')
-				.setFooter(`The prefix for this server is ${prefix}`);
+				.setFooter(i18n.__mf('npmessage.prefix', { prefix }));
 		} else {
 			newEmbed = new MessageEmbed()
 				.setColor('#5865F2')
-				.setTitle(`🎶 Now playing: ${npSong.title}`)
+				.setTitle(i18n.__mf('npmessage.titleSong', { title: npSong.title }))
 				.setURL(npSong.url)
 				.setImage(npSong.thumbUrl)
-				.setFooter(`The prefix for this server is ${prefix}`);
+				.setFooter(i18n.__mf('npmessage.prefix', { prefix }));
 		}
 
 		const output1 = await musicChannel.messages

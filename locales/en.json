@@ -41,6 +41,14 @@
 		"live": "LIVE",
 		"timeRemaining": "Time Remaining: {time}"
 	},
+	"npmessage": {
+		"emptyQueue": "__**Up Next:**__\nSend a url or a song name to start the queue",
+		"overflow": "There are **{overflow}** more songs in the queue..\n {songsQueue}",
+		"outputQueue": "__**Up Next:**__\n {songsQueue}",
+		"title": "🎶 Nothing is playing right now",
+		"titleSong": "🎶 Now playing: {title}",
+		"prefix": "The prefix for this server is {prefix}"
+	},
 	"pause": {
 		"description": "Pause the currently playing music",
 		"errorNotQueue": "There is nothing playing.",
