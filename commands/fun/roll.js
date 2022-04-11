@@ -1,3 +1,12 @@
+const { MessageActionRow, MessageButton } = require('discord.js');
+const i18n = require('i18n');
+
+function roll(args) {
+	var min = Math.ceil(args[0]) ? Math.ceil(args[0]) : 1;
+	var max = Math.floor(args[1]) ? Math.floor(args[1]) : 10;
+	const output = Math.floor(Math.random() * (max - min + 1) + min); // returns a random integer from lowerLimit to upperLimit
+	return output;
+}
 module.exports = {
 	name: 'roll',
 	category: 'fun',
@@ -6,11 +15,29 @@ module.exports = {
 	expectedArgs: '<lowest value> <highest value>',
 	minArgs: 2,
 	maxArgs: 2,
+	slash: true,
 
-	callback({ message, args }) {
-		var min = Math.ceil(args[0]) ? Math.ceil(args[0]) : 1;
-		var max = Math.floor(args[1]) ? Math.floor(args[1]) : 10;
-		const output = Math.floor(Math.random() * (max - min + 1) + min); // returns a random integer from lowerLimit to upperLimit
-		message.channel.send(output.toString());
+	callback({ client, interaction, args }) {
+		const output = roll(args);
+		const row = new MessageActionRow().addComponents(
+			new MessageButton().setCustomId('reRoll').setLabel('Re-Roll').setStyle('PRIMARY'),
+		);
+		interaction.reply({
+			content: i18n.__mf('roll.reply', { roll: output.toString() }),
+			// content: `${output.toString()}\nPress the button bellow to re-roll with the same range`,
+			components: [row],
+		});
+
+		client.on('interactionCreate', (i) => {
+			if (!i.isButton()) return;
+			if (i.customId === 'reRoll') {
+				let reRoll = roll(args);
+				i.update({
+					content: i18n.__mf('roll.reply', { roll: reRoll.toString() }),
+					// content: `${reRoll.toString()}\nPress the button bellow to re-roll with the same range`,
+					components: [row],
+				});
+			}
+		});
 	},
 };

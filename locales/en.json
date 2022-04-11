@@ -58,6 +58,9 @@
 		"description": "Show the bot's average ping",
 		"result": "Average ping to API: {ping} ms"
 	},
+	"roll": {
+		"reply": "{roll}\nPress the button bellow to re-roll with the same range"
+	},
 	"play": {
 		"description": "Plays audio from YouTube or Soundcloud",
 		"errorNotChannel": "You need to join a voice channel first!",
