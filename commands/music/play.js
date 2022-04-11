@@ -10,7 +10,7 @@ const { npMessage } = require(`${__base}/include/npmessage`);
 const { YOUTUBE_API_KEY, LOCALE, DEFAULT_VOLUME, MSGTIMEOUT } = require(`${__base}include/utils`);
 
 i18n.setLocale(LOCALE);
-const youtube = new YouTubeAPI(process.env.DEV_YOUTUBE_API_KEY);
+const youtube = new YouTubeAPI(YOUTUBE_API_KEY);
 
 module.exports = {
 	name: 'play',
