@@ -12,10 +12,21 @@ module.exports = {
 	category: 'fun',
 	// argsType: 'multiple',
 	description: 'Gives a random number between the specified values',
-	expectedArgs: '<lowest value> <highest value>',
-	minArgs: 2,
-	maxArgs: 2,
 	slash: true,
+	options: [
+		{
+			name: 'lowest-value',
+			description: 'The lower bound of the roll',
+			required: true,
+			type: 'INTEGER',
+		},
+		{
+			name: 'highest-value',
+			description: 'The upper bound of the roll',
+			required: true,
+			type: 'INTEGER',
+		},
+	],
 
 	callback({ client, interaction, args }) {
 		const output = roll(args);
