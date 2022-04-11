@@ -117,6 +117,13 @@ client.on('ready', async () => {
 		// console.log(client.db);
 		// console.log(musicGuilds);
 	});
+
+	wok.setCategorySettings([
+		{ name: 'fun', emoji: ':video_game:' },
+		{ name: 'moderation', emoji: ':cop:' },
+		{ name: 'music', emoji: ':musical_note:' },
+		{ name: 'testing', emoji: ':construction:' },
+	]);
 	// TODO Set queue.playing false on statup to ensure queue works correctly
 
 	// // Creates inhibitor to restrict music commands to music channel

@@ -109,13 +109,11 @@ module.exports = {
 		var playlistTitle = '';
 		if (isYt === 'playlist') {
 			try {
-				console.time('ytplay');
 				let playlist = await playdl.playlist_info(url);
 				playlistTitle = playlist.title;
 				await playlist.fetch(MAX_PLAYLIST_SIZE);
-				console.timeEnd('ytplay');
 				let vidInfo = playlist.videos;
-				vidInfo.forEach((video) => {
+				vidInfo.slice(0, MAX_PLAYLIST_SIZE + 1).forEach((video) => {
 					let song = {
 						title: video.title,
 						url: video.url,
@@ -149,11 +147,11 @@ module.exports = {
 					})
 					.catch(console.error);
 			}
-		} else if (isSpotify === 'playlist') {
+		} else if (isSpotify === 'playlist' || isSpotify === 'album') {
 			try {
 				let playlist = await playdl.spotify(url);
-				playlistTitle = playlist.name;
 				await playlist.fetch(MAX_PLAYLIST_SIZE);
+				playlistTitle = playlist.name;
 				const tracks = await playlist.fetched_tracks.get('1');
 
 				if (tracks.length > MAX_PLAYLIST_SIZE) {
@@ -179,13 +177,10 @@ module.exports = {
 				// 	videos.push(song);
 				// });
 				for (let i = 0; i <= (MAX_PLAYLIST_SIZE ? MAX_PLAYLIST_SIZE : 20) && i < tracks.length; i++) {
-					console.time('api');
 					let search = tracks[i].name + ' ' + tracks[i].artists[0].name;
-					console.log(search);
 					const results = await youtube.searchVideos(search, 1, {
 						part: 'snippet.title, snippet.maxRes, snippet.durationSeconds',
 					});
-					console.timeEnd('api');
 					// let [search] = await playdl.search(tracks[i].name, {
 					// 	source: { youtube: 'video' },
 					// 	limit: 1,
@@ -218,8 +213,7 @@ module.exports = {
 					source: { youtube: 'playlist' },
 					limit: 1,
 				});
-				let vids = await playlist.all_videos();
-				console.log(vids);
+				await playlist.all_videos();
 				// const results = await youtube.searchPlaylists(search, 1, {
 				// 	part: "snippet"
 				// });

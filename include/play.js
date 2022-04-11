@@ -1,5 +1,5 @@
 /* global __base */
-const ytdl = require('ytdl-core-discord');
+const playdl = require('play-dl');
 
 const { canModifyQueue, STAY_TIME, LOCALE, MSGTIMEOUT } = require(`${__base}include/utils`);
 const i18n = require('i18n');
@@ -10,68 +10,34 @@ i18n.setLocale(LOCALE);
 // const np = require('../commands/music/nowplaying');
 const { npMessage } = require(`${__base}include/npmessage`);
 
-module.exports = {
-	/**
-	 *
-	 * @param {DiscordMessage} message
-	 * @param {object} queue
-	 * @returns {DiscordAudioResource} DiscordAudioResource of the first song in the queue
-	 */
-	async getResource(message, queue) {
-		const song = queue.songs[0];
-		// Get stream from song Url //
-		let stream = null;
-		let info = null;
-		// TODO streamline by adding streamType
-		// let streamType = song.url.includes('youtube.com') ? 'opus' : 'ogg/opus';
-		if (song?.url.includes('youtube.com')) {
-			try {
-				info = await ytdl.getInfo(song.url);
-			} catch (error) {
-				console.error(error);
-				message.channel
-					.send(
-						i18n.__mf('play.queueError', {
-							error: error.message ? error.message : error,
-						}),
-					)
-					.then((msg) => {
-						setTimeout(() => msg.delete(), MSGTIMEOUT + 1_500);
-					})
-					.catch(console.error);
-				return false;
-			}
-
-			try {
-				stream = await ytdl.downloadFromInfo(info, {
-					filter: 'audioonly',
-					quality: 'highestaudio',
-					highWaterMark: 1 << 25,
-				});
-			} catch (error) {
-				console.error(error);
-				message.channel
-					.send(
-						i18n.__mf('play.queueError', {
-							error: error.message ? error.message : error,
-						}),
-					)
-					.then((msg) => {
-						setTimeout(() => msg.delete(), MSGTIMEOUT + 1_500);
-					})
-					.catch(console.error);
-				return false;
-			}
+/**
+ *
+ * @param {DiscordMessage} message
+ * @param {object} queue
+ * @returns {DiscordAudioResource} DiscordAudioResource of the first song in the queue
+ */
+async function getResource(message, queue) {
+	const song = queue.songs[0];
+	// Get stream from song Url //
+	let source = null;
+	if (song?.url.includes('youtube.com')) {
+		try {
+			source = await playdl.stream(song.url, { discordPlayerCompatibility: false });
+		} catch (error) {
+			console.error(error);
+			return false;
 		}
-		const resource = voice.createAudioResource(stream);
-		return resource;
-	},
+	}
+	const resource = voice.createAudioResource(source.stream, { inputType: source.type });
+	return resource;
+}
+module.exports = {
 	/**
 	 * @name play
 	 * @param {*} song
 	 * @param {DiscordMessage} message
 	 * @param {String} prefix
-	 * @returns nothing
+	 * @returns undefined
 	 */
 	async play(song, message, prefix) {
 		const queue = message.client.queue.get(message.guildId);
@@ -81,7 +47,7 @@ module.exports = {
 		let attempts = 0;
 		var resource = {};
 		while (!(queue.songs.length < 1 || attempts >= 5)) {
-			resource = await module.exports.getResource(message, queue);
+			resource = await getResource(message, queue);
 			if (resource) {
 				break;
 			} else {
@@ -95,7 +61,14 @@ module.exports = {
 					.catch(console.error);
 			}
 		}
-		// const resource = await module.exports.getResource(message, queue);
+		if (!resource) {
+			return message.channel
+				.send(i18n.__mf('play.queueFail'))
+				.then((msg) => {
+					setTimeout(() => msg.delete(), MSGTIMEOUT + 1_500);
+				})
+				.catch(console.error);
+		}
 		const player = voice.createAudioPlayer({
 			behaviors: { noSubscriber: voice.NoSubscriberBehavior.Pause },
 		});
@@ -110,7 +83,6 @@ module.exports = {
 			console.error(error);
 		}
 		connection.subscribe(player);
-		// let collector = {};
 
 		// vvv Do not remove comma!! it is to skip the first item in the array
 		const [, collector] = await npMessage({
@@ -137,7 +109,6 @@ module.exports = {
 					if (queue.playing) {
 						queue.playing = false;
 						player.pause();
-						// queue.connection.dispatcher.pause(true);
 						reaction.message.channel
 							.send(i18n.__mf('play.pauseSong', { author: user }))
 							.then((msg) => {
@@ -147,7 +118,6 @@ module.exports = {
 					} else {
 						queue.playing = true;
 						player.unpause();
-						// queue.connection.dispatcher.resume();
 						reaction.message.channel
 							.send(i18n.__mf('play.resumeSong', { author: user }))
 							.then((msg) => {
@@ -158,7 +128,6 @@ module.exports = {
 					break;
 				}
 				case '⏭': {
-					// queue.playing = true;
 					reaction.users.remove(user).catch(console.error);
 					if (!canModifyQueue(member)) {
 						return reaction.message.channel
@@ -175,14 +144,11 @@ module.exports = {
 						})
 						.catch(console.error);
 					queue.songs.shift();
-					// const nextResource = await module.exports.getResource(message, queue);
 					collector.stop('skipSong');
 					connection.removeAllListeners();
 					player.removeAllListeners();
 					player.stop();
 					module.exports.play(queue.songs[0], reaction.message, prefix);
-					// player.play(nextResource);
-					// queue.connection.dispatcher.end();
 					break;
 				}
 				case '🔁': {
@@ -229,7 +195,6 @@ module.exports = {
 					}
 					const { songs } = queue;
 					for (let i = songs.length - 1; i > 1; i--) {
-						// eslint-disable-next-line prefer-const
 						let j = 1 + Math.floor(Math.random() * i);
 						[songs[i], songs[j]] = [songs[j], songs[i]];
 					}
@@ -260,7 +225,7 @@ module.exports = {
 								.catch(console.error);
 						}
 					}
-					queue.songs = [];
+					message.client.queue.delete(message.guild.id);
 					reaction.message.channel
 						.send(i18n.__mf('play.stopSong', { author: user }))
 						.then((msg) => {
@@ -269,16 +234,13 @@ module.exports = {
 						.catch(console.error);
 					try {
 						player.stop();
-						// queue.connection.dispatcher.end();
 						npMessage({ message, prefix });
 					} catch (error) {
 						console.error(error);
 						if (connection?.state?.status !== VoiceConnectionStatus.Destroyed) {
 							connection.destroy();
 						}
-						// queue.connection.disconnect();
 					}
-					// collector.stop();
 					break;
 				}
 				default: {
@@ -287,9 +249,15 @@ module.exports = {
 				}
 			}
 		});
-
-		// connection.once(VoiceConnectionStatus.Ready, () => {});
-
+		connection.on('setup', () => {
+			try {
+				player.stop();
+			} catch (error) {
+				console.error(error);
+			}
+			connection.destroy();
+			message.client.queue.delete(message.guild.id);
+		});
 		// Check if disconnect is real or is moving to another channel
 		connection.on(VoiceConnectionStatus.Disconnected, async () => {
 			try {
@@ -317,22 +285,29 @@ module.exports = {
 			} catch (error) {
 				// apears to be finished current song
 
-				// must remove these listeners before we call play function again to avoid memory leak and maxListeners exceeded error
-				connection.removeAllListeners();
-
-				// stop for same reason as connection above
-				if (collector && !collector.ended) collector.stop(['idleQueue']);
-
-				if (queue.songs.length <= 1) {
-					// If there are no more songs in the queue then wait 30s before leaving vc
+				// decide what to do:
+				if (queue.songs.length > 1 && !queue.loop) {
+					// songs in queue and queue not looped so play next song
+					queue.songs.shift();
+					module.exports.play(queue.songs[0], message, prefix);
+				} else if (queue.songs.length >= 1 && queue.loop) {
+					// at least one song in queue and queue is looped so push finished
+					// song to back of queue then play next song
+					let lastSong = queue.songs.shift();
+					queue.songs.push(lastSong);
+					module.exports.play(queue.songs[0], message, prefix);
+				} else if (queue.songs.length === 1 && !queue.loop) {
+					// If there are no more songs in the queue then wait for STAY_TIME before leaving vc
 					// unless a song was added during the timeout
 					npMessage({ message, prefix });
+					queue.songs.shift();
 					setTimeout(() => {
-						if (queue.songs.length > 1) return;
-
-						if (connection) {
-							connection.destroy();
+						if (queue.songs.length >= 1) {
+							module.exports.play(queue.songs[0], message, prefix);
+							return;
 						}
+						connection?.destroy();
+
 						queue.textChannel
 							.send(i18n.__('play.queueEnded'))
 							.then((msg) => {
@@ -347,16 +322,13 @@ module.exports = {
 							.catch(console.error);
 						return message.client.queue.delete(message.guildId);
 					}, STAY_TIME * 1_000);
-				} else if (queue.loop) {
-					// if loop is on, push the song to the end of the queue
-					// so it can repeat endlessly
-					const lastSong = queue.songs.shift();
-					queue.songs.push(lastSong);
-					module.exports.play(queue.songs[0], message, prefix);
-				} else if (!queue.loop) {
-					// Recursively play the next song
-					queue.songs.shift();
-					module.exports.play(queue.songs[0], message, prefix);
+				}
+				// must remove these listeners before we call play function again to avoid memory leak and maxListeners exceeded error
+				connection?.removeAllListeners();
+
+				// stop for same reason as connection above
+				if (collector && !collector.ended) {
+					collector.stop(['idleQueue']);
 				}
 			}
 		});

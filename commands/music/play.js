@@ -1,6 +1,5 @@
 /* global __base */
 const { play } = require(`${__base}include/play`);
-const ytdl = require('ytdl-core-discord');
 const YouTubeAPI = require('simple-youtube-api');
 const playdl = require('play-dl');
 // const scdl = require('soundcloud-downloader').default;
@@ -11,7 +10,7 @@ const { npMessage } = require(`${__base}/include/npmessage`);
 const { YOUTUBE_API_KEY, LOCALE, DEFAULT_VOLUME, MSGTIMEOUT } = require(`${__base}include/utils`);
 
 i18n.setLocale(LOCALE);
-const youtube = new YouTubeAPI(YOUTUBE_API_KEY);
+const youtube = new YouTubeAPI(process.env.DEV_YOUTUBE_API_KEY);
 
 module.exports = {
 	name: 'play',
@@ -20,9 +19,7 @@ module.exports = {
 	guildOnly: 'true',
 
 	async callback({ message, args, prefix, instance }) {
-		// const { channel } = message.member.voice;
 		const channel = await message.guild.channels.fetch('856658520728141834');
-		// message.delete();
 		const serverQueue = message.client.queue.get(message.guild.id);
 
 		// Try switch case? to remove repetition of message.delete();
@@ -87,27 +84,28 @@ module.exports = {
 				.catch(console.error);
 		}
 
+		await playdl.setToken({
+			spotify: {
+				client_id: process.env.SPOTIFY_CLIENT,
+				client_secret: process.env.SPOTIFY_SECRET,
+				refresh_token: process.env.SPOTIFY_REFRESH,
+				market: process.env.SPOTIFY_MARKET,
+			},
+		});
 		if (playdl.is_expired()) {
-			await playdl.refreshToken(); // This will check if access token has expired or not. If yes, then refresh the token.
+			await playdl.refreshToken(); // This will check if access token has expired. If yes, then refresh the token.
 		}
 
 		const search = args.join(' ');
 		const url = args[0];
 		const isSpotify = playdl.sp_validate(url);
 		const isYt = playdl.yt_validate(url);
-		// const ytVideoPattern = /^(https?:\/\/)?(www\.)?(m\.)?(youtube\.com|youtu\.?be)\/.+$/gi;
-		// const ytPlaylistPattern = /^.*(list=)([^#&?]*).*/gi;
-		// const spotTrackPattern = /^https?:\/\/(?:open|play)\.spotify\.com\/track\/[\w\d]+$/i;
-		// const spotPlaylistPattern = /^https?:\/\/(?:open|play)\.spotify\.com\/playlist\/.+$/i;
 
 		//  Start the playlist if playlist url was provided
 		if (isYt === 'playlist') {
-			// args.playlist = args[0];
 			return instance.commandHandler.getCommand('playlist').callback({ message, args, prefix });
-			// TODO COMMAND CALL ABOVE DOESNT WORK
-			// return message.client.registry.resolveCommand('playlist').run(message, args);
 		}
-		if (isSpotify === 'playlist') {
+		if (isSpotify === 'playlist' || isSpotify === 'album') {
 			return instance.commandHandler.getCommand('playlist').callback({ message, args, prefix });
 		}
 
@@ -127,13 +125,12 @@ module.exports = {
 
 		if (isYt === 'video' && url.startsWith('https')) {
 			try {
-				songInfo = (await ytdl.getBasicInfo(url)).videoDetails;
-				const { thumbnails } = songInfo;
+				songInfo = await youtube.getVideo(url, { part: 'snippet' });
 				song = {
 					title: songInfo.title,
-					url: songInfo.video_url,
-					thumbUrl: thumbnails[thumbnails.length - 1].url,
-					duration: songInfo.lengthSeconds,
+					url: songInfo.url,
+					thumbUrl: songInfo.maxRes.url,
+					duration: songInfo.durationSeconds,
 				};
 			} catch (error) {
 				console.error(error);
@@ -151,13 +148,11 @@ module.exports = {
 		} else if (isSpotify === 'track') {
 			try {
 				const spot = await playdl.spotify(url);
-				// TODO this part has not been tested due to yt api limit
 				if (spot.type === 'track') {
 					const results = await youtube.searchVideos(spot.name, 1, {
 						part: 'snippet',
 					});
 					const searchResult = results[0];
-					// songInfo = (await ytdl.getBasicInfo(results[0].url)).videoDetails;
 					song = {
 						title: searchResult.title,
 						url: searchResult.url,
@@ -183,7 +178,6 @@ module.exports = {
 				const results = await youtube.searchVideos(search, 1, {
 					part: 'snippet',
 				});
-				// songInfo = (await ytdl.getBasicInfo(results[0].url)).videoDetails;
 				const searchResult = results[0];
 				song = {
 					title: searchResult.title,
@@ -206,7 +200,7 @@ module.exports = {
 			}
 		}
 
-		if (serverQueue) {
+		if (serverQueue?.songs.length > 0) {
 			serverQueue.songs.push(song);
 			npMessage({ message, npSong: serverQueue.songs[0], prefix });
 			return serverQueue.textChannel
@@ -233,7 +227,6 @@ module.exports = {
 					adapterCreator: channel.guild.voiceAdapterCreator,
 				});
 			}
-			// await queueConstruct.connection.voice.setSelfDeaf(true);
 			play(queueConstruct.songs[0], message, prefix);
 		} catch (error) {
 			console.error(error);

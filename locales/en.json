@@ -41,6 +41,14 @@
 		"live": "LIVE",
 		"timeRemaining": "Time Remaining: {time}"
 	},
+	"npmessage": {
+		"emptyQueue": "__**Up Next:**__\nSend a url or a song name to start the queue",
+		"overflow": "There are **{overflow}** more songs in the queue..\n {songsQueue}",
+		"outputQueue": "__**Up Next:**__\n {songsQueue}",
+		"title": "🎶 Nothing is playing right now",
+		"titleSong": "🎶 Now playing: {title}",
+		"prefix": "The prefix for this server is {prefix}"
+	},
 	"pause": {
 		"description": "Pause the currently playing music",
 		"errorNotQueue": "There is nothing playing.",
@@ -61,6 +69,7 @@
 		"cantJoinChannel": "Could not join the channel: {error}",
 		"queueEnded": "❌ Music queue ended.",
 		"queueError": "Sorry, there was a problem playing that song\nHere is the error provided: ```{error}```",
+		"queueFail": "Sorry, something apears to be broken. I could not play any of those songs",
 		"startedPlaying": "🎶 Started playing: **{title}** {url}",
 		"npSetup": "🎶 Nothing is playing",
 		"skipSong": "<@{author}> ⏩ skipped the song",
@@ -89,7 +98,7 @@
 		"prompt": "Please send a YouTube playlist link",
 		"notPlaylist": "Hmm that doesn't seem like a playlist url",
 		"maxSize": "That playlist is very large so only the first {maxSize} songs will be added to the queue",
-		"searching": "Searching for songs...",
+		"searching": ":mag: Searching for songs...\nThis may take a moment",
 		"queueAdded": "✅ The playlist: {playlist} has been added to the queue by <@{author}>"
 	},
 	"pruning": {
