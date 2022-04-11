@@ -9,15 +9,29 @@ module.exports = {
 	description: i18n.__('moderation.kick.description'),
 	// clientPermissions: ['KICK_MEMBERS'],
 	permissions: ['KICK_MEMBERS'],
+	testOnly: true,
+	slash: true,
+	options: [
+		{
+			name: 'member',
+			description: 'The member you wish to kick',
+			type: 'USER',
+			required: true,
+		},
+	],
 	// args: [{ key: 'member', prompt: i18n.__('moderation.kick.prompt'), type: 'member' }],
 
-	callback({ message, args }) {
+	callback({ interaction, args }) {
 		const { member } = args;
 		if (member.kickable) {
 			member.kick();
-			message.reply(i18n.__mf('moderation.kick.success', { member: member.user.username }));
+			interaction.reply({
+				content: i18n.__mf('moderation.kick.success', { member: member.user.username }),
+			});
 		} else {
-			message.reply(i18n.__mf('moderation.kick.fail', { member: member.user.username }));
+			interaction.reply({
+				content: i18n.__mf('moderation.kick.fail', { member: member.user.username }),
+			});
 		}
 	},
 };
