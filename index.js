@@ -149,13 +149,19 @@ client.on('ready', async () => {
 });
 
 client.on('messageCreate', async (message) => {
-	const { guildId } = message;
 	if (message.author.bot) return;
+	const { guildId } = message;
+	const prefix = wok._prefixes[guildId];
+	if (message.content.startsWith(prefix)) {
+		message.isCommand = true;
+	} else {
+		message.isCommand = false;
+	}
 	let MUSIC_CHANNEL_ID = (await findById(guildId)).musicChannel;
 	if (!MUSIC_CHANNEL_ID) {
 		MUSIC_CHANNEL_ID = '';
 	}
-	const prefix = wok._prefixes[guildId];
+
 	if (!message.content.startsWith(prefix) && message.channelId === MUSIC_CHANNEL_ID) {
 		const args = message.content.trim().split(/ +/);
 		try {
