@@ -8,40 +8,56 @@ const { upsert } = require(`${__base}include/upsert`);
 const voice = require('@discordjs/voice');
 
 i18n.setLocale(LOCALE);
+
+function isChannel(channelId, interaction) {
+	let obj = interaction.guild.channels.cache.get(channelId);
+
+	if (!obj || obj.type != 'GUILD_TEXT') return false;
+
+	return true;
+}
+
 module.exports = {
 	name: 'setup',
 	category: 'moderation',
-	description: 'Setup the channel for music commands',
+	description: 'Setup the channel you want to use for the music player',
 	guildOnly: 'true',
 	permissions: ['ADMINISTRATOR'],
-	// argsType: 'multiple',
+	testOnly: true,
+	slash: true,
+	options: [
+		{
+			name: 'channel',
+			description: 'The channel to be used for the music player',
+			type: 'CHANNEL',
+			required: true,
+		},
+	],
 
-	async callback({ message, args, prefix, guild }) {
+	async callback({ interaction, args, prefix, guild, client }) {
 		let channelTag = args[0];
-		channelTag = JSON.stringify(channelTag).replace(/[""#<>]/g, '');
 
-		message.channel
-			.send(i18n.__mf('common.startSetup', { channel: channelTag }))
-			.then((msg) => {
-				setTimeout(() => msg.delete(), MSGTIMEOUT + 2000);
-			})
-			.catch(console.error);
+		await interaction.reply({
+			content: i18n.__mf('common.startSetup', { channel: channelTag }),
+			ephemeral: true,
+		});
 
 		const connections = await voice.getVoiceConnections();
 		connections?.forEach((connection) => {
 			connection.emit('setup');
 		});
 
-		if (message.guild.channels.cache.get(channelTag)) {
+		if (isChannel(channelTag, interaction)) {
 			try {
-				const musicChannel = message.guild.channels.cache.get(channelTag);
+				const musicChannel = interaction.guild.channels.cache.get(channelTag);
 
-				const outputQueue = '__**Up Next:**__\nSend a youtube url or a song name to start the queue';
+				const outputQueue = i18n.__('npmessage.emptyQueue');
 				const newEmbed = new MessageEmbed()
 					.setColor('#5865F2')
-					.setTitle('🎶 Nothing is playing right now')
+					.setTitle(i18n.__('npmessage.title'))
+					.setURL('')
 					.setImage('https://i.imgur.com/TObp4E6.jpg')
-					.setFooter(`The prefix for this server is ${prefix}`);
+					.setFooter(i18n.__mf('npmessage.prefix', { prefix }));
 
 				const playingMessage = await musicChannel.send({ content: outputQueue, embeds: [newEmbed] });
 				await playingMessage.react('⏯');
@@ -54,10 +70,10 @@ module.exports = {
 				await playingMessage.react('⏹');
 
 				// Creates temp collector to remove reactions before bot restarts and uses the one in 'on ready' event
-				const filter = (reaction, user) => user.id !== message.client.user.id;
+				const filter = (reaction, user) => user.id !== client.user.id;
 				const collector = playingMessage.createReactionCollector({ filter });
 				collector.on('collect', (reaction, user) => {
-					const queue = reaction.message.client.queue.get(reaction.message.guild.id); // .songs
+					const queue = client.queue.get(reaction.message.guild.id); // .songs
 					if (!queue) {
 						reaction.users.remove(user).catch(console.error);
 						reaction.message.channel
@@ -79,40 +95,28 @@ module.exports = {
 				// Check if db was updated correctly
 				const MUSIC_CHANNEL_ID = (await findById(guild.id)).musicChannel;
 				if (MUSIC_CHANNEL_ID === channelTag) {
-					message.channel
-						.send(`The music channel has been set to <#${MUSIC_CHANNEL_ID}> \n Setup Complete!`)
-						.then((msg) => {
-							setTimeout(() => msg.delete(), MSGTIMEOUT);
-						})
-						.catch(console.error);
-					message.delete();
+					interaction.followUp({
+						content: i18n.__mf('moderation.setup.success', { MUSIC_CHANNEL_ID }),
+						ephemeral: true,
+					});
 				} else {
-					message.channel
-						.send("Sorry, it doesn't seem like that worked. Please try again")
-						.then((msg) => {
-							setTimeout(() => msg.delete(), MSGTIMEOUT);
-						})
-						.catch(console.error);
-					message.delete();
+					interaction.followUp({
+						content: i18n.__mf('moderation.setup.fail'),
+						ephemeral: true,
+					});
 				}
 			} catch (error) {
 				console.error(error);
-				message.channel
-					.send('Sorry there has been an error.')
-					.then((msg) => {
-						setTimeout(() => msg.delete(), MSGTIMEOUT);
-					})
-					.catch(console.error);
-				message.delete();
+				interaction.followUp({
+					content: i18n.__('moderation.setup.error', { error: error.message }),
+					ephemeral: true,
+				});
 			}
 		} else {
-			message.channel
-				.send('Sorry, that is not a valid channel. Please tag the channel: #<music_channel>')
-				.then((msg) => {
-					setTimeout(() => msg.delete(), MSGTIMEOUT);
-				})
-				.catch(console.error);
-			message.delete();
+			interaction.followUp({
+				content: i18n.__('moderation.setup.notChannel'),
+				ephemeral: true,
+			});
 		}
 	},
 };
