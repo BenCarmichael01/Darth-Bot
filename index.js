@@ -63,6 +63,8 @@ async function messageStartup(musicGuilds, wok) {
 			guildIdParam: musicGuilds[i],
 			prefix: wok._prefixes[musicGuilds[i]],
 		});
+		if (!collectors[i] || !npMessageObj[i]) continue;
+
 		collectors[i].on('collect', (reaction, user) => {
 			const queue = reaction.message.client.queue.get(reaction.message.guild.id);
 			if (!queue) {
