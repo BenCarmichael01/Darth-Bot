@@ -198,7 +198,12 @@
 			"noText": "You need to provide a status message\n",
 			"usage": "Status command usage: <Activity Type> <Status Message>",
 			"complete": "My status has been successfully updated"
+		},
+		"setup": {
+			"success": "The music channel has been set to <#{MUSIC_CHANNEL_ID}> \n Setup Complete!",
+			"fail": "Sorry, it doesn't seem like that worked. Please try again",
+			"error": "Sorry there has been an error.\n{error}",
+			"notChannel": "Sorry, that is not a valid channel.\nPlease ensure you have selected a text channel and not a voice channel or channel category"
 		}
 	}
 }
-
