@@ -28,7 +28,7 @@ module.exports = {
 			.catch(console.error);
 
 		const connections = await voice.getVoiceConnections();
-		connections.forEach((connection) => {
+		connections?.forEach((connection) => {
 			connection.emit('setup');
 		});
 
