@@ -20,13 +20,10 @@ module.exports = {
 	 */
 	async npMessage(args) {
 		const { client, message, npSong, guildIdParam, prefix } = args;
-		// TODO need to pass wok instance to this to retrieve prefix from _prefixes array.
 		const guildId = guildIdParam ? guildIdParam : message.guild.id;
 		const settings = await findById(message ? message.guildId : guildIdParam);
 		const MUSIC_CHANNEL_ID = settings.musicChannel;
-		// const MUSIC_CHANNEL_ID = (await message ? await message.guild : await client.guilds.cache.get(guildId)).settings.get('musicChannel');
 		const playingMessageId = settings.playingMessage;
-		// const playingMessageId = (await message ? await message.guild : await client.guilds.cache.get(guildId)).settings.get('playingMessage');
 
 		let musicChannel = '';
 		if (message === undefined) {
@@ -56,12 +53,10 @@ module.exports = {
 					if (overflow === 1) {
 						continue;
 					} else if (overflow > 1) {
-						// songsQueue = `There are **${overflow}** more songs in the queue..\n ${songsQueue}`;
 						songsQueue = i18n.__mf('npmessage.overflow', { overflow, songsQueue });
 					}
 				}
 			}
-			// outputQueue = `__**Up Next:**__\n ${songsQueue}`;
 			outputQueue = i18n.__mf('npmessage.outputQueue', { songsQueue });
 		}
 		let newEmbed = {};
@@ -92,14 +87,8 @@ module.exports = {
 				return outputArr;
 			})
 			.then(async (outputArr) => {
-				const filter = (reaction, user) => user.id !== (message ? message.client : client).user.id;
-
 				const outputVar = outputArr;
-				outputVar[1] = outputArr[0].createReactionCollector({
-					filter,
-					time: npSong === undefined || npSong.duration < 0 ? 600000 : npSong.duration * 1000,
-				});
-
+				outputVar[1] = outputArr[0].createMessageComponentCollector({ componentType: 'BUTTON' });
 				return outputVar;
 			})
 			.catch(console.error);
