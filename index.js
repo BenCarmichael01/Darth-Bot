@@ -65,16 +65,10 @@ async function messageStartup(musicGuilds, wok) {
 		});
 		if (!collectors[i] || !npMessageObj[i]) continue;
 
-		collectors[i].on('collect', (reaction, user) => {
-			const queue = reaction.message.client.queue.get(reaction.message.guild.id);
+		collectors[i].on('collect', (i) => {
+			const queue = i.client.queue.get(i.guildId);
 			if (!queue) {
-				reaction.users.remove(user).catch(console.error);
-				reaction.message.channel
-					.send(i18n.__('nowplaying.errorNotQueue'))
-					.then((msg) => {
-						setTimeout(() => msg.delete(), MSGTIMEOUT);
-					})
-					.catch(console.error);
+				i.reply({ content: i18n.__('nowplaying.errorNotQueue'), ephemeral: true });
 			}
 		});
 	}
