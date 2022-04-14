@@ -36,7 +36,7 @@
 	},
 	"nowplaying": {
 		"description": "Show now playing song",
-		"errorNotQueue": "There is nothing playing.",
+		"errorNotQueue": "There is nothing in the queue. Add a song to get started.",
 		"embedTitle": "Now playing",
 		"live": "LIVE",
 		"timeRemaining": "Time Remaining: {time}"
@@ -207,3 +207,4 @@
 		}
 	}
 }
+
