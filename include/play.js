@@ -40,13 +40,13 @@ module.exports = {
 	 * @returns undefined
 	 */
 	async play(song, message, prefix) {
-		const queue = message.client.queue.get(message.guildId);
+		var queue = message.client.queue.get(message.guildId);
 		const connection = voice.getVoiceConnection(message.guildId);
 		const { VoiceConnectionStatus, AudioPlayerStatus } = voice;
 
 		let attempts = 0;
 		var resource = {};
-		while (!(queue.songs.length < 1 || attempts >= 5)) {
+		while (!(queue?.songs.length < 1 || attempts >= 5)) {
 			resource = await getResource(message, queue);
 			if (resource) {
 				break;
@@ -226,6 +226,7 @@ module.exports = {
 						})
 						.catch(console.error);
 					try {
+						player.emit('queueEnd');
 						player.stop();
 						npMessage({ message, prefix });
 					} catch (error) {
@@ -264,6 +265,9 @@ module.exports = {
 				message.client.queue.delete(message.guild.id);
 			}
 		});
+		player.on('queueEnd', () => {
+			queue = undefined;
+		});
 		player.on(AudioPlayerStatus.Idle, async () => {
 			try {
 				await Promise.race([
@@ -274,9 +278,27 @@ module.exports = {
 				// Seems to be transitioning to another resource - ignore idle
 			} catch (error) {
 				// apears to be finished current song
-
 				// decide what to do:
-				if (queue.songs.length > 1 && !queue.loop) {
+				if (!queue) {
+					npMessage({ message, prefix });
+					return setTimeout(() => {
+						if (queue?.songs.length >= 1) {
+							module.exports.play(queue.songs[0], message, prefix);
+							return;
+						}
+						connection?.destroy();
+
+						message.channel
+							.send(i18n.__('play.queueEnded') + '\n' + i18n.__('play.leaveChannel'))
+							.then((msg) => {
+								setTimeout(() => msg.delete(), MSGTIMEOUT);
+							})
+							.catch(console.error);
+						return;
+					}, STAY_TIME * 1_000);
+				}
+
+				if (queue.songs.length > 1 && !queue?.loop) {
 					// songs in queue and queue not looped so play next song
 					queue.songs.shift();
 					module.exports.play(queue.songs[0], message, prefix);
