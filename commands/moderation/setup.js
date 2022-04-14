@@ -1,8 +1,8 @@
 ﻿/* global __base */
 const i18n = require('i18n');
-const { MessageEmbed } = require('discord.js');
+const { MessageEmbed, MessageActionRow, MessageButton } = require('discord.js');
 
-const { MSGTIMEOUT, LOCALE } = require(`${__base}include/utils`);
+const { LOCALE } = require(`${__base}include/utils`);
 const { findById } = require(`${__base}include/findById`);
 const { upsert } = require(`${__base}include/upsert`);
 const voice = require('@discordjs/voice');
@@ -59,31 +59,51 @@ module.exports = {
 					.setImage('https://i.imgur.com/TObp4E6.jpg')
 					.setFooter(i18n.__mf('npmessage.prefix', { prefix }));
 
-				const playingMessage = await musicChannel.send({ content: outputQueue, embeds: [newEmbed] });
-				await playingMessage.react('⏯');
-				await playingMessage.react('⏭');
-				/* await playingMessage.react('🔇');
-				await playingMessage.react('🔉');
-				await playingMessage.react('🔊'); */
-				await playingMessage.react('🔁');
-				await playingMessage.react('🔀');
-				await playingMessage.react('⏹');
+				const buttons = [
+					new MessageButton().setCustomId('playpause').setEmoji('⏯').setStyle('SECONDARY'),
+					new MessageButton().setCustomId('skip').setEmoji('⏭').setStyle('SECONDARY'),
+					new MessageButton().setCustomId('loop').setEmoji('🔁').setStyle('SECONDARY'),
+					new MessageButton().setCustomId('shuffle').setEmoji('🔀').setStyle('SECONDARY'),
+					new MessageButton().setCustomId('stop').setEmoji('⏹').setStyle('SECONDARY'),
+				];
+				const row = new MessageActionRow().addComponents(...buttons);
 
-				// Creates temp collector to remove reactions before bot restarts and uses the one in 'on ready' event
-				const filter = (reaction, user) => user.id !== client.user.id;
-				const collector = playingMessage.createReactionCollector({ filter });
-				collector.on('collect', (reaction, user) => {
-					const queue = client.queue.get(reaction.message.guild.id); // .songs
+				const playingMessage = await musicChannel.send({
+					content: outputQueue,
+					embeds: [newEmbed],
+					components: [row],
+				});
+				// await playingMessage.react('⏯');
+				// await playingMessage.react('⏭');
+				// /* await playingMessage.react('🔇');
+				// await playingMessage.react('🔉');
+				// await playingMessage.react('🔊'); */
+				// await playingMessage.react('🔁');
+				// await playingMessage.react('🔀');
+				// await playingMessage.react('⏹');
+
+				client.on('interactionCreate', (i) => {
+					if (!i.isButton) return;
+					const queue = client.queue.get(i.guild.id); // .songs
 					if (!queue) {
-						reaction.users.remove(user).catch(console.error);
-						reaction.message.channel
-							.send(i18n.__mf('nowplaying.errorNotQueue'))
-							.then((msg) => {
-								setTimeout(() => msg.delete(), MSGTIMEOUT);
-							})
-							.catch(console.error);
+						i.reply({ content: i18n.__mf('nowplaying.errorNotQueue'), ephemeral: true });
 					}
 				});
+				// Creates temp collector to remove reactions before bot restarts and uses the one in 'on ready' event
+				// const filter = (reaction, user) => user.id !== client.user.id;
+				// const collector = playingMessage.createReactionCollector({ filter });
+				// collector.on('collect', (reaction, user) => {
+				// 	const queue = client.queue.get(reaction.message.guild.id); // .songs
+				// 	if (!queue) {
+				// 		reaction.users.remove(user).catch(console.error);
+				// 		reaction.message.channel
+				// 			.send(i18n.__mf('nowplaying.errorNotQueue'))
+				// 			.then((msg) => {
+				// 				setTimeout(() => msg.delete(), MSGTIMEOUT);
+				// 			})
+				// 			.catch(console.error);
+				// 	}
+				// });
 
 				// updates/inserts musicChannel and playingMessage in db
 				await upsert({
