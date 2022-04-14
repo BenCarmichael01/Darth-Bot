@@ -73,14 +73,6 @@ module.exports = {
 					embeds: [newEmbed],
 					components: [row],
 				});
-				// await playingMessage.react('⏯');
-				// await playingMessage.react('⏭');
-				// /* await playingMessage.react('🔇');
-				// await playingMessage.react('🔉');
-				// await playingMessage.react('🔊'); */
-				// await playingMessage.react('🔁');
-				// await playingMessage.react('🔀');
-				// await playingMessage.react('⏹');
 
 				client.on('interactionCreate', (i) => {
 					if (!i.isButton) return;
@@ -89,21 +81,6 @@ module.exports = {
 						i.reply({ content: i18n.__mf('nowplaying.errorNotQueue'), ephemeral: true });
 					}
 				});
-				// Creates temp collector to remove reactions before bot restarts and uses the one in 'on ready' event
-				// const filter = (reaction, user) => user.id !== client.user.id;
-				// const collector = playingMessage.createReactionCollector({ filter });
-				// collector.on('collect', (reaction, user) => {
-				// 	const queue = client.queue.get(reaction.message.guild.id); // .songs
-				// 	if (!queue) {
-				// 		reaction.users.remove(user).catch(console.error);
-				// 		reaction.message.channel
-				// 			.send(i18n.__mf('nowplaying.errorNotQueue'))
-				// 			.then((msg) => {
-				// 				setTimeout(() => msg.delete(), MSGTIMEOUT);
-				// 			})
-				// 			.catch(console.error);
-				// 	}
-				// });
 
 				// updates/inserts musicChannel and playingMessage in db
 				await upsert({
