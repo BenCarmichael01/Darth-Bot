@@ -32,7 +32,10 @@
 		"errorNotQueue": "There is no queue.",
 		"usagesReply": "Usage: {prefix}move <from queue number> <to queue number>",
 		"result": "<@{author}> moved **{title}** to position **{index}** in the queue.",
-		"range": "Those values are larger than the size of the queue.\n Make sure you have entered the correct queue numbers"
+		"range": "Those values are larger than the size of the queue.\n Make sure you have entered the correct queue numbers",
+		"fromDescription": "The number of the song that you want to move",
+		"toDescription": "The position you want to move the song to.",
+		"success": "The song has been successfully moved. "
 	},
 	"nowplaying": {
 		"description": "Show now playing song",
