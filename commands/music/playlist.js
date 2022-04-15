@@ -24,10 +24,17 @@ module.exports = {
 	argsType: 'multiple', */
 
 	// TODO MSGTIMEOUT
-	async callback({ message, args, prefix }) {
-		const { channel } = message.member.voice;
+	async callback({ message, interaction, args, prefix }) {
+		var i;
+		if (!message) {
+			i = interaction;
+			await interaction.deferReply({ ephemeral: true });
+		} else if (!interaction) {
+			i = message;
+		}
+		const { channel } = i.member.voice;
 		// const channel = await message.guild.channels.fetch("856658520728141834");
-		const serverQueue = message.client.queue.get(message.guild.id);
+		const serverQueue = i.client.queue.get(i.guildId);
 
 		// if (!args[0]) {
 		// 	return message
@@ -86,8 +93,9 @@ module.exports = {
 		if (playdl.is_expired()) {
 			await playdl.refreshToken(); // This will check if access token has expired or not. If yes, then refresh the token.
 		}
-		message.delete();
-
+		if (message !== interaction) {
+			message.delete();
+		}
 		const search = args.join(' ');
 		const url = args[0];
 		const isSpotify = playdl.sp_validate(url);
