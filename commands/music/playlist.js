@@ -109,7 +109,7 @@ module.exports = {
 		var playlistTitle = '';
 		if (isYt === 'playlist') {
 			try {
-				let playlist = await playdl.playlist_info(url);
+				let playlist = await playdl.playlist_info(url, { incomplete: true });
 				playlistTitle = playlist.title;
 				await playlist.fetch(MAX_PLAYLIST_SIZE);
 				let vidInfo = playlist.videos;
