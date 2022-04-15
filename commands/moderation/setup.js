@@ -30,6 +30,7 @@ module.exports = {
 			name: 'channel',
 			description: 'The channel to be used for the music player',
 			type: 'CHANNEL',
+			channelType: 'GUILD_TEXT',
 			required: true,
 		},
 	],
