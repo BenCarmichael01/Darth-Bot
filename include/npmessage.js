@@ -16,12 +16,25 @@ module.exports = {
 	 * @param {object} args.npSong
 	 * @param {String} args.guildIdParam
 	 * @param {String} args.prefix
+	 * @param {DiscordInteraction} args.interaction
 	 * @returns {[DiscordMessage, MessageReactionCollector]} An array where the first item is the sent message object and the second is the reaction collector
 	 */
 	async npMessage(args) {
-		const { client, message, npSong, guildIdParam, prefix } = args;
-		const guildId = guildIdParam ? guildIdParam : message.guild.id;
-		const settings = await findById(message ? message.guildId : guildIdParam);
+		const { client, npSong, guildIdParam, prefix, interaction } = args;
+
+		var message = {};
+		let settings = {};
+		if (!args.message && interaction && !guildIdParam) {
+			message = interaction;
+			settings = await findById(message.guildId);
+		} else if (args.message) {
+			message = args.message;
+			settings = await findById(message.guildId);
+		} else {
+			message = undefined;
+			settings = await findById(guildIdParam);
+		}
+		const guildId = guildIdParam ? guildIdParam : message.guildId;
 		const MUSIC_CHANNEL_ID = settings.musicChannel;
 		const playingMessageId = settings.playingMessage;
 
@@ -42,18 +55,20 @@ module.exports = {
 		var outputQueue = i18n.__('npmessage.emptyQueue');
 		var songsQueue = '';
 		if (queue) {
-			const currentQueue = queue.slice(1, 10);
+			const displayQueue = queue.slice(1, 11);
 
 			let index = 0;
-			for (let i = 0; i < currentQueue.length; i++) {
+			for (let i = 0; i < displayQueue.length; i++) {
 				index = i + 1;
-				songsQueue = `**${index}.** ${currentQueue[i].title}\n ${songsQueue}`;
-				if (i === currentQueue.length - 1 && queue.length - 1 > currentQueue.length) {
-					const overflow = queue.length - currentQueue.length - 1;
-					if (overflow === 1) {
-						continue;
+				songsQueue = `**${index}.** ${displayQueue[i].title}\n ${songsQueue}`;
+				if (i === displayQueue.length - 1 && queue.length - 1 > displayQueue.length) {
+					const overflow = queue.length - 1 - displayQueue.length;
+					if (overflow === 1 && i < displayQueue.length) {
+						songsQueue = `**${index + 1}.** ${queue[i + 2].title}\n ${songsQueue}`;
+						break;
 					} else if (overflow > 1) {
 						songsQueue = i18n.__mf('npmessage.overflow', { overflow, songsQueue });
+						break;
 					}
 				}
 			}
