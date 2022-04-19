@@ -94,9 +94,7 @@ client.on('ready', async () => {
 		const musicGuilds = [];
 		await client.guilds.fetch().then((cache) => {
 			cache.each(async (guild) => {
-				// const dbEntry = (await findById(guild.id))._doc;
 				findById(guild.id).then(async (dbEntry) => {
-					// console.log(dbEntry);
 					const { _doc } = dbEntry;
 					delete _doc._id;
 					delete _doc.__v;
