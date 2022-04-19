@@ -12,11 +12,10 @@ const { npMessage } = require(`${__base}include/npmessage`);
 
 /**
  *
- * @param {DiscordMessage} message
  * @param {object} queue
  * @returns {DiscordAudioResource} DiscordAudioResource of the first song in the queue
  */
-async function getResource(message, queue) {
+async function getResource(queue) {
 	const song = queue.songs[0];
 	// Get stream from song Url //
 	let source = null;
@@ -31,6 +30,59 @@ async function getResource(message, queue) {
 	const resource = voice.createAudioResource(source.stream, { inputType: source.type });
 	return resource;
 }
+
+function reply({ message, interaction, content, ephemeral }) {
+	if (message) {
+		return message
+			.reply(content)
+			.then((msg) => {
+				setTimeout(() => {
+					message.delete();
+					msg.delete();
+				}, MSGTIMEOUT);
+			})
+			.catch(console.error);
+	} else if (interaction) {
+		if (ephemeral) {
+			return interaction.editReply({ content, ephemeral });
+		} else {
+			return interaction
+				.editReply({ content })
+				.then((msg) => {
+					setTimeout(() => {
+						msg.delete();
+					}, MSGTIMEOUT);
+				})
+				.catch(console.error);
+		}
+	}
+}
+function followUp({ message, interaction, content, ephemeral }) {
+	if (message) {
+		return message.channel
+			.send(content)
+			.then((msg) => {
+				setTimeout(() => {
+					message.delete();
+					msg.delete();
+				}, MSGTIMEOUT);
+			})
+			.catch(console.error);
+	} else if (interaction) {
+		if (ephemeral) {
+			return interaction.followUp({ content, ephemeral });
+		} else {
+			return interaction
+				.followUp({ content })
+				.then((msg) => {
+					setTimeout(() => {
+						msg.delete();
+					}, MSGTIMEOUT);
+				})
+				.catch(console.error);
+		}
+	}
+}
 module.exports = {
 	/**
 	 * @name play
@@ -39,35 +91,44 @@ module.exports = {
 	 * @param {String} prefix
 	 * @returns undefined
 	 */
-	async play(song, message, prefix) {
-		var queue = message.client.queue.get(message.guildId);
-		const connection = voice.getVoiceConnection(message.guildId);
+	async play({ song, message, interaction, prefix }) {
+		var i;
+		if (!message) {
+			i = interaction;
+			if (!interaction.deferred && !interaction.replied) {
+				await interaction.deferReply({ ephemeral: true });
+			}
+		} else if (!interaction) {
+			i = message;
+		}
+		var queue = i.client.queue.get(i.guildId);
+		const connection = voice.getVoiceConnection(i.guildId);
 		const { VoiceConnectionStatus, AudioPlayerStatus } = voice;
 
 		let attempts = 0;
 		var resource = {};
 		while (!(queue?.songs.length < 1 || attempts >= 5)) {
-			resource = await getResource(message, queue);
+			resource = await getResource(queue);
 			if (resource) {
 				break;
 			} else {
 				attempts++;
 				queue.songs.shift();
-				message.channel
-					.send(i18n.__mf('play.queueError'))
-					.then((msg) => {
-						setTimeout(() => msg.delete(), MSGTIMEOUT + 1_500);
-					})
-					.catch(console.error);
+				followUp({
+					message,
+					interaction,
+					content: i18n.__mf('play.queueError'),
+					ephemeral: true,
+				});
 			}
 		}
 		if (!resource) {
-			return message.channel
-				.send(i18n.__mf('play.queueFail'))
-				.then((msg) => {
-					setTimeout(() => msg.delete(), MSGTIMEOUT + 1_500);
-				})
-				.catch(console.error);
+			return followUp({
+				message,
+				interaction,
+				content: i18n.__mf('play.queueFail'),
+				ephemeral: true,
+			});
 		}
 		const player = voice.createAudioPlayer({
 			behaviors: { noSubscriber: voice.NoSubscriberBehavior.Pause },
@@ -87,6 +148,7 @@ module.exports = {
 		// vvv Do not remove comma!! it is to skip the first item in the array
 		const [, collector] = await npMessage({
 			message,
+			interaction,
 			npSong: song,
 			prefix,
 		});
@@ -247,7 +309,7 @@ module.exports = {
 				console.error(error);
 			}
 			connection.destroy();
-			message.client.queue.delete(message.guild.id);
+			i.client.queue.delete(i.guildId);
 		});
 		// Check if disconnect is real or is moving to another channel
 		connection.on(VoiceConnectionStatus.Disconnected, async () => {
@@ -262,7 +324,7 @@ module.exports = {
 				if (connection?.state?.status !== VoiceConnectionStatus.Destroyed) {
 					connection.destroy();
 				}
-				message.client.queue.delete(message.guild.id);
+				i.client.queue.delete(i.guildId);
 			}
 		});
 		player.on('queueEnd', () => {
@@ -280,20 +342,19 @@ module.exports = {
 				// apears to be finished current song
 				// decide what to do:
 				if (!queue) {
-					npMessage({ message, prefix });
+					npMessage({ message, interaction, prefix });
 					return setTimeout(() => {
 						if (queue?.songs.length >= 1) {
-							module.exports.play(queue.songs[0], message, prefix);
+							module.exports.play({ song: queue.songs[0], message, interaction, prefix });
 							return;
 						}
 						connection?.destroy();
-
-						message.channel
-							.send(i18n.__('play.queueEnded') + '\n' + i18n.__('play.leaveChannel'))
-							.then((msg) => {
-								setTimeout(() => msg.delete(), MSGTIMEOUT);
-							})
-							.catch(console.error);
+						followUp({
+							message,
+							interaction,
+							content: i18n.__('play.queueEnded') + '\n' + i18n.__('play.leaveChannel'),
+							ephemeral: false,
+						});
 						return;
 					}, STAY_TIME * 1_000);
 				}
@@ -301,38 +362,31 @@ module.exports = {
 				if (queue.songs.length > 1 && !queue?.loop) {
 					// songs in queue and queue not looped so play next song
 					queue.songs.shift();
-					module.exports.play(queue.songs[0], message, prefix);
+					module.exports.play({ song: queue.songs[0], message, interaction, prefix });
 				} else if (queue.songs.length >= 1 && queue.loop) {
 					// at least one song in queue and queue is looped so push finished
 					// song to back of queue then play next song
 					let lastSong = queue.songs.shift();
 					queue.songs.push(lastSong);
-					module.exports.play(queue.songs[0], message, prefix);
+					module.exports.play({ song: queue.songs[0], message, interaction, prefix });
 				} else if (queue.songs.length === 1 && !queue.loop) {
 					// If there are no more songs in the queue then wait for STAY_TIME before leaving vc
 					// unless a song was added during the timeout
-					npMessage({ message, prefix });
+					npMessage({ message, interaction, prefix });
 					queue.songs.shift();
 					setTimeout(() => {
 						if (queue.songs.length >= 1) {
-							module.exports.play(queue.songs[0], message, prefix);
+							module.exports.play({ song: queue.songs[0], message, interaction, prefix });
 							return;
 						}
 						connection?.destroy();
-
-						queue.textChannel
-							.send(i18n.__('play.queueEnded'))
-							.then((msg) => {
-								setTimeout(() => msg.delete(), MSGTIMEOUT);
-							})
-							.catch(console.error);
-						queue.textChannel
-							.send(i18n.__('play.leaveChannel'))
-							.then((msg) => {
-								setTimeout(() => msg.delete(), MSGTIMEOUT);
-							})
-							.catch(console.error);
-						return message.client.queue.delete(message.guildId);
+						followUp({
+							message,
+							interaction,
+							content: i18n.__('play.queueEnded') + '\n' + i18n.__('play.leaveChannel'),
+							ephemeral: false,
+						});
+						return i.client.queue.delete(i.guildId);
 					}, STAY_TIME * 1_000);
 				}
 				// must remove these listeners before we call play function again to avoid memory leak and maxListeners exceeded error
@@ -366,20 +420,14 @@ module.exports = {
 						player.stop();
 					}
 				} finally {
-					message.channel
-						.send(i18n.__('play.queueEnded'))
-						.then((msg) => {
-							setTimeout(() => msg.delete(), MSGTIMEOUT);
-						})
-						.catch(console.error);
-					message.channel
-						.send(i18n.__('play.leaveChannel'))
-						.then((msg) => {
-							setTimeout(() => msg.delete(), MSGTIMEOUT);
-						})
-						.catch(console.error);
-					message.client.queue.delete(message.guildId);
-					npMessage({ message, prefix });
+					followUp({
+						message,
+						interaction,
+						content: i18n.__('play.queueEnded') + '\n' + i18n.__('play.leaveChannel'),
+						ephemeral: false,
+					});
+					i.client.queue.delete(i.guildId);
+					npMessage({ message, interaction, prefix });
 				}
 			}
 		});

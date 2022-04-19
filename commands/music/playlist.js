@@ -312,7 +312,7 @@ module.exports = {
 					}),
 					ephemeral: false,
 				});
-				play(queueConstruct.songs[0], message, prefix);
+				play({ song: queueConstruct.songs[0], message, interaction, prefix });
 			} catch (error) {
 				console.error(error);
 				i.client.queue.delete(i.guildId);

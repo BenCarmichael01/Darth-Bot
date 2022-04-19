@@ -343,7 +343,7 @@ module.exports = {
 				});
 			}
 			// TODO this other play must support interactions as well
-			play(queueConstruct.songs[0], i, prefix);
+			play({ song: queueConstruct.songs[0], message, interaction, prefix });
 		} catch (error) {
 			console.error(error);
 			i.client.queue.delete(i.guildId);
