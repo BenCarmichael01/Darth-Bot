@@ -19,16 +19,12 @@ module.exports = {
 	 * @param {DiscordInteraction} args.interaction
 	 * @returns {[DiscordMessage, MessageReactionCollector]} An array where the first item is the sent message object and the second is the reaction collector
 	 */
-	async npMessage(args) {
-		const { client, npSong, guildIdParam, prefix, interaction } = args;
-
-		var message = {};
+	async npMessage({ client, npSong, guildIdParam, prefix, interaction, message }) {
 		let settings = {};
-		if (!args.message && interaction && !guildIdParam) {
+		if (!message && interaction && !guildIdParam) {
 			message = interaction;
 			settings = await findById(message.guildId);
-		} else if (args.message) {
-			message = args.message;
+		} else if (message) {
 			settings = await findById(message.guildId);
 		} else {
 			message = undefined;
