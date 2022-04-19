@@ -11,19 +11,74 @@ const { MAX_PLAYLIST_SIZE, DEFAULT_VOLUME, LOCALE, MSGTIMEOUT } = require(`${__b
 i18n.setLocale(LOCALE);
 const youtube = new YouTubeAPI(process.env.YOUTUBE_API_KEY);
 
+function reply({ message, interaction, content, ephemeral }) {
+	if (message) {
+		return message
+			.reply(content)
+			.then((msg) => {
+				setTimeout(() => {
+					message.delete();
+					msg.delete();
+				}, MSGTIMEOUT);
+			})
+			.catch(console.error);
+	} else if (interaction) {
+		if (ephemeral) {
+			return interaction.editReply({ content, ephemeral });
+		} else {
+			return interaction
+				.editReply({ content })
+				.then((msg) => {
+					setTimeout(() => {
+						msg.delete();
+					}, MSGTIMEOUT);
+				})
+				.catch(console.error);
+		}
+	}
+}
+function followUp({ message, interaction, content, ephemeral }) {
+	if (message) {
+		return message.channel
+			.send(content)
+			.then((msg) => {
+				setTimeout(() => {
+					message.delete();
+					msg.delete();
+				}, MSGTIMEOUT);
+			})
+			.catch(console.error);
+	} else if (interaction) {
+		if (ephemeral) {
+			return interaction.followUp({ content, ephemeral });
+		} else {
+			return interaction
+				.followUp({ content })
+				.then((msg) => {
+					setTimeout(() => {
+						msg.delete();
+					}, MSGTIMEOUT);
+				})
+				.catch(console.error);
+		}
+	}
+}
+
 module.exports = {
 	name: 'playlist',
 	category: 'music',
 	description: i18n.__('playlist.description'),
 	guildOnly: 'true',
-	/* args: [{
-		key: 'playlist',
-		prompt: i18n.__('playlist.prompt'),
-		type: 'string',
-	}],
-	argsType: 'multiple', */
-
-	// TODO MSGTIMEOUT
+	testOnly: true,
+	slash: true,
+	options: [
+		{
+			name: 'music',
+			description: i18n.__('play.option'),
+			type: 'STRING',
+			required: true,
+		},
+	],
 	async callback({ message, interaction, args, prefix }) {
 		var i;
 		if (!message) {
@@ -33,67 +88,56 @@ module.exports = {
 			i = message;
 		}
 		const { channel } = i.member.voice;
-		// const channel = await message.guild.channels.fetch("856658520728141834");
 		const serverQueue = i.client.queue.get(i.guildId);
-
-		// if (!args[0]) {
-		// 	return message
-		// 		.reply(i18n.__mf('playlist.usageReply', { prefix: message.guild.commandPrefix }))
-		// 		.catch(console.error);
-		// }
 		if (!channel) {
-			return message.channel
-				.send(i18n.__('playlist.errorNotChannel'))
-				.then((msg) => {
-					setTimeout(() => {
-						msg.delete();
-						message.delete();
-					}, MSGTIMEOUT);
-				})
-				.catch(console.error);
+			return reply({
+				message,
+				interaction,
+				content: i18n.__('playlist.errorNotChannel'),
+				ephemeral: true,
+			});
 		}
-		const permissions = channel.permissionsFor(message.client.user);
+		const permissions = channel.permissionsFor(i.client.user);
 		if (!permissions.has('CONNECT')) {
-			return message.channel
-				.send(i18n.__('playlist.missingPermissionConnect'))
-				.then((msg) => {
-					setTimeout(() => {
-						msg.delete();
-						message.delete();
-					}, MSGTIMEOUT);
-				})
-				.catch(console.error);
+			return reply({
+				message,
+				interaction,
+				content: i18n.__('playlist.missingPermissionConnect'),
+				ephemeral: true,
+			});
 		}
 		if (!permissions.has('SPEAK')) {
-			return message.channel
-				.send(i18n.__('missingPermissionSpeak'))
-				.then((msg) => {
-					setTimeout(() => {
-						msg.delete();
-						message.delete();
-					}, MSGTIMEOUT);
-				})
-				.catch(console.error);
+			return reply({
+				message,
+				interaction,
+				content: i18n.__('missingPermissionSpeak'),
+				ephemeral: true,
+			});
 		}
-		if (serverQueue && channel !== message.guild.me.voice.channel) {
-			return message.channel
-				.send(
-					i18n.__mf('play.errorNotInSameChannel', {
-						user: message.client.user,
-					}),
-				)
-				.then((msg) => {
-					setTimeout(() => {
-						msg.delete();
-						message.delete();
-					}, MSGTIMEOUT);
-				})
-				.catch(console.error);
+		if (serverQueue && channel !== i.guild.me.voice.channel) {
+			return reply({
+				message,
+				interaction,
+				content: i18n.__mf('play.errorNotInSameChannel', {
+					user: i.client.user.id,
+				}),
+				ephemeral: true,
+			});
 		}
+
+		await playdl.setToken({
+			spotify: {
+				client_id: process.env.SPOTIFY_CLIENT,
+				client_secret: process.env.SPOTIFY_SECRET,
+				refresh_token: process.env.SPOTIFY_REFRESH,
+				market: process.env.SPOTIFY_MARKET,
+			},
+		});
+
 		if (playdl.is_expired()) {
 			await playdl.refreshToken(); // This will check if access token has expired or not. If yes, then refresh the token.
 		}
-		if (message !== interaction) {
+		if (message) {
 			message.delete();
 		}
 		const search = args.join(' ');
@@ -102,7 +146,7 @@ module.exports = {
 		const isYt = playdl.yt_validate(url);
 
 		const queueConstruct = {
-			textChannel: message.channel,
+			textChannel: i.channel,
 			channel,
 			connection: null,
 			songs: [],
@@ -111,7 +155,12 @@ module.exports = {
 			playing: true,
 		};
 
-		var searching = await message.channel.send(i18n.__('playlist.searching'));
+		var searching = await reply({
+			message,
+			interaction,
+			content: i18n.__('playlist.searching'),
+			ephemeral: true,
+		});
 
 		var videos = [];
 		var playlistTitle = '';
@@ -130,30 +179,20 @@ module.exports = {
 					};
 					videos.push(song);
 				});
-				// for (
-				// 	let i = 0;
-				// 	i <= (MAX_PLAYLIST_SIZE ? MAX_PLAYLIST_SIZE : 100) && i < playlist.videos.length;
-				// 	i++
-				// ) {
-				// 	let video = iterator.next().value;
-				// 	let song = {
-				// 		title: video.title,
-				// 		url: video.url,
-				// 		thumbUrl: video.thumbnails[search.thumbnails.length - 1].url,
-				// 		duration: video.durationInSec,
-				// 	};
-				// 	videos.push(song);
-				// }
-				searching.delete().catch(console.error);
+				if (message) {
+					searching.delete().catch(console.error);
+				}
 			} catch (error) {
 				console.error(error);
-				searching.delete().catch(console.error);
-				return message.channel
-					.send(i18n.__('playlist.errorNotFoundPlaylist'))
-					.then((msg) => {
-						setTimeout(() => msg.delete(), MSGTIMEOUT);
-					})
-					.catch(console.error);
+				if (message) {
+					searching.delete().catch(console.error);
+				}
+				return reply({
+					message,
+					interaction,
+					content: i18n.__('playlist.errorNotFoundPlaylist'),
+					ephemeral: true,
+				});
 			}
 		} else if (isSpotify === 'playlist' || isSpotify === 'album') {
 			try {
@@ -163,27 +202,13 @@ module.exports = {
 				const tracks = await playlist.fetched_tracks.get('1');
 
 				if (tracks.length > MAX_PLAYLIST_SIZE) {
-					message.channel
-						.send(i18n.__mf('playlist.maxSize', { maxSize: MAX_PLAYLIST_SIZE }))
-						.then((msg) => {
-							setTimeout(() => msg.delete(), MSGTIMEOUT);
-						})
-						.catch(console.error);
+					reply({
+						message,
+						interaction,
+						content: i18n.__mf('playlist.maxSize', { maxSize: MAX_PLAYLIST_SIZE }),
+						ephemeral: true,
+					});
 				}
-				// await tracks.forEach(async (track) => {
-				// 	let term = track.name.concat(' ', track.artists[0].name);
-				// 	let [search] = await playdl.search(term, {
-				// 		source: { youtube: 'video' },
-				// 		limit: 1,
-				// 	});
-				// 	let song = {
-				// 		title: search.title,
-				// 		url: search.url,
-				// 		thumbUrl: search.thumbnails[search.thumbnails.length - 1].url,
-				// 		duration: search.durationInSec,
-				// 	};
-				// 	videos.push(song);
-				// });
 				for (let i = 0; i <= (MAX_PLAYLIST_SIZE ? MAX_PLAYLIST_SIZE : 20) && i < tracks.length; i++) {
 					let search = tracks[i].name + ' ' + tracks[i].artists[0].name;
 					const results = await youtube.searchVideos(search, 1, {
@@ -204,16 +229,15 @@ module.exports = {
 					};
 					videos.push(song);
 				}
-				searching.delete().catch(console.error);
+				if (message) {
+					searching.delete().catch(console.error);
+				}
 			} catch (error) {
 				console.error(error);
-				searching.delete().catch(console.error);
-				return message.channel
-					.send(error.message)
-					.then((msg) => {
-						setTimeout(() => msg.delete(), MSGTIMEOUT);
-					})
-					.catch(console.error);
+				if (message) {
+					searching.delete().catch(console.error);
+				}
+				return reply({ message, interaction, content: error.message, ephemeral: true });
 			}
 		} else {
 			try {
@@ -240,36 +264,38 @@ module.exports = {
 					};
 					videos.push(song);
 				}
-				searching.delete().catch(console.error);
+				if (message) {
+					searching.delete().catch(console.error);
+				}
 			} catch (error) {
-				searching.delete().catch(console.error);
+				if (message) {
+					searching.delete().catch(console.error);
+				}
 				console.error(error);
-				return message.channel
-					.send(error.message)
-					.then((msg) => {
-						setTimeout(() => msg.delete(), MSGTIMEOUT);
-					})
-					.catch(console.error);
+				return reply({ message, interaction, content: error.message, ephemeral: true });
 			}
 		}
 		if (serverQueue) {
 			serverQueue.songs.push(...videos);
-			npMessage({ message, npSong: serverQueue.songs[0], prefix });
-			message.channel
-				.send(i18n.__mf('playlist.queueAdded', { playlist: playlistTitle, author: message.author }))
-				.then((msg) => {
-					setTimeout(() => msg.delete(), MSGTIMEOUT);
-				})
-				.catch(console.error);
+			npMessage({ message, interaction, npSong: serverQueue.songs[0], prefix });
+			followUp({
+				message,
+				interaction,
+				content: i18n.__mf('playlist.queueAdded', {
+					playlist: playlistTitle,
+					author: i.member.id,
+				}),
+				ephemeral: false,
+			});
 		} else {
 			queueConstruct.songs.push(...videos);
 		}
 		// serverQueue ? serverQueue.songs.push(...newSongs) : queueConstruct.songs.push(...newSongs);
 		if (!serverQueue) {
-			message.client.queue.set(message.guild.id, queueConstruct);
+			i.client.queue.set(i.guildId, queueConstruct);
 
 			try {
-				if (!voice.getVoiceConnection(message.guildId)) {
+				if (!voice.getVoiceConnection(i.guildId)) {
 					queueConstruct.connection = await voice.joinVoiceChannel({
 						channelId: channel.id,
 						guildId: channel.guildId,
@@ -277,25 +303,26 @@ module.exports = {
 						adapterCreator: channel.guild.voiceAdapterCreator,
 					});
 				}
-				message.channel
-					.send(
-						i18n.__mf('playlist.queueAdded', { playlist: playlistTitle, author: message.author }),
-					)
-					.then((msg) => {
-						setTimeout(() => msg.delete(), MSGTIMEOUT);
-					})
-					.catch(console.error);
+				followUp({
+					message,
+					interaction,
+					content: i18n.__mf('playlist.queueAdded', {
+						playlist: playlistTitle,
+						author: i.member.id,
+					}),
+					ephemeral: false,
+				});
 				play(queueConstruct.songs[0], message, prefix);
 			} catch (error) {
 				console.error(error);
-				message.client.queue.delete(message.guild.id);
+				i.client.queue.delete(i.guildId);
 				await queueConstruct.connection.destroy();
-				return message.channel
-					.send(i18n.__('play.cantJoinChannel', { error }))
-					.then((msg) => {
-						setTimeout(() => msg.delete(), MSGTIMEOUT);
-					})
-					.catch(console.error);
+				return followUp({
+					message,
+					interaction,
+					content: i18n.__('play.cantJoinChannel', { error }),
+					ephemeral: true,
+				});
 			}
 		}
 		// TODO this used to return 1 but i cant remember why so i've removed it
