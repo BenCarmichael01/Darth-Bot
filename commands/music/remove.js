@@ -18,7 +18,7 @@ module.exports = {
 	slash: true,
 	options: [
 		{
-			name: 'songindex',
+			name: 'songnumbers',
 			description: i18n.__('remove.optionDescription'),
 			type: 'STRING',
 			required: true,
@@ -31,7 +31,7 @@ module.exports = {
 	 */
 	async callback({ interaction, args, prefix }) {
 		await interaction.deferReply({ ephemeral: true });
-		if (!prefix) {
+		if (prefix === undefined) {
 			prefix = 'unset';
 		}
 		const queue = interaction.client.queue.get(interaction.guildId);
@@ -46,7 +46,7 @@ module.exports = {
 			return reply({ interaction, content: i18n.__('remove.errorNotQueue'), ephemeral: true });
 		}
 
-		// const args = args//.join("");
+		args = args[0].split(' ');
 		const songs = args.map((arg) => parseInt(arg, 10));
 		const removed = [];
 
