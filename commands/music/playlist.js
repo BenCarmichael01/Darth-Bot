@@ -7,7 +7,7 @@ const playdl = require('play-dl');
 const YouTubeAPI = require('simple-youtube-api');
 
 const { MAX_PLAYLIST_SIZE, DEFAULT_VOLUME, LOCALE } = require(`${__base}/include/utils`);
-const { reply, followUp } = require(`${__base}include / reponses`);
+const { reply, followUp } = require(`${__base}include/responses`);
 
 i18n.setLocale(LOCALE);
 const youtube = new YouTubeAPI(process.env.YOUTUBE_API_KEY);
