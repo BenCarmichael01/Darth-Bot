@@ -31,7 +31,9 @@ module.exports = {
 		var i;
 		if (!message) {
 			i = interaction;
-			await interaction.deferReply({ ephemeral: true });
+			if (!interaction.deferred && !interaction.replied) {
+				await interaction.deferReply({ ephemeral: true });
+			}
 		} else if (!interaction) {
 			i = message;
 		}
