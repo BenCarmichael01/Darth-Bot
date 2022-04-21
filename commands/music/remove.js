@@ -1,7 +1,9 @@
 /* global __base */
-const { canModifyQueue, LOCALE, MSGTIMEOUT } = require(`${__base}include/utils`);
+const { canModifyQueue, LOCALE } = require(`${__base}include/utils`);
 const { npMessage } = require(`${__base}include/npmessage`);
 const i18n = require('i18n');
+const { reply, followUp } = require(`../../include/responses`);
+const { CommandInteraction } = require('discord.js');
 
 i18n.setLocale(LOCALE);
 
@@ -12,34 +14,36 @@ module.exports = {
 	category: 'music',
 	description: i18n.__('remove.description'),
 	guildOnly: 'true',
+	testOnly: true,
+	slash: true,
+	options: [
+		{
+			name: 'songindex',
+			description: i18n.__('remove.optionDescription'),
+			type: 'STRING',
+			required: true,
+		},
+	],
+	/**
+	 *
+	 * @param {{interaction: CommandInteraction, args: Array<String>, prefix: String}}
+	 * @returns
+	 */
+	async callback({ interaction, args, prefix }) {
+		await interaction.deferReply({ ephemeral: true });
 
-	callback({ message, args, prefix }) {
-		const queue = message.client.queue.get(message.guild.id);
-		setTimeout(() => message.delete(), 2_500);
+		const queue = interaction.client.queue.get(interaction.guildId);
+		if (!canModifyQueue(interaction.member)) {
+			return reply({
+				interaction,
+				content: i18n.__('common.errorNotChannel'),
+				ephemeral: true,
+			});
+		}
 		if (!queue) {
-			return message.channel
-				.send(i18n.__('remove.errorNotQueue'))
-				.then((msg) => {
-					setTimeout(() => msg.delete(), MSGTIMEOUT);
-				})
-				.catch(console.error);
+			return reply({ interaction, content: i18n.__('remove.errorNotQueue'), ephemeral: true });
 		}
-		if (!canModifyQueue(message.member)) {
-			return message.channel
-				.send(i18n.__('common.errorNotChannel'))
-				.then((msg) => {
-					setTimeout(() => msg.delete(), MSGTIMEOUT);
-				})
-				.catch(console.error);
-		}
-		if (!args.length) {
-			return message.channel
-				.send(i18n.__mf('remove.usageReply', { prefix }))
-				.then((msg) => {
-					setTimeout(() => msg.delete(), MSGTIMEOUT);
-				})
-				.catch(console.error);
-		}
+
 		// const args = args//.join("");
 		const songs = args.map((arg) => parseInt(arg, 10));
 		const removed = [];
@@ -52,38 +56,28 @@ module.exports = {
 				}
 				return true;
 			});
-			npMessage({ message, prefix, npSong: queue.songs[0] });
-			message.channel
-				.send(
-					`${message.author} ❌ removed \n**${removed
-						.map((song) => song.title)
-						.join('\n& ')}** \nfrom the queue.`,
-				)
-				.then((msg) => {
-					setTimeout(() => msg.delete(), MSGTIMEOUT);
-				})
-				.catch(console.error);
+			npMessage({ interaction, prefix, npSong: queue.songs[0] });
+			await reply({ interaction, content: 'Successfully removed song(s)', ephemeral: true });
+			followUp({
+				interaction,
+				content: `<@${interaction.member.id}> ❌ removed \n**${removed
+					.map((song) => song.title)
+					.join('\n& ')}** \nfrom the queue.`,
+				ephemeral: false,
+			});
 		} else if (!Number.isNaN(args[0]) && args[0] >= 1 && args[0] <= queue.songs.length) {
-			message.channel
-				.send(
-					`${message.author} ❌ removed **${
-						queue.songs.splice(args[0] - 1, 1)[0].title
-					}** from the queue.`,
-				)
-				.then((msg) => {
-					setTimeout(() => msg.delete(), MSGTIMEOUT);
-				})
-				.catch(console.error);
-
-			return npMessage({ message, prefix, npSong: queue.songs[0] });
+			reply({ interaction, content: 'Successfully removed song(s)', ephemeral: true });
+			followUp({
+				interaction,
+				content: `<@${interaction.member.id}> ❌ removed **${
+					queue.songs.splice(args[0] - 1, 1)[0].title
+				}** from the queue.`,
+				ephemeral: false,
+			});
+			return npMessage({ interaction, prefix, npSong: queue.songs[0] });
 		} else {
-			message.channel
-				.send(i18n.__mf('remove.usageReply', { prefix }))
-				.then((msg) => {
-					setTimeout(() => msg.delete(), MSGTIMEOUT);
-				})
-				.catch(console.error);
-			return npMessage({ message, prefix, npSong: queue.songs[0] });
+			reply({ interaction, content: i18n.__mf('remove.usageReply', { prefix }), ephemeral: false });
+			return npMessage({ interaction, prefix, npSong: queue.songs[0] });
 		}
 	},
 };

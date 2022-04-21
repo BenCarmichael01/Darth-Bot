@@ -125,7 +125,8 @@
 		"description": "Remove song from the queue",
 		"errorNotQueue": "There is no queue.",
 		"usageReply": "Usage: {prefix}remove <Queue Number>",
-		"result": "<@{author}> removed **{title}** from the queue."
+		"result": "<@{author}> removed **{title}** from the queue.",
+		"optionDescription": "The number of the song[s] you want to remove"
 	},
 	"resume": {
 		"description": "Resume currently playing music",
