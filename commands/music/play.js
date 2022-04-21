@@ -34,7 +34,6 @@ module.exports = {
 		var i;
 		if (!message) {
 			i = interaction;
-			await interaction.deferReply({ ephemeral: true });
 		} else if (!interaction) {
 			i = message;
 		}
@@ -122,6 +121,7 @@ module.exports = {
 			// 	})
 			// 	.catch(console.error);
 		}
+		await interaction.deferReply({ ephemeral: false });
 
 		await playdl.setToken({
 			spotify: {
@@ -293,6 +293,15 @@ module.exports = {
 			}
 			// TODO this other play must support interactions as well
 			play({ song: queueConstruct.songs[0], message, interaction, prefix });
+			reply({
+				message,
+				interaction,
+				content: i18n.__mf('play.queueAdded', {
+					title: queueConstruct.songs[0].title,
+					author: i.member.id,
+				}),
+				ephemeral: false,
+			});
 		} catch (error) {
 			console.error(error);
 			i.client.queue.delete(i.guildId);
