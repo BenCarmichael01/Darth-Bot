@@ -30,7 +30,7 @@ module.exports = {
 			message = undefined;
 			settings = await findById(guildIdParam);
 		}
-		const guildId = guildIdParam ? guildIdParam : message.guildId;
+		const guildId = guildIdParam ? guildIdParam : message ? message.guildId : interaction.guildId;
 		const MUSIC_CHANNEL_ID = settings.musicChannel;
 		const playingMessageId = settings.playingMessage;
 
