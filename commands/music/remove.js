@@ -31,7 +31,9 @@ module.exports = {
 	 */
 	async callback({ interaction, args, prefix }) {
 		await interaction.deferReply({ ephemeral: true });
-
+		if (!prefix) {
+			prefix = 'unset';
+		}
 		const queue = interaction.client.queue.get(interaction.guildId);
 		if (!canModifyQueue(interaction.member)) {
 			return reply({
