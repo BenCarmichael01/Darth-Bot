@@ -34,6 +34,9 @@ module.exports = {
 		var i;
 		if (!message) {
 			i = interaction;
+			if (!interaction.deferred && !interaction.replied) {
+				await interaction.deferReply({ ephemeral: true });
+			}
 		} else if (!interaction) {
 			i = message;
 		}
@@ -121,7 +124,6 @@ module.exports = {
 			// 	})
 			// 	.catch(console.error);
 		}
-		await interaction.deferReply({ ephemeral: false });
 
 		await playdl.setToken({
 			spotify: {
