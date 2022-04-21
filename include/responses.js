@@ -5,9 +5,9 @@ module.exports = {
 	/**
 	 * Either replies to a discord message or interaction depending on which is passed to it
 	 * @param {{message: Message, interaction: CommandInteraction, content: string, ephemeral: boolean}}
-	 * @returns {Message} The outgoing message/interaction object
+	 * @returns {Promise<Message>} The outgoing message/interaction object
 	 */
-	reply({ message, interaction, content, ephemeral }) {
+	async reply({ message, interaction, content, ephemeral }) {
 		if (message) {
 			return message
 				.reply(content)
@@ -36,9 +36,9 @@ module.exports = {
 	/**
 	 * Either replies to a discord message or interaction depending on which is passed to it
 	 * @param {{message: Message, interaction: CommandInteraction, content: string, ephemeral: boolean}}
-	 * @returns {Message} The outgoing message/interaction object
+	 * @returns {Promise<Message>} The outgoing message/interaction object
 	 */
-	followUp({ message, interaction, content, ephemeral }) {
+	async followUp({ message, interaction, content, ephemeral }) {
 		if (message) {
 			return message.channel
 				.send(content)
