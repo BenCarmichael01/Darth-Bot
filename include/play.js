@@ -45,7 +45,7 @@ module.exports = {
 		if (!message) {
 			i = interaction;
 			if (!interaction.deferred && !interaction.replied) {
-				await interaction.deferReply({ ephemeral: true });
+				await interaction.deferReply({ ephemeral: false });
 			}
 		} else if (!interaction) {
 			i = message;
@@ -156,7 +156,15 @@ module.exports = {
 					connection.removeAllListeners();
 					player.removeAllListeners();
 					player.stop();
-					module.exports.play(queue.songs[0], i.message, prefix);
+					if (queue.songs.length > 0) {
+						module.exports.play({ song: queue.songs[0], message, interaction: i, prefix });
+					} else {
+						await npMessage({
+							message,
+							interaction,
+							prefix,
+						});
+					}
 					break;
 				}
 				case 'loop': {
@@ -239,7 +247,7 @@ module.exports = {
 					try {
 						player.emit('queueEnd');
 						player.stop();
-						npMessage({ message, prefix });
+						npMessage({ message, interaction: i, prefix });
 					} catch (error) {
 						console.error(error);
 						if (connection?.state?.status !== VoiceConnectionStatus.Destroyed) {
