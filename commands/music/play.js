@@ -2,7 +2,6 @@
 const { play } = require(`${__base}include/play`);
 const YouTubeAPI = require('simple-youtube-api');
 const playdl = require('play-dl');
-// const scdl = require('soundcloud-downloader').default;
 const i18n = require('i18n');
 const voice = require('@discordjs/voice');
 

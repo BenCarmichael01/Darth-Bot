@@ -3,7 +3,7 @@ const { canModifyQueue, LOCALE } = require(`${__base}include/utils`);
 const { npMessage } = require(`${__base}include/npmessage`);
 const i18n = require('i18n');
 const { reply, followUp } = require(`../../include/responses`);
-const { CommandInteraction } = require('discord.js');
+const { CommandInteraction } = require('discord.js'); // eslint-disable-line no-unused-vars
 
 i18n.setLocale(LOCALE);
 

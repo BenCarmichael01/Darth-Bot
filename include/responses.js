@@ -1,6 +1,6 @@
 /* global __base */
 const { MSGTIMEOUT } = require(`${__base}include/utils`);
-const { Message, CommandInteraction } = require('discord.js');
+const { Message, CommandInteraction } = require('discord.js'); // eslint-disable-line no-unused-vars
 module.exports = {
 	/**
 	 * Either replies to a discord message or interaction depending on which is passed to it
