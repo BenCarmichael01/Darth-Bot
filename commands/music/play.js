@@ -9,62 +9,11 @@ const voice = require('@discordjs/voice');
 const { npMessage } = require(`${__base}/include/npmessage`);
 const { YOUTUBE_API_KEY, LOCALE, DEFAULT_VOLUME, MSGTIMEOUT } = require(`${__base}include/utils`);
 const { findById } = require(`${__base}/include/findById`);
+const { reply, followUp } = require(`${__base}include / reponses`);
 
 i18n.setLocale(LOCALE);
 const youtube = new YouTubeAPI(YOUTUBE_API_KEY);
 
-function reply({ message, interaction, content, ephemeral }) {
-	if (message) {
-		return message
-			.reply(content)
-			.then((msg) => {
-				setTimeout(() => {
-					message.delete();
-					msg.delete();
-				}, MSGTIMEOUT);
-			})
-			.catch(console.error);
-	} else if (interaction) {
-		if (ephemeral) {
-			return interaction.editReply({ content, ephemeral });
-		} else {
-			return interaction
-				.editReply({ content })
-				.then((msg) => {
-					setTimeout(() => {
-						msg.delete();
-					}, MSGTIMEOUT);
-				})
-				.catch(console.error);
-		}
-	}
-}
-function followUp({ message, interaction, content, ephemeral }) {
-	if (message) {
-		return message.channel
-			.send(content)
-			.then((msg) => {
-				setTimeout(() => {
-					message.delete();
-					msg.delete();
-				}, MSGTIMEOUT);
-			})
-			.catch(console.error);
-	} else if (interaction) {
-		if (ephemeral) {
-			return interaction.followUp({ content, ephemeral });
-		} else {
-			return interaction
-				.followUp({ content })
-				.then((msg) => {
-					setTimeout(() => {
-						msg.delete();
-					}, MSGTIMEOUT);
-				})
-				.catch(console.error);
-		}
-	}
-}
 module.exports = {
 	name: 'play',
 	category: 'music',
