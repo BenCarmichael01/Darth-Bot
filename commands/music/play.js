@@ -31,13 +31,16 @@ module.exports = {
 
 	async callback({ message, interaction, args, prefix, instance }) {
 		var i;
+		console.log(interaction.id);
 		if (!message) {
-			i = interaction;
 			if (!interaction.deferred && !interaction.replied) {
 				await interaction.deferReply({ ephemeral: true });
 			}
+			i = interaction;
+			i.isInteraction = true;
 		} else if (!interaction) {
 			i = message;
+			i.isInteraction = false;
 		}
 		// const channel = await message.guild.channels.fetch('856658520728141834');
 		const userVc = await i.member.voice?.channel;
@@ -48,7 +51,7 @@ module.exports = {
 		if (!userVc) {
 			return reply({ message, interaction, content: i18n.__('play.errorNotChannel'), ephemeral: true });
 		}
-		if (serverQueue && userVc !== message.guild.me.voice.channel) {
+		if (serverQueue && userVc !== i.guild.me.voice.channel) {
 			return reply({
 				message,
 				interaction,
@@ -154,8 +157,9 @@ module.exports = {
 		}
 
 		message ? message.delete() : null;
+		const settings = await i.client.db.get(i.guildId);
 		const queueConstruct = {
-			textChannel: i.guild.channels.fetch(findById(i.guildId).musicChannel),
+			textChannel: await i.guild.channels.fetch(settings.musicChannel),
 			channel,
 			connection: null,
 			songs: [],
@@ -268,11 +272,12 @@ module.exports = {
 		if (serverQueue?.songs.length > 0) {
 			serverQueue.songs.push(song);
 			npMessage({ interaction, message, npSong: serverQueue.songs[0], prefix });
+			reply({ message, interaction, content: 'Success', ephemeral: true });
 			return serverQueue.textChannel
 				.send(
 					i18n.__mf('play.queueAdded', {
 						title: song.title,
-						author: message.author,
+						author: i.member.id,
 					}),
 				)
 				.then((msg) => {
@@ -282,7 +287,7 @@ module.exports = {
 		}
 
 		queueConstruct.songs.push(song);
-		i.client.queue.set(i.guild.id, queueConstruct);
+		i.client.queue.set(i.guildId, queueConstruct);
 		try {
 			if (!voice.getVoiceConnection(i.guildId)) {
 				queueConstruct.connection = voice.joinVoiceChannel({
@@ -292,17 +297,21 @@ module.exports = {
 					adapterCreator: userVc.guild.voiceAdapterCreator,
 				});
 			}
-			// TODO this other play must support interactions as well
 			play({ song: queueConstruct.songs[0], message, interaction, prefix });
-			reply({
-				message,
-				interaction,
-				content: i18n.__mf('play.queueAdded', {
-					title: queueConstruct.songs[0].title,
-					author: i.member.id,
-				}),
-				ephemeral: false,
-			});
+			reply({ message, interaction, content: 'Success', ephemeral: true });
+			queueConstruct.textChannel
+				.send({
+					content: i18n.__mf('play.queueAdded', {
+						title: queueConstruct.songs[0].title,
+						author: i.member.id,
+					}),
+				})
+				.then((msg) => {
+					setTimeout(() => {
+						msg.delete().catch(console.error);
+					}, MSGTIMEOUT);
+				})
+				.catch(console.error);
 		} catch (error) {
 			console.error(error);
 			i.client.queue.delete(i.guildId);
@@ -311,7 +320,7 @@ module.exports = {
 			return followUp({
 				message,
 				interaction,
-				content: i18n.__('play.cantJoinChannel', { error }),
+				content: i18n.__('play.cantJoinChannel', { error: error.message }),
 				ephemeral: true,
 			});
 			// return message.channel
