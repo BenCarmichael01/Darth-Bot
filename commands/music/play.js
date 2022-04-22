@@ -110,7 +110,7 @@ module.exports = {
 			return reply({
 				message,
 				interaction,
-				content: i18n.__('play.missingPermissionSpea'),
+				content: i18n.__('play.missingPermissionSpeak'),
 				ephemeral: true,
 			});
 			// return message
