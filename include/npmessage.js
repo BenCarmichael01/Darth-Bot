@@ -1,6 +1,7 @@
 ﻿/* global __base */
 const i18n = require('i18n');
 const { MessageEmbed } = require('discord.js');
+const { from_string } = require('libsodium-wrappers');
 
 const { LOCALE } = require(`${__base}include/utils`);
 const { findById } = require(`${__base}/include/findById`);
@@ -20,32 +21,32 @@ module.exports = {
 	 * @returns {[DiscordMessage, MessageReactionCollector]} An array where the first item is the sent message object and the second is the reaction collector
 	 */
 	async npMessage({ client, npSong, guildIdParam, prefix, interaction, message }) {
-		let settings = {};
+		let i;
 		if (!message && interaction && !guildIdParam) {
-			message = interaction;
-			settings = await findById(message.guildId);
+			i = interaction;
 		} else if (message) {
-			settings = await findById(message.guildId);
+			i = message;
 		} else {
-			message = undefined;
-			settings = await findById(guildIdParam);
+			i = undefined;
 		}
-		const guildId = guildIdParam ? guildIdParam : message ? message.guildId : interaction.guildId;
+		const guildId = guildIdParam ? guildIdParam : i.guildId;
+		const settings = await findById(guildId);
+
 		const MUSIC_CHANNEL_ID = settings.musicChannel;
 		const playingMessageId = settings.playingMessage;
 
 		let musicChannel = '';
-		if (message === undefined) {
+		if (i === undefined) {
 			musicChannel = await client.guilds.cache.get(guildId).channels.cache.get(MUSIC_CHANNEL_ID);
 			if (!musicChannel) {
 				return [];
 			}
 		} else {
-			musicChannel = await message.client.channels.cache.get(MUSIC_CHANNEL_ID);
+			musicChannel = await i.client.channels.cache.get(MUSIC_CHANNEL_ID);
 		}
 		let queue = [];
-		if (message !== undefined && npSong !== undefined) {
-			queue = message.client.queue.get(message.guild.id).songs;
+		if (i !== undefined && npSong !== undefined) {
+			queue = i.client.queue.get(i.guildId)?.songs;
 		}
 
 		var outputQueue = i18n.__('npmessage.emptyQueue');
