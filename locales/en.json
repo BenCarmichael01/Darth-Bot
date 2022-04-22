@@ -136,10 +136,10 @@
 	},
 	"search": {
 		"description": "Search and select videos to play",
-		"usageReply": "Usage: {prefix}{name} <Video Name>",
+		"usageReply": "Usage: {prefix}{search} <Video Name>",
 		"errorAlreadyCollector": "A message collector is already active in this channel.",
 		"errorNotChannel": "You need to join a voice channel first!",
-		"resultEmbedTtile": "**Reply with the song number you want to play**",
+		"resultEmbedTtile": "Reply with the song number you want to play\nYou have **30 seconds** to choose!",
 		"resultEmbedDesc": "Results for: {search}"
 	},
 	"shuffle": {
