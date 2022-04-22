@@ -10,47 +10,26 @@ module.exports = {
 	 * @param {{message: Message, interaction: CommandInteraction, content: string, ephemeral: boolean}}
 	 * @returns {Promise<Message>} The outgoing message/interaction object
 	 */
-	async reply({ message, interaction, content, ephemeral, embed }) {
-		if (message && !embed) {
+	async reply({ message, interaction, content, ephemeral }) {
+		if (message) {
 			return message
-				.reply({ content })
+				.reply(content)
 				.then((msg) => {
 					setTimeout(() => {
 						message.delete();
-						msg.delete();
-					}, MSGTIMEOUT);
-				})
-				.catch(console.error);
-		} else if (message && embed) {
-			return message
-				.reply({ content, embeds: [embed] })
-				.then((msg) => {
-					setTimeout(() => {
-						message.delete();
-						msg.delete();
+						msg.delete().catch();
 					}, MSGTIMEOUT);
 				})
 				.catch(console.error);
 		} else if (interaction) {
-			if (ephemeral && embed) {
-				return interaction.editReply({ content, ephemeral, embeds: [embed] });
-			} else if (ephemeral && !embed) {
-				return interaction.editReply({ content, ephemeral });
-			} else if (!ephemeral && embed) {
-				return interaction
-					.editReply({ content, embeds: [embed] })
-					.then((msg) => {
-						setTimeout(() => {
-							msg.delete();
-						}, MSGTIMEOUT);
-					})
-					.catch(console.error);
-			} else if (!ephemeral && !embed) {
+			if (ephemeral) {
+				return interaction.editReply({ content, ephemeral: true });
+			} else {
 				return interaction
 					.editReply({ content })
 					.then((msg) => {
 						setTimeout(() => {
-							msg.delete();
+							msg.delete().catch(console.error);
 						}, MSGTIMEOUT);
 					})
 					.catch(console.error);
@@ -62,47 +41,26 @@ module.exports = {
 	 * @param {{message: Message, interaction: CommandInteraction, content: string, ephemeral: boolean}}
 	 * @returns {Promise<Message>} The outgoing message/interaction object
 	 */
-	async followUp({ message, interaction, content, ephemeral, embed }) {
-		if (message && !embed) {
+	async followUp({ message, interaction, content, ephemeral }) {
+		if (message) {
 			return message.channel
 				.send(content)
 				.then((msg) => {
 					setTimeout(() => {
 						message.delete();
-						msg.delete();
-					}, MSGTIMEOUT);
-				})
-				.catch(console.error);
-		} else if (message && embed) {
-			return message.channel
-				.send({ content, embeds: [embed] })
-				.then((msg) => {
-					setTimeout(() => {
-						message.delete();
-						msg.delete();
+						msg.delete().catch();
 					}, MSGTIMEOUT);
 				})
 				.catch(console.error);
 		} else if (interaction) {
-			if (ephemeral && embed) {
-				return interaction.followUp({ content, ephemeral, embeds: [embed] });
-			} else if (ephemeral && !embed) {
+			if (ephemeral) {
 				return interaction.followUp({ content, ephemeral });
-			} else if (!ephemeral && embed) {
-				return interaction
-					.followUp({ content, embeds: [embed] })
-					.then((msg) => {
-						setTimeout(() => {
-							msg.delete();
-						}, MSGTIMEOUT);
-					})
-					.catch(console.error);
-			} else if (!ephemeral && !embed) {
+			} else {
 				return interaction
 					.followUp({ content })
 					.then((msg) => {
 						setTimeout(() => {
-							msg.delete();
+							msg.delete().catch();
 						}, MSGTIMEOUT);
 					})
 					.catch(console.error);
