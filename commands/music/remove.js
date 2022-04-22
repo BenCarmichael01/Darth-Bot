@@ -3,12 +3,13 @@ const { canModifyQueue, LOCALE } = require(`${__base}include/utils`);
 const { npMessage } = require(`${__base}include/npmessage`);
 const i18n = require('i18n');
 const { reply, followUp } = require(`../../include/responses`);
-const { CommandInteraction } = require('discord.js'); // eslint-disable-line no-unused-vars
 
 i18n.setLocale(LOCALE);
 
 const pattern = /^[0-9]{1,2}(\s*,\s*[0-9]{1,2})*$/;
-
+/**
+ * @typedef {import('discord.js').CommandInteraction} CommandInteraction
+ */
 module.exports = {
 	name: 'remove',
 	category: 'music',
