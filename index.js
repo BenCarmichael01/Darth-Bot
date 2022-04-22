@@ -184,21 +184,21 @@ client.on('messageCreate', async (message) => {
 				.catch(console.error);
 		}
 	}
+	if (!message.isCommand) return;
+	const { commandHandler } = wok;
+	const command = message.content.split(' ')[0].substring(1);
+	const commands = [''];
 
-	// const { commandHandler } = wok;
-	// const command = message.content.split(' ')[0].substring(1);
-	// const commands = [''];
+	await commandHandler.commands.forEach((cmdObj) => {
+		commands.push(cmdObj.names[0]);
+	});
 
-	// await commandHandler.commands.forEach((cmdObj) => {
-	// 	commands.push(cmdObj.names[0]);
-	// });
-
-	// if (!commands.includes(command)) {
-	// 	message.channel
-	// 		.send(i18n.__mf('common.unknownCommand', { prefix }))
-	// 		.then((msg) => {
-	// 			setTimeout(() => msg.delete(), MSGTIMEOUT);
-	// 		})
-	// 		.catch(console.error);
-	// }
+	if (!commands.includes(command)) {
+		message.channel
+			.send(i18n.__mf('common.unknownCommand', { prefix }))
+			.then((msg) => {
+				setTimeout(() => msg.delete(), MSGTIMEOUT);
+			})
+			.catch(console.error);
+	}
 });
