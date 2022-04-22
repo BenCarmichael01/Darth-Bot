@@ -3,19 +3,14 @@ const YouTubeAPI = require('simple-youtube-api');
 const { YOUTUBE_API_KEY, LOCALE } = require(`${__base}include/utils`);
 const youtube = new YouTubeAPI(YOUTUBE_API_KEY);
 const i18n = require('i18n');
-const { MessageEmbed, MessageButton, MessageActionRow, Client } = require('discord.js');
-const { reply, followUp } = require(`../../include/responses`);
+const { MessageEmbed, MessageButton, MessageActionRow } = require('discord.js');
+const { reply } = require(`../../include/responses`);
 
 i18n.setLocale(LOCALE);
 /**
  * @typedef {import('discord.js').CommandInteraction} CommandInteraction
  * @typedef {import('discord.js').Message} Message
  */
-
-function filter(msg) {
-	const pattern = /^[0-9]{1,2}(\s*,\s*[0-9]{1,2})*$/;
-	return pattern.test(msg.content);
-}
 
 module.exports = {
 	name: 'search',
@@ -37,7 +32,7 @@ module.exports = {
 	 * @param {{ interaction: CommandInteraction, args: Array<String>}}
 	 * @returns {Void}
 	 */
-	async callback({ client, interaction, instance, args, prefix }) {
+	async callback({ interaction, instance, args, prefix }) {
 		await interaction.deferReply({ ephemeral: true });
 		// if (interaction.channel.activeCollector) return message.reply(i18n.__('search.errorAlreadyCollector'));
 		if (!interaction.member.voice)
@@ -56,8 +51,9 @@ module.exports = {
 			results.map((video, index) =>
 				resultsEmbed.addField(video.shortURL, `${index + 1}. ${video.title}`),
 			);
+			let searchEmbed = new MessageEmbed().setTitle('Searching...').setColor('#F8AA2A');
 			// await interaction.editReply({ content: 'searching...', ephemeral: true });
-			await reply({ interaction, content: 'Searching...', ephemeral: true });
+			await interaction.editReply({ embeds: [searchEmbed], ephemeral: true });
 
 			const buttons = [
 				new MessageButton().setCustomId('one').setLabel('1').setStyle('PRIMARY'),
@@ -67,31 +63,32 @@ module.exports = {
 				new MessageButton().setCustomId('five').setLabel('5').setStyle('PRIMARY'),
 			];
 			const row = new MessageActionRow().addComponents(...buttons);
-			const resultsMessage = await interaction.followUp({
+
+			await interaction.editReply({
 				embeds: [resultsEmbed],
 				components: [row],
-				fetchReply: true,
+				ephemeral: true,
 			});
-			// const filter = (interaction) => {
-			// 	// interaction.message.id === resultsMessage.id;
-			// };
-			const collector = await resultsMessage.createMessageComponentCollector({
-				time: 30_000,
-				componentType: 'BUTTON',
-			});
+
+			const collector = await interaction
+				.fetchReply()
+				.then((reply) => {
+					return reply.createMessageComponentCollector({
+						time: 30_000,
+						componentType: 'BUTTON',
+					});
+				})
+				.catch(console.error);
+
 			collector.on('collect', async (i) => {
-				console.log('why');
-				i.deferReply({ ephemeral: true });
+				await i.deferReply({ ephemeral: true });
 				switch (i.customId) {
 					case 'one': {
 						const choice = resultsEmbed.fields[0].name;
-						await i.editReply({
-							content: `Now playing: ${results[0].title}`,
-							ephemeral: true,
-						});
 						instance.commandHandler
 							.getCommand('play')
 							.callback({ interaction: i, args: [choice], prefix });
+						collector.stop('choiceMade');
 						break;
 					}
 					case 'two': {
@@ -99,6 +96,7 @@ module.exports = {
 						instance.commandHandler
 							.getCommand('play')
 							.callback({ interaction: i, args: [choice], prefix });
+						collector.stop('choiceMade');
 						break;
 					}
 					case 'three': {
@@ -106,6 +104,7 @@ module.exports = {
 						instance.commandHandler
 							.getCommand('play')
 							.callback({ interaction: i, args: [choice], prefix });
+						collector.stop('choiceMade');
 						break;
 					}
 					case 'four': {
@@ -113,6 +112,7 @@ module.exports = {
 						instance.commandHandler
 							.getCommand('play')
 							.callback({ interaction: i, args: [choice], prefix });
+						collector.stop('choiceMade');
 						break;
 					}
 					case 'five': {
@@ -120,44 +120,13 @@ module.exports = {
 						instance.commandHandler
 							.getCommand('play')
 							.callback({ interaction: i, args: [choice], prefix });
+						collector.stop('choiceMade');
 						break;
 					}
 				}
 			});
-			collector.on('end', () => {
-				console.log('end');
-			});
-			// interaction.channel.activeCollector = true;
-			// const response = await interaction.channel.awaitMessages(filter, {
-			// 	max: 1,
-			// 	time: 30000,
-			// 	errors: ['time'],
-			// });
-			// const answer = response.first().content;
-
-			// if (reply.includes(',')) {
-			// 	let songs = reply.split(',').map((str) => str.trim());
-
-			// 	for (let song of songs) {
-			// 		await message.client.commands
-			// 			.get('play')
-			// 			.execute(message, [resultsEmbed.fields[parseInt(song) - 1].name]);
-			// 	}
-			// } else {
-			// 	const choice = resultsEmbed.fields[parseInt(response.first()) - 1].name;
-			// 	message.client.commands.get('play').execute(message, [choice]);
-			// }
-
-			// message.channel.activeCollector = false;
-			setTimeout(() => {
-				resultsMessage.delete().catch(console.error);
-			}, 30_000);
-
-			// response.first().delete().catch(console.error);
 		} catch (error) {
 			console.error(error);
-			interaction.channel.activeCollector = false;
-			// message.reply(error.message).catch(console.error);
 		}
 	},
 };
