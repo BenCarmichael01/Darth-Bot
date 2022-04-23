@@ -30,15 +30,13 @@ module.exports = {
 	/**
 	 *
 	 * @param {{ interaction: CommandInteraction, args: Array<String>}}
-	 * @returns {Void}
+	 * @returns {undefined}
 	 */
 	async callback({ interaction, instance, args, prefix }) {
 		await interaction.deferReply({ ephemeral: true });
-		// if (interaction.channel.activeCollector) return message.reply(i18n.__('search.errorAlreadyCollector'));
 		if (!interaction.member.voice)
 			return await reply({ interaction, content: i18n.__('search.errorNotChannel'), ephemeral: true });
 
-		// const search = args.join(' ');
 		const search = args[0];
 
 		let resultsEmbed = new MessageEmbed()
@@ -52,7 +50,7 @@ module.exports = {
 				resultsEmbed.addField(video.shortURL, `${index + 1}. ${video.title}`),
 			);
 			let searchEmbed = new MessageEmbed().setTitle('Searching...').setColor('#F8AA2A');
-			// await interaction.editReply({ content: 'searching...', ephemeral: true });
+
 			await interaction.editReply({ embeds: [searchEmbed], ephemeral: true });
 
 			const buttons = [
