@@ -1,5 +1,5 @@
 /* global __base */
-const { canModifyQueue, LOCALE } = require(`${__base}include/utils`);
+const { canModifyQueue, LOCALE, MSGTIMEOUT } = require(`${__base}include/utils`);
 const { npMessage } = require(`${__base}include/npmessage`);
 const i18n = require('i18n');
 const { reply } = require(`../../include/responses`);
@@ -33,11 +33,22 @@ module.exports = {
 			queue.songs = songs;
 			interaction.client.queue.set(interaction.guildId, queue);
 			npMessage({ interaction, npSong: songs[0], prefix });
-			await reply({
+			reply({
 				interaction,
-				content: i18n.__mf('shuffle.result', { author: interaction.member.id }),
+				content: i18n.__('shuffle.success'),
 				ephemeral: true,
 			});
+			queue.textChannel
+				.send({
+					content: i18n.__mf('shuffle.result', { author: interaction.member.id }),
+					ephemeral: false,
+				})
+				.then((msg) => {
+					setTimeout(() => {
+						msg.delete().catch(console.error);
+					}, MSGTIMEOUT);
+				})
+				.catch(console.error);
 			return;
 		} catch (error) {
 			console.error(error);
