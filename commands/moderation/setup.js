@@ -45,7 +45,11 @@ module.exports = {
 
 		const connections = await voice.getVoiceConnections();
 		connections?.forEach((connection) => {
-			connection.emit('setup');
+			let channel = connection.joinConfig.channelId;
+			let { guildId } = client.channels.resolve(channel);
+			if (guildId === interaction.guildId) {
+				connection.emit('setup');
+			}
 		});
 
 		if (isChannel(channelTag, interaction)) {
