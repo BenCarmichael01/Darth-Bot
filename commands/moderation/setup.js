@@ -1,4 +1,4 @@
-﻿/* global __base */
+/* global __base */
 const i18n = require('i18n');
 const { MessageEmbed, MessageActionRow, MessageButton } = require('discord.js');
 
@@ -30,7 +30,7 @@ module.exports = {
 			name: 'channel',
 			description: 'The channel to be used for the music player',
 			type: 'CHANNEL',
-			channelType: 'GUILD_TEXT',
+			channelTypes: ['GUILD_TEXT'],
 			required: true,
 		},
 	],
