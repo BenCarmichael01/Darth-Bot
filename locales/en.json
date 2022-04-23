@@ -157,7 +157,8 @@
 		"usageReply": "Usage: {prefix}{name} <Queue Number>",
 		"errorNotQueue": "There is no queue.",
 		"errorNotValid": "The queue is only {length} songs long!",
-		"result": "<@{author}> skipped {arg} songs"
+		"result": "<@{author}> skipped {arg} songs",
+		"success": "Successfully skipped to track {track}"
 	},
 	"stop": {
 		"description": "Stops the music",
