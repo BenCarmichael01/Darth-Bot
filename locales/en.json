@@ -145,7 +145,8 @@
 	"shuffle": {
 		"description": "Shuffles the queue",
 		"errorNotQueue": "There is no queue to shuffle.",
-		"result": "<@{author}> has shuffled the queue"
+		"result": "<@{author}> has shuffled the queue",
+		"success": "Succesfully shuffled the queue"
 	},
 	"skip": {
 		"description": "Skip the currently playing song",
