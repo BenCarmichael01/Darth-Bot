@@ -7,7 +7,6 @@ const voice = require('@discordjs/voice');
 
 const { npMessage } = require(`${__base}/include/npmessage`);
 const { YOUTUBE_API_KEY, LOCALE, DEFAULT_VOLUME, MSGTIMEOUT } = require(`${__base}include/utils`);
-const { findById } = require(`${__base}/include/findById`);
 const { reply, followUp } = require(`${__base}include/responses`);
 
 i18n.setLocale(LOCALE);
@@ -162,6 +161,7 @@ module.exports = {
 			textChannel: await i.guild.channels.fetch(settings.musicChannel),
 			channel,
 			connection: null,
+			player: null,
 			songs: [],
 			loop: false,
 			volume: DEFAULT_VOLUME || 100,

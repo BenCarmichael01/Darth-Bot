@@ -82,6 +82,7 @@ module.exports = {
 		const player = voice.createAudioPlayer({
 			behaviors: { noSubscriber: voice.NoSubscriberBehavior.Pause },
 		});
+		queue.player = player;
 
 		player.on('error', (error) => {
 			console.error(`Error: ${error.message} with resource`);
@@ -286,6 +287,14 @@ module.exports = {
 		});
 		player.on('queueEnd', () => {
 			queue = undefined;
+		});
+		player.on('skipTo', () => {
+			queue = i.client.queue.get(i.guildId);
+			collector.stop('skipSong');
+			connection.removeAllListeners();
+			player.removeAllListeners();
+			player.stop();
+			module.exports.play({ song: queue.songs[0], message, interaction: i, prefix });
 		});
 		player.on(AudioPlayerStatus.Idle, async () => {
 			try {
