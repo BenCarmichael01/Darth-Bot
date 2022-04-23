@@ -10,9 +10,9 @@ i18n.setLocale(LOCALE);
  */
 
 module.exports = {
-	name: 'skipto',
+	name: 'jump',
 	category: 'music',
-	description: i18n.__('skipto.description'),
+	description: i18n.__('jump.description'),
 	guildOnly: 'true',
 	testOnly: true,
 	slash: true,
@@ -30,11 +30,11 @@ module.exports = {
 	 * @param {{interaction: CommandInteraction, args: Array<Strings> }}
 	 * @returns
 	 */
-	callback({ interaction, args }) {
-		interaction.deferReply({ ephemeral: true });
+	async callback({ interaction, args }) {
+		await interaction.deferReply({ ephemeral: true });
 
 		const queue = interaction.client.queue.get(interaction.guildId);
-		if (!queue) return reply({ interaction, content: i18n.__('skipto.errorNotQueue'), ephemeral: true });
+		if (!queue) return reply({ interaction, content: i18n.__('jump.errorNotQueue'), ephemeral: true });
 
 		if (!canModifyQueue(interaction.member)) {
 			return reply({ interaction, content: i18n.__('common.errorNotChannel'), ephemeral: true });
@@ -42,7 +42,7 @@ module.exports = {
 		if (args[0] > queue.songs.length) {
 			return reply({
 				interaction,
-				content: i18n.__mf('skipto.errorNotValid', {
+				content: i18n.__mf('jump.errorNotValid', {
 					length: queue.songs.length,
 				}),
 				ephemeral: true,
@@ -57,11 +57,11 @@ module.exports = {
 		} else {
 			queue.songs = queue.songs.slice(args[0] - 2);
 		}
-		queue.player.emit('skipTo');
-		reply({ interaction, content: i18n.__mf('skipTo.success', { track: args[0] }) });
+		queue.player.emit('jump');
+		reply({ interaction, content: i18n.__mf('jump.success', { track: args[0] }) });
 		queue.textChannel
 			.send(
-				i18n.__mf('skipto.result', {
+				i18n.__mf('jump.result', {
 					author: interaction.member.id,
 					arg: args[0] - 1,
 				}),

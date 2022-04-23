@@ -288,7 +288,7 @@ module.exports = {
 		player.on('queueEnd', () => {
 			queue = undefined;
 		});
-		player.on('skipTo', () => {
+		player.on('jump', () => {
 			queue = i.client.queue.get(i.guildId);
 			collector.stop('skipSong');
 			connection.removeAllListeners();
