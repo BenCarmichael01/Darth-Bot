@@ -164,17 +164,12 @@ module.exports = {
 					const results = await youtube.searchVideos(search, 1, {
 						part: 'snippet.title, snippet.maxRes, snippet.durationSeconds',
 					});
-					// let [search] = await playdl.search(tracks[i].name, {
-					// 	source: { youtube: 'video' },
-					// 	limit: 1,
-					// });
 					const searchResult = results[0];
 					if (!searchResult) continue;
 					let song = {
 						title: searchResult?.title,
 						url: searchResult?.url,
 						thumbUrl: searchResult?.maxRes.url,
-						// thumbUrl: search.thumbnails[search.thumbnails.length - 1].url,
 						duration: searchResult?.durationInSec,
 					};
 					videos.push(song);
@@ -196,10 +191,6 @@ module.exports = {
 					limit: 1,
 				});
 				await playlist.all_videos();
-				// const results = await youtube.searchPlaylists(search, 1, {
-				// 	part: "snippet"
-				// });
-				// [playlist] = results;
 				for (
 					let i = 0;
 					i <= (MAX_PLAYLIST_SIZE ? MAX_PLAYLIST_SIZE : 100) && i < playlist.videos.length;
@@ -240,7 +231,6 @@ module.exports = {
 		} else {
 			queueConstruct.songs.push(...videos);
 		}
-		// serverQueue ? serverQueue.songs.push(...newSongs) : queueConstruct.songs.push(...newSongs);
 		if (!serverQueue) {
 			i.client.queue.set(i.guildId, queueConstruct);
 

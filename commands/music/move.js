@@ -39,15 +39,6 @@ module.exports = {
 				return interaction.editReply({ content: i18n.__('move.errorNotQueue'), ephemeral: true });
 			}
 			if (!canModifyQueue(interaction.member)) return;
-
-			// if (!args.length) {
-			// 	return message
-			// 		.reply(i18n.__mf('move.usagesReply', { prefix }))
-			// 		.then((msg) => {
-			// 			setTimeout(() => msg.delete(), MSGTIMEOUT);
-			// 		})
-			// 		.catch(console.error);
-			// }
 			if (Number.isNaN(args[0]) || args[0] < 1) {
 				return interaction.editReply({
 					content: i18n.__mf('move.usagesReply', { prefix }),

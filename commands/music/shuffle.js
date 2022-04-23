@@ -17,7 +17,6 @@ module.exports = {
 	async callback({ interaction, prefix }) {
 		try {
 			await interaction.deferReply({ ephemeral: true });
-			// const command = message ? message : interaction;
 			const queue = interaction.client.queue.get(interaction.guildId);
 			if (!queue) {
 				return reply({ interaction, content: i18n.__('shuffle.errorNotQueue'), ephemeral: true });

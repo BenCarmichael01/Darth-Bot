@@ -35,7 +35,6 @@ module.exports = {
 		);
 		interaction.reply({
 			content: i18n.__mf('roll.reply', { roll: output.toString() }),
-			// content: `${output.toString()}\nPress the button bellow to re-roll with the same range`,
 			components: [row],
 		});
 
@@ -45,7 +44,6 @@ module.exports = {
 				let reRoll = roll(args);
 				i.update({
 					content: i18n.__mf('roll.reply', { roll: reRoll.toString() }),
-					// content: `${reRoll.toString()}\nPress the button bellow to re-roll with the same range`,
 					components: [row],
 				});
 			}

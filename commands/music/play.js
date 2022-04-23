@@ -41,7 +41,7 @@ module.exports = {
 			i = message;
 			i.isInteraction = false;
 		}
-		// const channel = await message.guild.channels.fetch('856658520728141834');
+
 		const userVc = await i.member.voice?.channel;
 		const channel = await i.guild.me.voice.channel;
 		const serverQueue = i.client.queue.get(i.guildId);
@@ -59,19 +59,6 @@ module.exports = {
 				}),
 				ephemeral: true,
 			});
-			// return message
-			// 	.reply(
-			// 		i18n.__mf('play.errorNotInSameChannel', {
-			// 			user: message.client.user,
-			// 		}),
-			// 	)
-			// 	.then((msg) => {
-			// 		setTimeout(() => {
-			// 			msg.delete();
-			// 			message.delete();
-			// 		}, MSGTIMEOUT);
-			// })
-			// .catch(console.error);
 		}
 		if (!args.length) {
 			return reply({
@@ -80,15 +67,6 @@ module.exports = {
 				content: i18n.__mf('play.usageReply', { prefix }),
 				ephemeral: true,
 			});
-			// return message
-			// 	.reply(i18n.__mf('play.usageReply', { prefix }))
-			// 	.then((msg) => {
-			// 		setTimeout(() => {
-			// 			msg.delete();
-			// 			message.delete();
-			// 		}, MSGTIMEOUT);
-			// 	})
-			// 	.catch(console.error);
 		}
 		const permissions = userVc.permissionsFor(i.client.user);
 		if (!permissions.has('CONNECT')) {
@@ -98,15 +76,6 @@ module.exports = {
 				content: i18n.__('play.missingPermissionConnect'),
 				ephemeral: true,
 			});
-			// return message
-			// 	.reply(i18n.__('play.missingPermissionConnect'))
-			// 	.then((msg) => {
-			// 		setTimeout(() => {
-			// 			msg.delete();
-			// 			message.delete();
-			// 		}, MSGTIMEOUT);
-			// 	})
-			// 	.catch(console.error);
 		}
 		if (!permissions.has('SPEAK')) {
 			return reply({
@@ -115,15 +84,6 @@ module.exports = {
 				content: i18n.__('play.missingPermissionSpeak'),
 				ephemeral: true,
 			});
-			// return message
-			// 	.reply(i18n.__('play.missingPermissionSpeak'))
-			// 	.then((msg) => {
-			// 		setTimeout(() => {
-			// 			msg.delete();
-			// 			message.delete();
-			// 		}, MSGTIMEOUT);
-			// 	})
-			// 	.catch(console.error);
 		}
 
 		await playdl.setToken({
@@ -189,16 +149,6 @@ module.exports = {
 						error: error.message ? error.message : error,
 					}),
 				});
-				// return message.channel
-				// 	.send(
-				// 		i18n.__mf('play.queueError', {
-				// 			error: error.message ? error.message : error,
-				// 		}),
-				// 	)
-				// 	.then((msg) => {
-				// 		setTimeout(() => msg.delete(), MSGTIMEOUT + 1_500);
-				// 	})
-				// 	.catch(console.error);
 			}
 		} else if (isSpotify === 'track') {
 			try {
@@ -224,16 +174,6 @@ module.exports = {
 						error: error.message ? error.message : error,
 					}),
 				});
-				// return message.channel
-				// 	.send(
-				// 		i18n.__mf('play.queueError', {
-				// 			error: error.message ? error.message : error,
-				// 		}),
-				// 	)
-				// 	.then((msg) => {
-				// 		setTimeout(() => msg.delete(), MSGTIMEOUT + 1_500);
-				// 	})
-				// 	.catch(console.error);
 			}
 		} else {
 			try {
@@ -256,16 +196,6 @@ module.exports = {
 						error: error.message ? error.message : error,
 					}),
 				});
-				// return message.channel
-				// 	.send(
-				// 		i18n.__mf('play.queueError', {
-				// 			error: error.message ? error.message : error,
-				// 		}),
-				// 	)
-				// 	.then((msg) => {
-				// 		setTimeout(() => msg.delete(), MSGTIMEOUT + 1_500);
-				// 	})
-				// 	.catch(console.error);
 			}
 		}
 
@@ -316,19 +246,12 @@ module.exports = {
 			console.error(error);
 			i.client.queue.delete(i.guildId);
 			await queueConstruct.connection.destroy();
-			// await channel.leave();
 			return followUp({
 				message,
 				interaction,
 				content: i18n.__('play.cantJoinChannel', { error: error.message }),
 				ephemeral: true,
 			});
-			// return message.channel
-			// 	.send(i18n.__('play.cantJoinChannel', { error }))
-			// 	.then((msg) => {
-			// 		setTimeout(() => msg.delete(), MSGTIMEOUT);
-			// 	})
-			// 	.catch(console.error);
 		}
 
 		return 1;
