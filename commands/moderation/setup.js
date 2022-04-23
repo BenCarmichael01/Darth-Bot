@@ -21,7 +21,7 @@ module.exports = {
 	name: 'setup',
 	category: 'moderation',
 	description: 'Setup the channel you want to use for the music player',
-	guildOnly: 'true',
+	guildOnly: true,
 	permissions: ['ADMINISTRATOR'],
 	testOnly: true,
 	slash: true,
