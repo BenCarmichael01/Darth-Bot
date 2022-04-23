@@ -213,7 +213,7 @@ module.exports = {
 					}
 					queue.songs = songs;
 					i.client.queue.set(i.guildId, queue);
-					npMessage({ message, npSong: song, prefix });
+					npMessage({ interaction: i, npSong: song, prefix });
 					i.editReply({
 						content: i18n.__mf('shuffle.result', {
 							author: name,
