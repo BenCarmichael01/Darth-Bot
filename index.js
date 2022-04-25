@@ -21,7 +21,7 @@ const client = new discordjs.Client({
 	// owner: '337710838469230592',
 });
 
-client.login(process.env.DISCORD_TOKEN_DEV);
+client.login(process.env.DISCORD_TOKEN);
 client.queue = new Map();
 client.db = new discordjs.Collection();
 // client.commands = new Discord.Collection();
