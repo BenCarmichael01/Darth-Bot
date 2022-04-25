@@ -82,7 +82,7 @@ client.on('ready', async () => {
 
 	wok = new WOKCommands(client, {
 		commandsDir: path.join(__dirname, 'commands'),
-		testServers: ['756990417630789744', '856658520270307339'],
+		testServers: ['756990417630789744', '856658520270307339', '718928540460122242'],
 		botOwners: '337710838469230592',
 		mongoUri: process.env.MONGO_URI,
 		delErrMsgCooldown: 5,
@@ -96,6 +96,7 @@ client.on('ready', async () => {
 		await client.guilds.fetch().then((cache) => {
 			cache.each(async (guild) => {
 				findById(guild.id).then(async (dbEntry) => {
+					if (!dbEntry) return;
 					const { _doc } = dbEntry;
 					delete _doc._id;
 					delete _doc.__v;
