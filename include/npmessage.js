@@ -1,109 +1,83 @@
-﻿/* global __base */
+﻿const Discord = require('discord.js');
 const i18n = require('i18n');
-const { MessageEmbed } = require('discord.js');
-const { from_string } = require('libsodium-wrappers');
+const { LOCALE } = require('../util/utils');
 
-const { LOCALE } = require(`${__base}include/utils`);
-const { findById } = require(`${__base}/include/findById`);
-
+const { MessageEmbed } = Discord;
 i18n.setLocale(LOCALE);
-// TODO update npmessage when prefix is changed
-module.exports = {
-	/**
-	 *
-	 * @param {object} args
-	 * @param {DiscordClient} args.client
-	 * @param {DiscordMessage} args.message
-	 * @param {object} args.npSong
-	 * @param {String} args.guildIdParam
-	 * @param {String} args.prefix
-	 * @param {DiscordInteraction} args.interaction
-	 * @returns {[DiscordMessage, MessageReactionCollector]} An array where the first item is the sent message object and the second is the reaction collector
-	 */
-	async npMessage({ client, npSong, guildIdParam, prefix, interaction, message }) {
-		let i;
-		if (!message && interaction && !guildIdParam) {
-			i = interaction;
-		} else if (message) {
-			i = message;
-		} else {
-			i = undefined;
-		}
-		const guildId = guildIdParam ? guildIdParam : i.guildId;
-		const settings = await findById(guildId);
 
-		const MUSIC_CHANNEL_ID = settings.musicChannel;
-		const playingMessageId = settings.playingMessage;
+module.exports = {
+	async npMessage(args) {
+		const {
+			client,
+			message,
+			npSong,
+			guildIdParam,
+		} = args;
+
+		const guildId = (guildIdParam ? guildIdParam : message.guild.id);
+		const prefix = (message ? message.guild.commandPrefix : client.guilds.cache.get(guildId).commandPrefix);
+		const MUSIC_CHANNEL_ID = (await message ? await message.guild : await client.guilds.cache.get(guildId)).settings.get('musicChannel');
+		const playingMessageId = (await message ? await message.guild : await client.guilds.cache.get(guildId)).settings.get('playingMessage');
 
 		let musicChannel = '';
-		if (i === undefined) {
+		if (message === undefined) {
 			musicChannel = await client.guilds.cache.get(guildId).channels.cache.get(MUSIC_CHANNEL_ID);
-			if (!musicChannel) {
-				return [];
-			}
 		} else {
-			musicChannel = await i.client.channels.cache.get(MUSIC_CHANNEL_ID);
+			musicChannel = await message.client.channels.cache.get(MUSIC_CHANNEL_ID);
 		}
 		let queue = [];
-		if (i !== undefined && npSong !== undefined) {
-			queue = i.client.queue.get(i.guildId)?.songs;
+		if (message !== undefined && npSong !== undefined) {
+			queue = message.client.queue.get(message.guild.id).songs;
 		}
 
-		var outputQueue = i18n.__('npmessage.emptyQueue');
+		var outputQueue = '__**Up Next:**__:\nSend a url or a song name to start the queue';
 		var songsQueue = '';
 		if (queue) {
-			const displayQueue = queue.slice(1, 11);
+			const currentQueue = queue.slice(1, 22);
 
 			let index = 0;
-			for (let i = 0; i < displayQueue.length; i++) {
+			for (let i = 0; i < currentQueue.length; i++) {
 				index = i + 1;
-				songsQueue = `**${index}.** ${displayQueue[i].title}\n ${songsQueue}`;
-				if (i === displayQueue.length - 1 && queue.length - 1 > displayQueue.length) {
-					const overflow = queue.length - 1 - displayQueue.length;
-					if (overflow === 1 && i < displayQueue.length) {
-						songsQueue = `**${index + 1}.** ${queue[i + 2].title}\n ${songsQueue}`;
-						break;
-					} else if (overflow > 1) {
-						songsQueue = i18n.__mf('npmessage.overflow', { overflow, songsQueue });
-						break;
-					}
-				}
+				songsQueue = `**${index}.** ${currentQueue[i].title}\n ${songsQueue}`;
 			}
-			outputQueue = i18n.__mf('npmessage.outputQueue', { songsQueue });
+			outputQueue = `__**Up Next:**__:\n ${songsQueue}`;
 		}
 		let newEmbed = {};
 		if (npSong === undefined) {
 			newEmbed = new MessageEmbed()
 				.setColor('#5865F2')
-				.setTitle(i18n.__('npmessage.title'))
+				.setTitle('🎶 Nothing is playing right now')
 				.setURL('')
 				.setImage('https://i.imgur.com/TObp4E6.jpg')
-				.setFooter(i18n.__mf('npmessage.prefix', { prefix }));
+				.setFooter(`The prefix for this server is ${prefix}`);
 		} else {
 			newEmbed = new MessageEmbed()
 				.setColor('#5865F2')
-				.setTitle(i18n.__mf('npmessage.titleSong', { title: npSong.title }))
+				.setTitle(`🎶 Now playing: ${npSong.title}`)
 				.setURL(npSong.url)
 				.setImage(npSong.thumbUrl)
-				.setFooter(i18n.__mf('npmessage.prefix', { prefix }));
+				.setFooter(`The prefix for this server is ${prefix}`);
 		}
 
-		const output1 = await musicChannel.messages
-			.fetch({ limit: 10 })
+		const output1 = await musicChannel.messages.fetch({ limit: 10 })
 			.then(async (messages) => {
 				const outputArr = [];
 				outputArr[0] = await messages.get(playingMessageId);
 				// Change now playing message to match current song
-				outputArr[0].edit({ content: outputQueue, embeds: [newEmbed] });
+				outputArr[0].edit(outputQueue, newEmbed);
 				// outputArr[0].edit({ content: outputQueue, embeds: [newEmbed] });
 				return outputArr;
 			})
 			.then(async (outputArr) => {
+				const filter = (reaction, user) => user.id !== (message ? message.client : client).user.id;
+
 				const outputVar = outputArr;
-				outputVar[1] = outputArr[0].createMessageComponentCollector({ componentType: 'BUTTON' });
+				outputVar[1] = outputArr[0].createReactionCollector(filter, {
+					time: npSong === undefined || npSong.duration < 0 ? 600000 : npSong.duration * 1000,
+				});
+
 				return outputVar;
-			})
-			.catch(console.error);
+			}).catch(console.error);
 
 		return output1;
 		// outputs an arrray with the first item being the playingMessage and the second being the reaction collector

@@ -1,56 +1,32 @@
-/* global __base */
-const { canModifyQueue, LOCALE, MSGTIMEOUT } = require(`${__base}include/utils`);
-const { npMessage } = require(`${__base}include/npmessage`);
-const i18n = require('i18n');
-const { reply } = require(`../../include/responses`);
+const { canModifyQueue, LOCALE } = require("../../util/utils");
+const i18n = require("i18n");
+const Commando = require('discord.js-commando')
+const path = require('path');
 
 i18n.setLocale(LOCALE);
 
-module.exports = {
-	name: 'shuffle',
-	category: 'music',
-	description: i18n.__('shuffle.description'),
-	guildOnly: 'true',
-	slash: true,
-	testOnly: true,
+module.exports = class shuffleCommand extends Commando.Command {
+	constructor(client) {
+		super(client, {
+			name: 'shuffle',
+			group: 'music',
+			memberName: 'shuffle',
+			description: i18n.__("shuffle.description"),
+			guildOnly: 'true',
+		})
+	};
+	async run(message, args) {
+		const queue = message.client.queue.get(message.guild.id);
+		if (!queue) return message.channel.send(i18n.__("shuffle.errorNotQueue")).catch(console.error);
+		if (!canModifyQueue(message.member)) return i18n.__("common.errorNotChannel");
 
-	async callback({ interaction, prefix }) {
-		try {
-			await interaction.deferReply({ ephemeral: true });
-			const queue = interaction.client.queue.get(interaction.guildId);
-			if (!queue) {
-				return reply({ interaction, content: i18n.__('shuffle.errorNotQueue'), ephemeral: true });
-			}
-			if (!canModifyQueue(interaction.member)) {
-				return reply({ interaction, content: i18n.__('common.errorNotChannel'), ephemeral: true });
-			}
-			const { songs } = queue;
-			for (let i = songs.length - 1; i > 1; i--) {
-				const j = 1 + Math.floor(Math.random() * i);
-				[songs[i], songs[j]] = [songs[j], songs[i]];
-			}
-			queue.songs = songs;
-			interaction.client.queue.set(interaction.guildId, queue);
-			npMessage({ interaction, npSong: songs[0], prefix });
-			reply({
-				interaction,
-				content: i18n.__('shuffle.success'),
-				ephemeral: true,
-			});
-			queue.textChannel
-				.send({
-					content: i18n.__mf('shuffle.result', { author: interaction.member.id }),
-					ephemeral: false,
-				})
-				.then((msg) => {
-					setTimeout(() => {
-						msg.delete().catch(console.error);
-					}, MSGTIMEOUT);
-				})
-				.catch(console.error);
-			return;
-		} catch (error) {
-			console.error(error);
+		let songs = queue.songs;
+		for (let i = songs.length - 1; i > 1; i--) {
+			let j = 1 + Math.floor(Math.random() * i);
+			[songs[i], songs[j]] = [songs[j], songs[i]];
 		}
-	},
+		queue.songs = songs;
+		message.client.queue.set(message.guild.id, queue);
+		queue.textChannel.send(i18n.__mf('shuffle.result', { author: message.author })).catch(console.error);
+	}
 };
