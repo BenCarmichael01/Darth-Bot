@@ -1,0 +1,21 @@
+		{
+		"no-await-in-loop": 0,
+		"class-methods-use-this": "off",
+		"no-unneeded-ternary": "off",
+		"import/no-unresolved": [2, { "caseSensitive": false, "commonjs": true }],
+		"import/no-dynamic-require": 0,
+		"no-console": 0,
+		"no-plusplus": ["error", { "allowForLoopAfterthoughts": true }],
+		"import/extensions": [
+			0,
+			{
+				"js": "ignorePackages",
+				"json": "ignorePackages"
+			}
+		],
+		"no-underscore-dangle": 0,
+		"no-bitwise": "off",
+		"no-var": "off",
+		"vars-on-top": "off"
+	}
+	// Use prettier-eslint extension to format code. 

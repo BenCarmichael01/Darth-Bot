@@ -1,74 +1,130 @@
-const { MessageEmbed } = require("discord.js");
-const YouTubeAPI = require("simple-youtube-api");
-const { YOUTUBE_API_KEY, LOCALE } = require("../../util/utils");
+/* global __base */
+const YouTubeAPI = require('simple-youtube-api');
+const { YOUTUBE_API_KEY, LOCALE } = require(`${__base}include/utils`);
 const youtube = new YouTubeAPI(YOUTUBE_API_KEY);
-const i18n = require("i18n");
-const Commando = require('discord.js-commando')
-const path = require('path');
+const i18n = require('i18n');
+const { MessageEmbed, MessageButton, MessageActionRow } = require('discord.js');
+const { reply } = require(`../../include/responses`);
 
 i18n.setLocale(LOCALE);
+/**
+ * @typedef {import('discord.js').CommandInteraction} CommandInteraction
+ * @typedef {import('discord.js').Message} Message
+ */
 
-module.exports = class searchCommand extends Commando.Command {
-	constructor(client) {
-		super(client, {
+module.exports = {
+	name: 'search',
+	category: 'music',
+	description: i18n.__('search.description'),
+	guildOnly: 'true',
+	slash: true,
+	testOnly: true,
+	options: [
+		{
 			name: 'search',
-			group: 'music',
-			memberName: 'search',
-			description: i18n.__("search.description"),
-			guildOnly: 'true',
-		})
-	};
-	async run(message, args) {
-		if (!args.length)
-			return message
-				.reply(i18n.__mf("search.usageReply", { prefix: message.client.prefix, name: module.exports.name }))
-				.catch(console.error);
-		if (message.channel.activeCollector) return message.reply(i18n.__("search.errorAlreadyCollector"));
-		if (!message.member.voice.channel)
-			return message.reply(i18n.__("search.errorNotChannel")).catch(console.error);
+			description: 'The term to search for',
+			type: 'STRING',
+			required: true,
+		},
+	],
+	/**
+	 *
+	 * @param {{ interaction: CommandInteraction, args: Array<String>}}
+	 * @returns {undefined}
+	 */
+	async callback({ interaction, instance, args, prefix }) {
+		await interaction.deferReply({ ephemeral: true });
+		if (!interaction.member.voice)
+			return await reply({ interaction, content: i18n.__('search.errorNotChannel'), ephemeral: true });
 
-		const search = args.join(" ");
+		const search = args[0];
 
 		let resultsEmbed = new MessageEmbed()
-			.setTitle(i18n.__("search.resultEmbedTtile"))
-			.setDescription(i18n.__mf("search.resultEmbedDesc", { search: search }))
-			.setColor("#F8AA2A");
+			.setTitle(i18n.__('search.resultEmbedTtile'))
+			.setDescription(i18n.__mf('search.resultEmbedDesc', { search: search }))
+			.setColor('#F8AA2A');
 
 		try {
-			const results = await youtube.searchVideos(search, 10);
-			results.map((video, index) => resultsEmbed.addField(video.shortURL, `${index + 1}. ${video.title}`));
+			const results = await youtube.searchVideos(search, 5);
+			results.map((video, index) =>
+				resultsEmbed.addField(video.shortURL, `${index + 1}. ${video.title}`),
+			);
+			let searchEmbed = new MessageEmbed().setTitle('Searching...').setColor('#F8AA2A');
 
-			let resultsMessage = await message.channel.send(resultsEmbed);
+			await interaction.editReply({ embeds: [searchEmbed], ephemeral: true });
 
-			function filter(msg) {
-				const pattern = /^[0-9]{1,2}(\s*,\s*[0-9]{1,2})*$/;
-				return pattern.test(msg.content);
-			}
+			const buttons = [
+				new MessageButton().setCustomId('one').setLabel('1').setStyle('PRIMARY'),
+				new MessageButton().setCustomId('two').setLabel('2').setStyle('PRIMARY'),
+				new MessageButton().setCustomId('three').setLabel('3').setStyle('PRIMARY'),
+				new MessageButton().setCustomId('four').setLabel('4').setStyle('PRIMARY'),
+				new MessageButton().setCustomId('five').setLabel('5').setStyle('PRIMARY'),
+			];
+			const row = new MessageActionRow().addComponents(...buttons);
 
-			message.channel.activeCollector = true;
-			const response = await message.channel.awaitMessages(filter, { max: 1, time: 30000, errors: ["time"] });
-			const reply = response.first().content;
+			await interaction.editReply({
+				embeds: [resultsEmbed],
+				components: [row],
+				ephemeral: true,
+			});
 
-			if (reply.includes(",")) {
-				let songs = reply.split(",").map((str) => str.trim());
+			const collector = await interaction
+				.fetchReply()
+				.then((reply) => {
+					return reply.createMessageComponentCollector({
+						time: 30_000,
+						componentType: 'BUTTON',
+					});
+				})
+				.catch(console.error);
 
-				for (let song of songs) {
-					await message.client.commands
-						.get("play")
-						.execute(message, [resultsEmbed.fields[parseInt(song) - 1].name]);
+			collector.on('collect', async (i) => {
+				await i.deferReply({ ephemeral: true });
+				switch (i.customId) {
+					case 'one': {
+						const choice = resultsEmbed.fields[0].name;
+						instance.commandHandler
+							.getCommand('play')
+							.callback({ interaction: i, args: [choice], prefix });
+						collector.stop('choiceMade');
+						break;
+					}
+					case 'two': {
+						const choice = resultsEmbed.fields[1].name;
+						instance.commandHandler
+							.getCommand('play')
+							.callback({ interaction: i, args: [choice], prefix });
+						collector.stop('choiceMade');
+						break;
+					}
+					case 'three': {
+						const choice = resultsEmbed.fields[2].name;
+						instance.commandHandler
+							.getCommand('play')
+							.callback({ interaction: i, args: [choice], prefix });
+						collector.stop('choiceMade');
+						break;
+					}
+					case 'four': {
+						const choice = resultsEmbed.fields[3].name;
+						instance.commandHandler
+							.getCommand('play')
+							.callback({ interaction: i, args: [choice], prefix });
+						collector.stop('choiceMade');
+						break;
+					}
+					case 'five': {
+						const choice = resultsEmbed.fields[4].name;
+						instance.commandHandler
+							.getCommand('play')
+							.callback({ interaction: i, args: [choice], prefix });
+						collector.stop('choiceMade');
+						break;
+					}
 				}
-			} else {
-				const choice = resultsEmbed.fields[parseInt(response.first()) - 1].name;
-				message.client.commands.get("play").execute(message, [choice]);
-			}
-
-			message.channel.activeCollector = false;
-			resultsMessage.delete().catch(console.error);
-			response.first().delete().catch(console.error);
+			});
 		} catch (error) {
 			console.error(error);
-			message.channel.activeCollector = false;
-			message.reply(error.message).catch(console.error);
 		}
-	}
+	},
 };

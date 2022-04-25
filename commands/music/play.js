@@ -1,109 +1,127 @@
-require('module-alias/register');
-const { play } = require('@include/play');
-const ytdl = require('ytdl-core-discord');
+/* global __base */
+const { play } = require(`${__base}include/play`);
 const YouTubeAPI = require('simple-youtube-api');
-const scdl = require('soundcloud-downloader').default;
-const https = require('https');
-const { YOUTUBE_API_KEY, SOUNDCLOUD_CLIENT_ID, LOCALE, DEFAULT_VOLUME } = require(`${__base}util/utils`);
+const playdl = require('play-dl');
 const i18n = require('i18n');
-const Commando = require('discord.js-commando');
-const config = require('@root/config.json');
-const { npMessage } = require(`${__base}include/npmessage`);
+const voice = require('@discordjs/voice');
+
+const { npMessage } = require(`${__base}/include/npmessage`);
+const { YOUTUBE_API_KEY, LOCALE, DEFAULT_VOLUME, MSGTIMEOUT } = require(`${__base}include/utils`);
+const { reply, followUp } = require(`${__base}include/responses`);
 
 i18n.setLocale(LOCALE);
-const { MSGTIMEOUT } = config;
 const youtube = new YouTubeAPI(YOUTUBE_API_KEY);
 
-module.exports = class playCommand extends Commando.Command {
-	constructor(client) {
-		super(client, {
-			name: 'play',
-			group: 'music',
-			memberName: 'play',
-			description: i18n.__('play.description'),
-			guildOnly: 'true',
-		});
-	}
+module.exports = {
+	name: 'play',
+	category: 'music',
+	description: i18n.__('play.description'),
+	guildOnly: 'true',
+	testOnly: true,
+	slash: 'both',
+	options: [
+		{
+			name: 'music',
+			description: i18n.__('play.option'),
+			type: 'STRING',
+			required: true,
+		},
+	],
 
-	async run(message, args) {
-		const prefix = message.guild.commandPrefix;
-		const MUSIC_CHANNEL_ID = message.guild.settings.get('musicChannel');
-
-		const { channel } = message.member.voice;
-
-		const serverQueue = message.client.queue.get(message.guild.id);
-		if (!channel) {
-			return message.reply(i18n.__('play.errorNotChannel')).then((msg) => {
-				msg.delete({ timeout: MSGTIMEOUT });
-			}).catch(console.error);
+	async callback({ message, interaction, args, prefix, instance }) {
+		var i;
+		console.log(interaction.id);
+		if (!message) {
+			if (!interaction.deferred && !interaction.replied) {
+				await interaction.deferReply({ ephemeral: true });
+			}
+			i = interaction;
+			i.isInteraction = true;
+		} else if (!interaction) {
+			i = message;
+			i.isInteraction = false;
 		}
-		if (serverQueue && channel !== message.guild.me.voice.channel) {
-			return message
-				.reply(i18n.__mf('play.errorNotInSameChannel', { user: message.client.user }))
-				.then((msg) => {
-					msg.delete({ timeout: MSGTIMEOUT });
-				}).catch(console.error);
+
+		const userVc = await i.member.voice?.channel;
+		const channel = await i.guild.me.voice.channel;
+		const serverQueue = i.client.queue.get(i.guildId);
+
+		// Try switch case? to remove repetition of message.delete();
+		if (!userVc) {
+			return reply({ message, interaction, content: i18n.__('play.errorNotChannel'), ephemeral: true });
+		}
+		if (serverQueue && userVc !== i.guild.me.voice.channel) {
+			return reply({
+				message,
+				interaction,
+				content: i18n.__mf('play.errorNotInSameChannel', {
+					user: message.client.user,
+				}),
+				ephemeral: true,
+			});
 		}
 		if (!args.length) {
-			return message
-				.reply(i18n.__mf('play.usageReply', { prefix }))
-				.then((msg) => {
-					msg.delete({ timeout: MSGTIMEOUT });
-				}).catch(console.error);
+			return reply({
+				message,
+				interaction,
+				content: i18n.__mf('play.usageReply', { prefix }),
+				ephemeral: true,
+			});
 		}
-		const permissions = channel.permissionsFor(message.client.user);
+		const permissions = userVc.permissionsFor(i.client.user);
 		if (!permissions.has('CONNECT')) {
-			return message.reply(i18n.__('play.missingPermissionConnect')).then((msg) => {
-				msg.delete({ timeout: MSGTIMEOUT });
-			}).catch(console.error);
+			return reply({
+				message,
+				interaction,
+				content: i18n.__('play.missingPermissionConnect'),
+				ephemeral: true,
+			});
 		}
 		if (!permissions.has('SPEAK')) {
-			return message.reply(i18n.__('play.missingPermissionSpeak')).then((msg) => {
-				msg.delete({ timeout: MSGTIMEOUT });
-			}).catch(console.error);
+			return reply({
+				message,
+				interaction,
+				content: i18n.__('play.missingPermissionSpeak'),
+				ephemeral: true,
+			});
+		}
+
+		await playdl.setToken({
+			spotify: {
+				client_id: process.env.SPOTIFY_CLIENT,
+				client_secret: process.env.SPOTIFY_SECRET,
+				refresh_token: process.env.SPOTIFY_REFRESH,
+				market: process.env.SPOTIFY_MARKET,
+			},
+		});
+		if (playdl.is_expired()) {
+			await playdl.refreshToken(); // This will check if access token has expired. If yes, then refresh the token.
 		}
 
 		const search = args.join(' ');
-		const videoPattern = /^(https?:\/\/)?(www\.)?(m\.)?(youtube\.com|youtu\.?be)\/.+$/gi;
-		const playlistPattern = /^.*(list=)([^#&?]*).*/gi;
-		const scRegex = /^https?:\/\/(soundcloud\.com)\/(.*)$/;
-		const mobileScRegex = /^https?:\/\/(soundcloud\.app\.goo\.gl)\/(.*)$/;
 		const url = args[0];
-		const urlValid = videoPattern.test(args[0]);
+		const isSpotify = playdl.sp_validate(url);
+		const isYt = playdl.yt_validate(url);
 
 		//  Start the playlist if playlist url was provided
-		if (!videoPattern.test(args[0]) && playlistPattern.test(args[0])) {
-			args.playlist = args[0];
-			return message.client.registry.resolveCommand('playlist').run(message, args);
+		if (isYt === 'playlist') {
+			return instance.commandHandler
+				.getCommand('playlist')
+				.callback({ message, interaction, args, prefix });
 		}
-		if (scdl.isValidUrl(url) && url.includes('/sets/')) {
-			return message.client.registry.resolveCommand('playlist').run(message, args);
-		}
-
-		message.delete({ TIMEOUT: MSGTIMEOUT });
-		if (mobileScRegex.test(url)) {
-			try {
-				https.get(url, (res) => {
-					if (res.statusCode == '302') {
-						return message.client.commands.get('play').execute(message, [res.headers.location]);
-					}
-					return message.reply('No content could be found at that url.').then((msg) => {
-						msg.delete({ timeout: MSGTIMEOUT });
-					}).catch(console.error);
-				});
-			} catch (error) {
-				console.error(error);
-				return message.reply(error.message).catch(console.error);
-			}
-			return message.reply('Following url redirection...').then((msg) => {
-				msg.delete({ timeout: MSGTIMEOUT });
-			}).catch(console.error);
+		if (isSpotify === 'playlist' || isSpotify === 'album') {
+			return instance.commandHandler
+				.getCommand('playlist')
+				.callback({ message, interaction, args, prefix });
 		}
 
+		message ? message.delete() : null;
+		const settings = await i.client.db.get(i.guildId);
 		const queueConstruct = {
-			textChannel: message.channel,
+			textChannel: await i.guild.channels.fetch(settings.musicChannel),
 			channel,
 			connection: null,
+			player: null,
 			songs: [],
 			loop: false,
 			volume: DEFAULT_VOLUME || 100,
@@ -113,81 +131,129 @@ module.exports = class playCommand extends Commando.Command {
 		let songInfo = null;
 		let song = null;
 
-		if (urlValid) {
+		if (isYt === 'video' && url.startsWith('https')) {
 			try {
-				songInfo = await ytdl.getBasicInfo(url).videoDetails;
-				const { thumbnails } = songInfo;
+				songInfo = await youtube.getVideo(url, { part: 'snippet' });
 				song = {
 					title: songInfo.title,
-					url: songInfo.video_url,
-					thumbUrl: thumbnails[thumbnails.length - 1].url,
-					duration: songInfo.lengthSeconds,
+					url: songInfo.url,
+					thumbUrl: songInfo.maxRes.url,
+					duration: songInfo.durationSeconds,
 				};
-				// console.log(song);
 			} catch (error) {
 				console.error(error);
-				return message.reply(error.message).then((msg) => {
-					msg.delete({ timeout: MSGTIMEOUT });
-				}).catch(console.error);
+				return followUp({
+					message,
+					interaction,
+					content: i18n.__mf('play.queueError', {
+						error: error.message ? error.message : error,
+					}),
+				});
 			}
-		} else if (scRegex.test(url)) {
+		} else if (isSpotify === 'track') {
 			try {
-				const trackInfo = await scdl.getInfo(url, SOUNDCLOUD_CLIENT_ID);
-				song = {
-					title: trackInfo.title,
-					url: trackInfo.permalink_url,
-					duration: Math.ceil(trackInfo.duration / 1000),
-				};
+				const spot = await playdl.spotify(url);
+				if (spot.type === 'track') {
+					const results = await youtube.searchVideos(spot.name, 1, {
+						part: 'snippet',
+					});
+					const searchResult = results[0];
+					song = {
+						title: searchResult.title,
+						url: searchResult.url,
+						thumbUrl: searchResult.maxRes.url,
+						duration: searchResult.durationSeconds,
+					};
+				}
 			} catch (error) {
 				console.error(error);
-				return message.reply(error.message).then((msg) => {
-					msg.delete({ timeout: MSGTIMEOUT });
-				}).catch(console.error);
+				return followUp({
+					message,
+					interaction,
+					content: i18n.__mf('play.queueError', {
+						error: error.message ? error.message : error,
+					}),
+				});
 			}
 		} else {
 			try {
-				const results = await youtube.searchVideos(search, 1, { part: 'snippet' });
-				songInfo = (await ytdl.getBasicInfo(results[0].url)).videoDetails;
-				const { thumbnails } = songInfo;
+				const results = await youtube.searchVideos(search, 1, {
+					part: 'snippet',
+				});
+				const searchResult = results[0];
 				song = {
-					title: songInfo.title,
-					url: songInfo.video_url,
-					thumbUrl: thumbnails[thumbnails.length - 1].url,
-					duration: songInfo.lengthSeconds,
+					title: searchResult.title,
+					url: searchResult.url,
+					thumbUrl: searchResult.maxRes.url,
+					duration: searchResult.durationSeconds,
 				};
 			} catch (error) {
 				console.error(error);
-				return message.reply(error.message).then((msg) => {
-					msg.delete({ timeout: MSGTIMEOUT });
-				}).catch(console.error);
+				return followUp({
+					message,
+					interaction,
+					content: i18n.__mf('play.queueError', {
+						error: error.message ? error.message : error,
+					}),
+				});
 			}
 		}
 
-		if (serverQueue) {
+		if (serverQueue?.songs.length > 0) {
 			serverQueue.songs.push(song);
-			npMessage({ message, npSong: serverQueue.songs[0] });
+			npMessage({ interaction, message, npSong: serverQueue.songs[0], prefix });
+			reply({ message, interaction, content: 'Success', ephemeral: true });
 			return serverQueue.textChannel
-				.send(i18n.__mf('play.queueAdded', { title: song.title, author: message.author }))
+				.send(
+					i18n.__mf('play.queueAdded', {
+						title: song.title,
+						author: i.member.id,
+					}),
+				)
 				.then((msg) => {
-					msg.delete({ timeout: MSGTIMEOUT });
-				}).catch(console.error);
+					setTimeout(() => msg.delete(), MSGTIMEOUT);
+				})
+				.catch(console.error);
 		}
 
 		queueConstruct.songs.push(song);
-		message.client.queue.set(message.guild.id, queueConstruct);
+		i.client.queue.set(i.guildId, queueConstruct);
 		try {
-			queueConstruct.connection = await channel.join();
-			await queueConstruct.connection.voice.setSelfDeaf(true);
-			play(queueConstruct.songs[0], message);
+			if (!voice.getVoiceConnection(i.guildId)) {
+				queueConstruct.connection = voice.joinVoiceChannel({
+					channelId: userVc.id,
+					guildId: userVc.guildId,
+					selfDeaf: true,
+					adapterCreator: userVc.guild.voiceAdapterCreator,
+				});
+			}
+			play({ song: queueConstruct.songs[0], message, interaction, prefix });
+			reply({ message, interaction, content: 'Success', ephemeral: true });
+			queueConstruct.textChannel
+				.send({
+					content: i18n.__mf('play.queueAdded', {
+						title: queueConstruct.songs[0].title,
+						author: i.member.id,
+					}),
+				})
+				.then((msg) => {
+					setTimeout(() => {
+						msg.delete().catch(console.error);
+					}, MSGTIMEOUT);
+				})
+				.catch(console.error);
 		} catch (error) {
 			console.error(error);
-			message.client.queue.delete(message.guild.id);
-			await channel.leave();
-			return message.channel.send(i18n.__('play.cantJoinChannel', { error })).then((msg) => {
-				msg.delete({ timeout: MSGTIMEOUT });
-			}).catch(console.error);
+			i.client.queue.delete(i.guildId);
+			await queueConstruct.connection.destroy();
+			return followUp({
+				message,
+				interaction,
+				content: i18n.__('play.cantJoinChannel', { error: error.message }),
+				ephemeral: true,
+			});
 		}
 
 		return 1;
-	}
+	},
 };
