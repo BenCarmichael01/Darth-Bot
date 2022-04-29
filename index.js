@@ -154,25 +154,22 @@ client.on('ready', async () => {
 client.on('messageCreate', async (message) => {
 	if (message.author.bot) return;
 	const { guildId } = message;
-	const prefix = wok._prefixes[guildId];
-	if (message.content.startsWith(prefix)) {
-		message.isCommand = true;
-	} else {
-		message.isCommand = false;
-	}
-	let MUSIC_CHANNEL_ID = (await findById(guildId)).musicChannel;
+
+	const settings = await findById(guildId);
+	if (!settings) return;
+
+	let MUSIC_CHANNEL_ID = settings.musicChannel;
 	if (!MUSIC_CHANNEL_ID) {
 		MUSIC_CHANNEL_ID = '';
 	}
 
-	if (!message.content.startsWith(prefix) && message.channelId === MUSIC_CHANNEL_ID) {
+	if (message.channelId === MUSIC_CHANNEL_ID) {
 		const args = message.content.trim().split(/ +/);
 		try {
 			wok.commandHandler._commands.get('play').callback({
 				message,
 				args,
 				instance: wok,
-				prefix,
 			});
 			return;
 		} catch (error) {
@@ -184,22 +181,5 @@ client.on('messageCreate', async (message) => {
 				})
 				.catch(console.error);
 		}
-	}
-	if (!message.isCommand) return;
-	const { commandHandler } = wok;
-	const command = message.content.split(' ')[0].substring(1);
-	const commands = [''];
-
-	await commandHandler.commands.forEach((cmdObj) => {
-		commands.push(cmdObj.names[0]);
-	});
-
-	if (!commands.includes(command)) {
-		message.channel
-			.send(i18n.__mf('common.unknownCommand', { prefix }))
-			.then((msg) => {
-				setTimeout(() => msg.delete(), MSGTIMEOUT);
-			})
-			.catch(console.error);
 	}
 });
