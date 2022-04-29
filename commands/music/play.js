@@ -43,7 +43,7 @@ module.exports = {
 
 		const settings = await i.client.db.get(i.guildId);
 		if (!settings?.musicChannel) {
-			reply({ message, interaction, content: i18n.__('common.noSetup'), ephemeral: true });
+			await reply({ message, interaction, content: i18n.__('common.noSetup'), ephemeral: true });
 			message?.delete();
 			return;
 		}
@@ -128,7 +128,6 @@ module.exports = {
 			return;
 		}
 
-		message ? message.delete() : null;
 		const queueConstruct = {
 			textChannel: await i.guild.channels.fetch(settings.musicChannel),
 			channel,
@@ -210,6 +209,7 @@ module.exports = {
 						error: error.message ? error.message : error,
 					}),
 				});
+				message ? message.delete() : null;
 				return;
 			}
 		}
@@ -217,7 +217,8 @@ module.exports = {
 		if (serverQueue?.songs.length > 0) {
 			serverQueue.songs.push(song);
 			npMessage({ interaction, message, npSong: serverQueue.songs[0], prefix });
-			reply({ message, interaction, content: i18n.__('play.success'), ephemeral: true });
+			await reply({ message, interaction, content: i18n.__('play.success'), ephemeral: true });
+			message ? message.delete() : null;
 			serverQueue.textChannel
 				.send(
 					i18n.__mf('play.queueAdded', {
@@ -244,7 +245,8 @@ module.exports = {
 				});
 			}
 			play({ song: queueConstruct.songs[0], message, interaction, prefix });
-			reply({ message, interaction, content: 'Success', ephemeral: true });
+			await reply({ message, interaction, content: i18n.__('play.success'), ephemeral: true });
+			message ? message.delete() : null;
 			queueConstruct.textChannel
 				.send({
 					content: i18n.__mf('play.queueAdded', {
@@ -268,6 +270,7 @@ module.exports = {
 				content: i18n.__('play.cantJoinChannel', { error: error.message }),
 				ephemeral: true,
 			});
+			message ? message.delete() : null;
 			return;
 		}
 
