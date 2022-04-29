@@ -35,7 +35,7 @@ module.exports = {
 		},
 	],
 
-	async callback({ interaction, args, prefix, guild, client }) {
+	async callback({ interaction, args, guild, client }) {
 		let channelTag = args[0];
 
 		await interaction.reply({
