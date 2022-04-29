@@ -1,15 +1,12 @@
 /* global __base */
 const playdl = require('play-dl');
-
+const { npMessage } = require(`${__base}include/npmessage`);
 const { canModifyQueue, STAY_TIME, LOCALE, MSGTIMEOUT } = require(`${__base}include/utils`);
 const { followUp } = require(`${__base}include/responses`);
 const i18n = require('i18n');
 const voice = require('@discordjs/voice');
 
 i18n.setLocale(LOCALE);
-// TODO FIX THIS REF WHEN MOVED COMMAND TO COMMANDO
-// const np = require('../commands/music/nowplaying');
-const { npMessage } = require(`${__base}include/npmessage`);
 
 /**
  *
