@@ -55,7 +55,7 @@ module.exports = {
 				message,
 				interaction,
 				content: i18n.__mf('play.errorNotInSameChannel', {
-					user: message.client.user,
+					user: i.client.user,
 				}),
 				ephemeral: true,
 			});
