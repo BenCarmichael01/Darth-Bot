@@ -48,10 +48,11 @@ module.exports = {
 
 		// Try switch case? to remove repetition of message.delete();
 		if (!userVc) {
-			return reply({ message, interaction, content: i18n.__('play.errorNotChannel'), ephemeral: true });
+			reply({ message, interaction, content: i18n.__('play.errorNotChannel'), ephemeral: true });
+			return;
 		}
 		if (serverQueue && userVc !== i.guild.me.voice.channel) {
-			return reply({
+			reply({
 				message,
 				interaction,
 				content: i18n.__mf('play.errorNotInSameChannel', {
@@ -59,31 +60,35 @@ module.exports = {
 				}),
 				ephemeral: true,
 			});
+			return;
 		}
 		if (!args.length) {
-			return reply({
+			reply({
 				message,
 				interaction,
 				content: i18n.__mf('play.usageReply', { prefix }),
 				ephemeral: true,
 			});
+			return;
 		}
 		const permissions = userVc.permissionsFor(i.client.user);
 		if (!permissions.has('CONNECT')) {
-			return reply({
+			reply({
 				message,
 				interaction,
 				content: i18n.__('play.missingPermissionConnect'),
 				ephemeral: true,
 			});
+			return;
 		}
 		if (!permissions.has('SPEAK')) {
-			return reply({
+			reply({
 				message,
 				interaction,
 				content: i18n.__('play.missingPermissionSpeak'),
 				ephemeral: true,
 			});
+			return;
 		}
 
 		await playdl.setToken({
@@ -105,14 +110,12 @@ module.exports = {
 
 		//  Start the playlist if playlist url was provided
 		if (isYt === 'playlist') {
-			return instance.commandHandler
-				.getCommand('playlist')
-				.callback({ message, interaction, args, prefix });
+			instance.commandHandler.getCommand('playlist').callback({ message, interaction, args, prefix });
+			return;
 		}
 		if (isSpotify === 'playlist' || isSpotify === 'album') {
-			return instance.commandHandler
-				.getCommand('playlist')
-				.callback({ message, interaction, args, prefix });
+			instance.commandHandler.getCommand('playlist').callback({ message, interaction, args, prefix });
+			return;
 		}
 
 		message ? message.delete() : null;
@@ -142,13 +145,14 @@ module.exports = {
 				};
 			} catch (error) {
 				console.error(error);
-				return followUp({
+				followUp({
 					message,
 					interaction,
 					content: i18n.__mf('play.queueError', {
 						error: error.message ? error.message : error,
 					}),
 				});
+				return;
 			}
 		} else if (isSpotify === 'track') {
 			try {
@@ -167,13 +171,14 @@ module.exports = {
 				}
 			} catch (error) {
 				console.error(error);
-				return followUp({
+				followUp({
 					message,
 					interaction,
 					content: i18n.__mf('play.queueError', {
 						error: error.message ? error.message : error,
 					}),
 				});
+				return;
 			}
 		} else {
 			try {
@@ -189,13 +194,14 @@ module.exports = {
 				};
 			} catch (error) {
 				console.error(error);
-				return followUp({
+				followUp({
 					message,
 					interaction,
 					content: i18n.__mf('play.queueError', {
 						error: error.message ? error.message : error,
 					}),
 				});
+				return;
 			}
 		}
 
@@ -203,7 +209,7 @@ module.exports = {
 			serverQueue.songs.push(song);
 			npMessage({ interaction, message, npSong: serverQueue.songs[0], prefix });
 			reply({ message, interaction, content: 'Success', ephemeral: true });
-			return serverQueue.textChannel
+			serverQueue.textChannel
 				.send(
 					i18n.__mf('play.queueAdded', {
 						title: song.title,
@@ -214,6 +220,7 @@ module.exports = {
 					setTimeout(() => msg.delete(), MSGTIMEOUT);
 				})
 				.catch(console.error);
+			return;
 		}
 
 		queueConstruct.songs.push(song);
@@ -246,14 +253,15 @@ module.exports = {
 			console.error(error);
 			i.client.queue.delete(i.guildId);
 			await queueConstruct.connection.destroy();
-			return followUp({
+			followUp({
 				message,
 				interaction,
 				content: i18n.__('play.cantJoinChannel', { error: error.message }),
 				ephemeral: true,
 			});
+			return;
 		}
 
-		return 1;
+		return;
 	},
 };
