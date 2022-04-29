@@ -34,8 +34,27 @@ module.exports = {
 	 */
 	async callback({ interaction, instance, args, prefix }) {
 		await interaction.deferReply({ ephemeral: true });
-		if (!interaction.member.voice)
+
+		const userVc = await interaction.member.voice?.channel;
+		const serverQueue = interaction.client.queue.get(interaction.guildId);
+
+		if (!interaction.member.voice) {
 			return await reply({ interaction, content: i18n.__('search.errorNotChannel'), ephemeral: true });
+		}
+		if (!userVc) {
+			reply({ interaction, content: i18n.__('play.errorNotChannel'), ephemeral: true });
+			return;
+		}
+		if (serverQueue && userVc !== interaction.guild.me.voice.channel) {
+			reply({
+				interaction,
+				content: i18n.__mf('play.errorNotInSameChannel', {
+					user: interaction.client.user,
+				}),
+				ephemeral: true,
+			});
+			return;
+		}
 
 		const search = args[0];
 
