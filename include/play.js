@@ -110,7 +110,7 @@ module.exports = {
 			switch (int.customId) {
 				case 'playpause': {
 					if (!canModifyQueue(member)) {
-						return i
+						return int
 							.editReply({ content: i18n.__('common.errorNotChannel') })
 							.then(() => {
 								setTimeout(() => int.deleteReply(), MSGTIMEOUT);
@@ -123,7 +123,7 @@ module.exports = {
 						int.editReply({
 							content: i18n.__mf('play.pauseSong', { author: name }),
 						}).then(() => {
-							setTimeout(() => i.deleteReply(), MSGTIMEOUT);
+							setTimeout(() => int.deleteReply(), MSGTIMEOUT);
 						});
 					} else {
 						queue.playing = true;
@@ -132,7 +132,7 @@ module.exports = {
 							content: i18n.__mf('play.resumeSong', { author: name }),
 						})
 							.then(() => {
-								setTimeout(() => i.deleteReply(), MSGTIMEOUT);
+								setTimeout(() => int.deleteReply(), MSGTIMEOUT);
 							})
 							.catch(console.error);
 					}
@@ -143,13 +143,13 @@ module.exports = {
 						return int
 							.editReply({ content: i18n.__('common.errorNotChannel') })
 							.then(() => {
-								setTimeout(() => i.deleteReply(), MSGTIMEOUT);
+								setTimeout(() => int.deleteReply(), MSGTIMEOUT);
 							})
 							.catch(console.error);
 					}
 					int.editReply({ content: i18n.__mf('play.skipSong', { author: name }) })
 						.then(() => {
-							setTimeout(() => i.deleteReply(), MSGTIMEOUT);
+							setTimeout(() => int.deleteReply(), MSGTIMEOUT);
 						})
 						.catch(console.error);
 					queue.songs.shift();
@@ -173,7 +173,7 @@ module.exports = {
 						return int
 							.editReply({ content: i18n.__('common.errorNotChannel') })
 							.then(() => {
-								setTimeout(() => i.deleteReply(), MSGTIMEOUT);
+								setTimeout(() => int.deleteReply(), MSGTIMEOUT);
 							})
 							.catch(console.error);
 					}
