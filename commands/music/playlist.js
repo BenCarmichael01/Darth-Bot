@@ -123,7 +123,10 @@ module.exports = {
 		if (message) {
 			searching = await message.reply(i18n.__('playlist.searching'));
 		} else if (interaction) {
-			searching = await interaction.reply({ content: i18n.__('playlist.searching'), ephemeral: true });
+			searching = await interaction.editReply({
+				content: i18n.__('playlist.searching'),
+				ephemeral: true,
+			});
 		}
 		if (message) {
 			message.delete();
