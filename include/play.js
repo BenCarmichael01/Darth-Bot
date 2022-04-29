@@ -291,7 +291,7 @@ module.exports = {
 			connection.removeAllListeners();
 			player.removeAllListeners();
 			player.stop();
-			module.exports.play({ song: queue.songs[0], message, interaction: i, prefix });
+			module.exports.play({ song: queue.songs[0], message, interaction, prefix });
 		});
 		player.on(AudioPlayerStatus.Idle, async () => {
 			try {
