@@ -284,7 +284,7 @@ module.exports = {
 			}
 		});
 		player.on('queueEnd', () => {
-			queue = undefined;
+			i.client.queue.delete(i.guildId);
 		});
 		player.on('jump', () => {
 			queue = i.client.queue.get(i.guildId);
