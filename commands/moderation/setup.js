@@ -78,10 +78,11 @@ module.exports = {
 					embeds: [newEmbed],
 					components: [row],
 				});
+				const collector = playingMessage.createMessageComponentCollector({ componentType: 'BUTTON' });
 
-				client.on('interactionCreate', (i) => {
-					if (!i.isButton) return;
-					const queue = client.queue.get(i.guild.id); // .songs
+				collector.on('collect', (i) => {
+					if (!i.isButton()) return;
+					const queue = client.queue.get(i.guildId); // .songs
 					if (!queue) {
 						i.reply({ content: i18n.__mf('nowplaying.errorNotQueue'), ephemeral: true });
 					}
