@@ -31,7 +31,7 @@
     "set-value": "^4.1.0",
     "simple-youtube-api": "^5.2.1",
     "soundcloud-downloader": "^1.0.0",
-    "sqlite": "^4.0.24",
+    "sqlite": "^4.0.25",
     "sqlite3": "https://github.com/mapbox/node-sqlite3/tarball/master",
     "string-progressbar": "^1.0.4",
     "tar": "^4.4.19",
