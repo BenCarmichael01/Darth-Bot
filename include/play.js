@@ -104,6 +104,7 @@ module.exports = {
 			await int.deferReply();
 			const { member } = int;
 			const name = member.id;
+			const queue = await int.client.queue.get(int.guildId);
 			switch (int.customId) {
 				case 'playpause': {
 					if (!canModifyQueue(member)) {
