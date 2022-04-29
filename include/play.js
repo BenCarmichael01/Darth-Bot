@@ -103,24 +103,24 @@ module.exports = {
 			prefix,
 		});
 
-		collector.on('collect', async (i) => {
-			await i.deferReply();
-			const { member } = i;
+		collector.on('collect', async (int) => {
+			await int.deferReply();
+			const { member } = int;
 			const name = member.id;
-			switch (i.customId) {
+			switch (int.customId) {
 				case 'playpause': {
 					if (!canModifyQueue(member)) {
 						return i
 							.editReply({ content: i18n.__('common.errorNotChannel') })
 							.then(() => {
-								setTimeout(() => i.deleteReply(), MSGTIMEOUT);
+								setTimeout(() => int.deleteReply(), MSGTIMEOUT);
 							})
 							.catch(console.error);
 					}
 					if (queue.playing) {
 						queue.playing = false;
 						player.pause();
-						i.editReply({
+						int.editReply({
 							content: i18n.__mf('play.pauseSong', { author: name }),
 						}).then(() => {
 							setTimeout(() => i.deleteReply(), MSGTIMEOUT);
@@ -128,7 +128,7 @@ module.exports = {
 					} else {
 						queue.playing = true;
 						player.unpause();
-						i.editReply({
+						int.editReply({
 							content: i18n.__mf('play.resumeSong', { author: name }),
 						})
 							.then(() => {
@@ -140,14 +140,14 @@ module.exports = {
 				}
 				case 'skip': {
 					if (!canModifyQueue(member)) {
-						return i
+						return int
 							.editReply({ content: i18n.__('common.errorNotChannel') })
 							.then(() => {
 								setTimeout(() => i.deleteReply(), MSGTIMEOUT);
 							})
 							.catch(console.error);
 					}
-					i.editReply({ content: i18n.__mf('play.skipSong', { author: name }) })
+					int.editReply({ content: i18n.__mf('play.skipSong', { author: name }) })
 						.then(() => {
 							setTimeout(() => i.deleteReply(), MSGTIMEOUT);
 						})
@@ -158,11 +158,11 @@ module.exports = {
 					player.removeAllListeners();
 					player.stop();
 					if (queue.songs.length > 0) {
-						module.exports.play({ song: queue.songs[0], message, interaction: i, prefix });
+						module.exports.play({ song: queue.songs[0], message, interaction: int, prefix });
 					} else {
 						await npMessage({
 							message,
-							interaction,
+							interaction: int,
 							prefix,
 						});
 					}
@@ -170,7 +170,7 @@ module.exports = {
 				}
 				case 'loop': {
 					if (!canModifyQueue(member)) {
-						return i
+						return int
 							.editReply({ content: i18n.__('common.errorNotChannel') })
 							.then(() => {
 								setTimeout(() => i.deleteReply(), MSGTIMEOUT);
@@ -178,32 +178,32 @@ module.exports = {
 							.catch(console.error);
 					}
 					queue.loop = !queue.loop;
-					i.editReply({
+					int.editReply({
 						content: i18n.__mf('play.loopSong', {
 							author: name,
 							loop: queue.loop ? i18n.__('common.on') : i18n.__('common.off'),
 						}),
 					})
 						.then(() => {
-							setTimeout(() => i.deleteReply(), MSGTIMEOUT);
+							setTimeout(() => int.deleteReply(), MSGTIMEOUT);
 						})
 						.catch(console.error);
 					break;
 				}
 				case 'shuffle': {
 					if (!queue) {
-						return i
+						return int
 							.editReply({ content: i18n.__('shuffle.errorNotQueue') })
 							.then(() => {
-								setTimeout(() => i.deleteReply(), MSGTIMEOUT);
+								setTimeout(() => int.deleteReply(), MSGTIMEOUT);
 							})
 							.catch(console.error);
 					}
 					if (!canModifyQueue(member)) {
-						return i
+						return int
 							.editReply({ content: i18n.__('common.errorNotChannel') })
 							.then(() => {
-								setTimeout(() => i.deleteReply(), MSGTIMEOUT);
+								setTimeout(() => int.deleteReply(), MSGTIMEOUT);
 							})
 							.catch(console.error);
 					}
@@ -213,15 +213,15 @@ module.exports = {
 						[songs[i], songs[j]] = [songs[j], songs[i]];
 					}
 					queue.songs = songs;
-					i.client.queue.set(i.guildId, queue);
-					npMessage({ interaction: i, npSong: song, prefix });
-					i.editReply({
+					int.client.queue.set(int.guildId, queue);
+					npMessage({ interaction: int, npSong: song, prefix });
+					int.editReply({
 						content: i18n.__mf('shuffle.result', {
 							author: name,
 						}),
 					})
 						.then(() => {
-							setTimeout(() => i.deleteReply(), MSGTIMEOUT);
+							setTimeout(() => int.deleteReply(), MSGTIMEOUT);
 						})
 						.catch(console.error);
 					break;
@@ -229,26 +229,26 @@ module.exports = {
 				case 'stop': {
 					if (!member.permissions.has('ADMINISTRATOR')) {
 						if (!canModifyQueue(member)) {
-							return i
+							return int
 								.editReply({
 									content: i18n.__('common.errorNotChannel'),
 								})
 								.then(() => {
-									setTimeout(() => i.deleteReply(), MSGTIMEOUT);
+									setTimeout(() => int.deleteReply(), MSGTIMEOUT);
 								})
 								.catch(console.error);
 						}
 					}
-					i.client.queue.delete(i.guildId);
-					i.editReply({ content: i18n.__mf('play.stopSong', { author: name }) })
+					int.client.queue.delete(int.guildId);
+					int.editReply({ content: i18n.__mf('play.stopSong', { author: name }) })
 						.then(() => {
-							setTimeout(() => i.deleteReply(), MSGTIMEOUT);
+							setTimeout(() => int.deleteReply(), MSGTIMEOUT);
 						})
 						.catch(console.error);
 					try {
 						player.emit('queueEnd');
 						player.stop();
-						npMessage({ message, interaction: i, prefix });
+						npMessage({ message, interaction: int, prefix });
 					} catch (error) {
 						console.error(error);
 						if (connection?.state?.status !== VoiceConnectionStatus.Destroyed) {
