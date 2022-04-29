@@ -110,8 +110,8 @@ module.exports = {
 					if (!canModifyQueue(member)) {
 						return int
 							.editReply({ content: i18n.__('common.errorNotChannel') })
-							.then(() => {
-								setTimeout(() => int.deleteReply(), MSGTIMEOUT);
+							.then((reply) => {
+								setTimeout(() => reply.delete(), MSGTIMEOUT);
 							})
 							.catch(console.error);
 					}
@@ -120,8 +120,8 @@ module.exports = {
 						player.pause();
 						int.editReply({
 							content: i18n.__mf('play.pauseSong', { author: name }),
-						}).then(() => {
-							setTimeout(() => int.deleteReply(), MSGTIMEOUT);
+						}).then((reply) => {
+							setTimeout(() => reply.delete(), MSGTIMEOUT);
 						});
 					} else {
 						queue.playing = true;
@@ -129,8 +129,8 @@ module.exports = {
 						int.editReply({
 							content: i18n.__mf('play.resumeSong', { author: name }),
 						})
-							.then(() => {
-								setTimeout(() => int.deleteReply(), MSGTIMEOUT);
+							.then((reply) => {
+								setTimeout(() => reply.delete(), MSGTIMEOUT);
 							})
 							.catch(console.error);
 					}
@@ -140,14 +140,14 @@ module.exports = {
 					if (!canModifyQueue(member)) {
 						return int
 							.editReply({ content: i18n.__('common.errorNotChannel') })
-							.then(() => {
-								setTimeout(() => int.deleteReply(), MSGTIMEOUT);
+							.then((reply) => {
+								setTimeout(() => reply.delete(), MSGTIMEOUT);
 							})
 							.catch(console.error);
 					}
 					int.editReply({ content: i18n.__mf('play.skipSong', { author: name }) })
-						.then(() => {
-							setTimeout(() => int.deleteReply(), MSGTIMEOUT);
+						.then((reply) => {
+							setTimeout(() => reply.delete(), MSGTIMEOUT);
 						})
 						.catch(console.error);
 					queue.songs.shift();
@@ -170,8 +170,8 @@ module.exports = {
 					if (!canModifyQueue(member)) {
 						return int
 							.editReply({ content: i18n.__('common.errorNotChannel') })
-							.then(() => {
-								setTimeout(() => int.deleteReply(), MSGTIMEOUT);
+							.then((reply) => {
+								setTimeout(() => reply.delete(), MSGTIMEOUT);
 							})
 							.catch(console.error);
 					}
@@ -182,8 +182,8 @@ module.exports = {
 							loop: queue.loop ? i18n.__('common.on') : i18n.__('common.off'),
 						}),
 					})
-						.then(() => {
-							setTimeout(() => int.deleteReply(), MSGTIMEOUT);
+						.then((reply) => {
+							setTimeout(() => reply.delete(), MSGTIMEOUT);
 						})
 						.catch(console.error);
 					break;
@@ -192,16 +192,16 @@ module.exports = {
 					if (!queue) {
 						return int
 							.editReply({ content: i18n.__('shuffle.errorNotQueue') })
-							.then(() => {
-								setTimeout(() => int.deleteReply(), MSGTIMEOUT);
+							.then((reply) => {
+								setTimeout(() => reply.delete(), MSGTIMEOUT);
 							})
 							.catch(console.error);
 					}
 					if (!canModifyQueue(member)) {
 						return int
 							.editReply({ content: i18n.__('common.errorNotChannel') })
-							.then(() => {
-								setTimeout(() => int.deleteReply(), MSGTIMEOUT);
+							.then((reply) => {
+								setTimeout(() => reply.delete(), MSGTIMEOUT);
 							})
 							.catch(console.error);
 					}
@@ -218,8 +218,8 @@ module.exports = {
 							author: name,
 						}),
 					})
-						.then(() => {
-							setTimeout(() => int.deleteReply(), MSGTIMEOUT);
+						.then((reply) => {
+							setTimeout(() => reply.delete(), MSGTIMEOUT);
 						})
 						.catch(console.error);
 					break;
@@ -231,16 +231,16 @@ module.exports = {
 								.editReply({
 									content: i18n.__('common.errorNotChannel'),
 								})
-								.then(() => {
-									setTimeout(() => int.deleteReply(), MSGTIMEOUT);
+								.then((reply) => {
+									setTimeout(() => reply.delete(), MSGTIMEOUT);
 								})
 								.catch(console.error);
 						}
 					}
 					int.client.queue.delete(int.guildId);
 					int.editReply({ content: i18n.__mf('play.stopSong', { author: name }) })
-						.then(() => {
-							setTimeout(() => int.deleteReply(), MSGTIMEOUT);
+						.then((reply) => {
+							setTimeout(() => reply.delete(), MSGTIMEOUT);
 						})
 						.catch(console.error);
 					try {
