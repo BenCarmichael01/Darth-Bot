@@ -104,7 +104,6 @@ module.exports = {
 			await playdl.refreshToken(); // This will check if access token has expired or not. If yes, then refresh the token.
 		}
 
-		const search = args.join(' ');
 		const url = args[0];
 		const isSpotify = playdl.sp_validate(url);
 		const isYt = playdl.yt_validate(url);
@@ -206,37 +205,44 @@ module.exports = {
 				return reply({ message, interaction, content: error.message, ephemeral: true });
 			}
 		} else {
-			try {
-				let [playlist] = await playdl.search(search, {
-					source: { youtube: 'playlist' },
-					limit: 1,
-				});
-				await playlist.all_videos();
-				for (
-					let i = 0;
-					i <= (MAX_PLAYLIST_SIZE ? MAX_PLAYLIST_SIZE : 100) && i < playlist.videos.length;
-					i++
-				) {
-					let video = playlist.videos[i];
-					let song = {
-						title: video.title,
-						url: video.url,
-						thumbUrl: video.thumbnails[search.thumbnails.length - 1].url,
-						duration: video.durationInSec,
-					};
-					videos.push(song);
-				}
-				if (message) {
-					searching.delete().catch(console.error);
-				}
-			} catch (error) {
-				if (message) {
-					searching.delete().catch(console.error);
-				}
-				console.error(error);
-				return reply({ message, interaction, content: error.message, ephemeral: true });
+			if (message) {
+				searching.delete().catch(console.error);
 			}
+			reply({ message, interaction, content: i18n.__('playlist.notPlaylist'), ephemeral: true });
+			return;
 		}
+		// else {
+		// 	try {
+		// 		let [playlist] = await playdl.search(search, {
+		// 			source: { youtube: 'playlist' },
+		// 			limit: 1,
+		// 		});
+		// 		await playlist.all_videos();
+		// 		for (
+		// 			let i = 0;
+		// 			i <= (MAX_PLAYLIST_SIZE ? MAX_PLAYLIST_SIZE : 100) && i < playlist.videos.length;
+		// 			i++
+		// 		) {
+		// 			let video = playlist.videos[i];
+		// 			let song = {
+		// 				title: video.title,
+		// 				url: video.url,
+		// 				thumbUrl: video.thumbnails[search.thumbnails.length - 1].url,
+		// 				duration: video.durationInSec,
+		// 			};
+		// 			videos.push(song);
+		// 		}
+		// 		if (message) {
+		// 			searching.delete().catch(console.error);
+		// 		}
+		// 	} catch (error) {
+		// 		if (message) {
+		// 			searching.delete().catch(console.error);
+		// 		}
+		// 		console.error(error);
+		// 		return reply({ message, interaction, content: error.message, ephemeral: true });
+		// 	}
+		// }
 		if (serverQueue) {
 			serverQueue.songs.push(...videos);
 			npMessage({ message, interaction, npSong: serverQueue.songs[0], prefix });
