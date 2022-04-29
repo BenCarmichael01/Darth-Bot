@@ -142,6 +142,16 @@ module.exports = {
 					}
 				}
 			});
+			collector.on('end', (_, reason) => {
+				if (reason === 'time') {
+					interaction.editReply({
+						content: i18n.__('search.timeout'),
+						ephemeral: true,
+						embeds: [],
+						components: [],
+					});
+				}
+			});
 		} catch (error) {
 			console.error(error);
 		}
