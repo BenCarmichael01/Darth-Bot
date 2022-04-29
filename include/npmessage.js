@@ -1,7 +1,6 @@
 ﻿/* global __base */
 const i18n = require('i18n');
 const { MessageEmbed } = require('discord.js');
-const { from_string } = require('libsodium-wrappers');
 
 const { LOCALE } = require(`${__base}include/utils`);
 const { findById } = require(`${__base}/include/findById`);
@@ -20,7 +19,7 @@ module.exports = {
 	 * @param {DiscordInteraction} args.interaction
 	 * @returns {[DiscordMessage, MessageReactionCollector]} An array where the first item is the sent message object and the second is the reaction collector
 	 */
-	async npMessage({ client, npSong, guildIdParam, prefix, interaction, message }) {
+	async npMessage({ client, npSong, guildIdParam, interaction, message }) {
 		let i;
 		if (!message && interaction && !guildIdParam) {
 			i = interaction;
