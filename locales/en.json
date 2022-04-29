@@ -88,7 +88,8 @@
 		"loopSong": "<@{author}> Loop is now {loop}",
 		"stopSong": "<@{author}> ⏹ stopped the music!",
 		"leaveChannel": "Leaving voice channel...",
-		"option": "Name / URL of song or playlist. Spotify | YouTube accepted."
+		"option": "Name / URL of song or playlist. Spotify | YouTube accepted.",
+		"success": "Song added to the queue"
 	},
 	"playlist": {
 		"description": "Play a playlist from youtube",
@@ -140,7 +141,8 @@
 		"errorAlreadyCollector": "A message collector is already active in this channel.",
 		"errorNotChannel": "You need to join a voice channel first!",
 		"resultEmbedTtile": "Reply with the song number you want to play\nYou have **30 seconds** to choose!",
-		"resultEmbedDesc": "Results for: {search}"
+		"resultEmbedDesc": "Results for: {search}",
+		"timeout": "You have ran out of time! Try searching again"
 	},
 	"shuffle": {
 		"description": "Shuffles the queue",
@@ -214,4 +216,3 @@
 		}
 	}
 }
-
