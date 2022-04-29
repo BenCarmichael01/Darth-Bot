@@ -96,6 +96,7 @@ client.on('ready', async () => {
 		await client.guilds.fetch().then((cache) => {
 			cache.each(async (guild) => {
 				findById(guild.id).then(async (dbEntry) => {
+					if (!dbEntry) return;
 					const { _doc } = dbEntry;
 					delete _doc._id;
 					delete _doc.__v;
