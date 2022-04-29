@@ -166,7 +166,8 @@ module.exports = {
 			try {
 				const spot = await playdl.spotify(url);
 				if (spot.type === 'track') {
-					const results = await youtube.searchVideos(spot.name, 1, {
+					let search = spot.name + ' ' + spot.artists[0].name;
+					const results = await youtube.searchVideos(search, 1, {
 						part: 'snippet',
 					});
 					const searchResult = results[0];
