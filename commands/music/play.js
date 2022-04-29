@@ -41,13 +41,20 @@ module.exports = {
 			i.isInteraction = false;
 		}
 
+		const settings = await i.client.db.get(i.guildId);
+		if (!settings?.musicChannel) {
+			reply({ message, interaction, content: i18n.__('common.noSetup'), ephemeral: true });
+			message?.delete();
+			return;
+		}
+
 		const userVc = await i.member.voice?.channel;
 		const channel = await i.guild.me.voice.channel;
-		const serverQueue = i.client.queue.get(i.guildId);
+		const serverQueue = await i.client.queue.get(i.guildId);
 
-		// Try switch case? to remove repetition of message.delete();
 		if (!userVc) {
 			reply({ message, interaction, content: i18n.__('play.errorNotChannel'), ephemeral: true });
+			message?.delete();
 			return;
 		}
 		if (serverQueue && userVc !== i.guild.me.voice.channel) {
@@ -59,6 +66,7 @@ module.exports = {
 				}),
 				ephemeral: true,
 			});
+			message?.delete();
 			return;
 		}
 		if (!args.length) {
@@ -68,6 +76,7 @@ module.exports = {
 				content: i18n.__mf('play.usageReply', { prefix }),
 				ephemeral: true,
 			});
+			message?.delete();
 			return;
 		}
 		const permissions = userVc.permissionsFor(i.client.user);
@@ -78,6 +87,7 @@ module.exports = {
 				content: i18n.__('play.missingPermissionConnect'),
 				ephemeral: true,
 			});
+			message?.delete();
 			return;
 		}
 		if (!permissions.has('SPEAK')) {
@@ -87,6 +97,7 @@ module.exports = {
 				content: i18n.__('play.missingPermissionSpeak'),
 				ephemeral: true,
 			});
+			message?.delete();
 			return;
 		}
 
@@ -118,7 +129,6 @@ module.exports = {
 		}
 
 		message ? message.delete() : null;
-		const settings = await i.client.db.get(i.guildId);
 		const queueConstruct = {
 			textChannel: await i.guild.channels.fetch(settings.musicChannel),
 			channel,

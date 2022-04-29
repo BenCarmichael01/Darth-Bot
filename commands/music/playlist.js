@@ -37,35 +37,49 @@ module.exports = {
 		} else if (!interaction) {
 			i = message;
 		}
+
+		const settings = await i.client.db.get(i.guildId);
+		if (!settings?.musicChannel) {
+			reply({ message, interaction, content: i18n.__('common.noSetup'), ephemeral: true });
+			message?.delete();
+			return;
+		}
+
 		const { channel } = i.member.voice;
 		const serverQueue = i.client.queue.get(i.guildId);
 		if (!channel) {
-			return reply({
+			reply({
 				message,
 				interaction,
 				content: i18n.__('playlist.errorNotChannel'),
 				ephemeral: true,
 			});
+			message?.delete();
+			return;
 		}
 		const permissions = channel.permissionsFor(i.client.user);
 		if (!permissions.has('CONNECT')) {
-			return reply({
+			reply({
 				message,
 				interaction,
 				content: i18n.__('playlist.missingPermissionConnect'),
 				ephemeral: true,
 			});
+			message?.delete();
+			return;
 		}
 		if (!permissions.has('SPEAK')) {
-			return reply({
+			reply({
 				message,
 				interaction,
 				content: i18n.__('missingPermissionSpeak'),
 				ephemeral: true,
 			});
+			message?.delete();
+			return;
 		}
 		if (serverQueue && channel !== i.guild.me.voice.channel) {
-			return reply({
+			reply({
 				message,
 				interaction,
 				content: i18n.__mf('play.errorNotInSameChannel', {
@@ -73,6 +87,8 @@ module.exports = {
 				}),
 				ephemeral: true,
 			});
+			message?.delete();
+			return;
 		}
 
 		await playdl.setToken({

@@ -35,6 +35,12 @@ module.exports = {
 	async callback({ interaction, instance, args, prefix }) {
 		await interaction.deferReply({ ephemeral: true });
 
+		const settings = await interaction.client.db.get(interaction.guildId);
+		if (!settings?.musicChannel) {
+			reply({ interaction, content: i18n.__('common.noSetup'), ephemeral: true });
+			return;
+		}
+
 		const userVc = await interaction.member.voice?.channel;
 		const serverQueue = interaction.client.queue.get(interaction.guildId);
 
