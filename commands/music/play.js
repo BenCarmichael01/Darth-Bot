@@ -30,7 +30,6 @@ module.exports = {
 
 	async callback({ message, interaction, args, prefix, instance }) {
 		var i;
-		console.log(interaction.id);
 		if (!message) {
 			if (!interaction.deferred && !interaction.replied) {
 				await interaction.deferReply({ ephemeral: true });
