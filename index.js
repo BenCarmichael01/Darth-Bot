@@ -66,7 +66,7 @@ async function messageStartup(musicGuilds, wok) {
 		if (!collectors[i] || !npMessageObj[i]) continue;
 
 		collectors[i].on('collect', (i) => {
-			if (i.type !== 'MESSAGE_COMPONENT') return;
+			if (!i.isButton()) return;
 			const queue = i.client.queue.get(i.guildId);
 			if (!queue) {
 				i.reply({ content: i18n.__('nowplaying.errorNotQueue'), ephemeral: true });
