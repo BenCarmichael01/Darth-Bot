@@ -208,7 +208,7 @@ module.exports = {
 		if (serverQueue?.songs.length > 0) {
 			serverQueue.songs.push(song);
 			npMessage({ interaction, message, npSong: serverQueue.songs[0], prefix });
-			reply({ message, interaction, content: 'Success', ephemeral: true });
+			reply({ message, interaction, content: i18n.__('play.success'), ephemeral: true });
 			serverQueue.textChannel
 				.send(
 					i18n.__mf('play.queueAdded', {
