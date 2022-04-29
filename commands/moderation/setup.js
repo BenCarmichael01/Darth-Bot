@@ -96,12 +96,18 @@ module.exports = {
 				});
 
 				// Check if db was updated correctly
-				const MUSIC_CHANNEL_ID = (await findById(guild.id)).musicChannel;
+				const settings = await findById(guild.id);
+				const MUSIC_CHANNEL_ID = settings?.musicChannel;
 				if (MUSIC_CHANNEL_ID === channelTag) {
 					interaction.followUp({
 						content: i18n.__mf('moderation.setup.success', { MUSIC_CHANNEL_ID }),
 						ephemeral: true,
 					});
+					// Push to cached db
+					let { _doc } = settings;
+					delete _doc._id;
+					delete _doc.__v;
+					await client.db.set(guild.id, _doc);
 				} else {
 					interaction.followUp({
 						content: i18n.__mf('moderation.setup.fail'),
