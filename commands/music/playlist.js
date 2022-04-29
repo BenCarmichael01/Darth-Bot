@@ -87,9 +87,7 @@ module.exports = {
 		if (playdl.is_expired()) {
 			await playdl.refreshToken(); // This will check if access token has expired or not. If yes, then refresh the token.
 		}
-		if (message) {
-			message.delete();
-		}
+
 		const search = args.join(' ');
 		const url = args[0];
 		const isSpotify = playdl.sp_validate(url);
@@ -105,12 +103,16 @@ module.exports = {
 			playing: true,
 		};
 
-		var searching = await reply({
-			message,
-			interaction,
-			content: i18n.__('playlist.searching'),
-			ephemeral: true,
-		});
+		var searching = {};
+		if (message) {
+			searching = await message.reply(i18n.__('playlist.searching'));
+		} else if (interaction) {
+			searching = await interaction.reply({ content: i18n.__('playlist.searching'), ephemeral: true });
+		}
+		if (message) {
+			message.delete();
+			console.log(message.id);
+		}
 
 		var videos = [];
 		var playlistTitle = '';
