@@ -77,15 +77,15 @@ module.exports = {
 				.setColor('#5865F2')
 				.setTitle(i18n.__('npmessage.title'))
 				.setURL('')
-				.setImage('https://i.imgur.com/TObp4E6.jpg')
-				.setFooter(i18n.__mf('npmessage.prefix', { prefix }));
+				.setImage('https://i.imgur.com/TObp4E6.jpg');
+			//.setFooter(i18n.__mf('npmessage.prefix', { prefix }));
 		} else {
 			newEmbed = new MessageEmbed()
 				.setColor('#5865F2')
 				.setTitle(i18n.__mf('npmessage.titleSong', { title: npSong.title }))
 				.setURL(npSong.url)
-				.setImage(npSong.thumbUrl)
-				.setFooter(i18n.__mf('npmessage.prefix', { prefix }));
+				.setImage(npSong.thumbUrl);
+			//.setFooter(i18n.__mf('npmessage.prefix', { prefix }));
 		}
 
 		const output1 = await musicChannel.messages
