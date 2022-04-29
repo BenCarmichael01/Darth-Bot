@@ -16,7 +16,7 @@ module.exports = {
 				.reply(content)
 				.then((msg) => {
 					setTimeout(() => {
-						message.delete();
+						// message.delete();
 						msg.delete().catch();
 					}, MSGTIMEOUT);
 				})
@@ -47,7 +47,7 @@ module.exports = {
 				.send(content)
 				.then((msg) => {
 					setTimeout(() => {
-						message.delete();
+						// message.delete();
 						msg.delete().catch();
 					}, MSGTIMEOUT);
 				})
