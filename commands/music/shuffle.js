@@ -10,7 +10,7 @@ module.exports = {
 	name: 'shuffle',
 	category: 'music',
 	description: i18n.__('shuffle.description'),
-	guildOnly: 'true',
+	guildOnly: true,
 	slash: true,
 	testOnly: true,
 
