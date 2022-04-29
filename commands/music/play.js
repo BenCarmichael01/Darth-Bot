@@ -18,7 +18,7 @@ module.exports = {
 	description: i18n.__('play.description'),
 	guildOnly: 'true',
 	testOnly: true,
-	slash: 'both',
+	slash: true,
 	options: [
 		{
 			name: 'music',
