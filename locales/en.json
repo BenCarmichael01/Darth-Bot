@@ -50,7 +50,7 @@
 		"outputQueue": "__**Up Next:**__\n {songsQueue}",
 		"title": "🎶 Nothing is playing right now",
 		"titleSong": "🎶 Now playing: {title}",
-		"prefix": "The prefix for this server is {prefix}"
+		"footer": "Type a / in the chat to see a list of my commands"
 	},
 	"pause": {
 		"description": "Pause the currently playing music",

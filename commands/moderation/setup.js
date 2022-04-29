@@ -61,9 +61,8 @@ module.exports = {
 					.setColor('#5865F2')
 					.setTitle(i18n.__('npmessage.title'))
 					.setURL('')
-					.setImage('https://i.imgur.com/TObp4E6.jpg');
-				// .setFooter(i18n.__mf('npmessage.prefix', { prefix }));
-
+					.setImage('https://i.imgur.com/TObp4E6.jpg')
+					.setFooter(i18n.__('npmessage.footer'));
 				const buttons = [
 					new MessageButton().setCustomId('playpause').setEmoji('⏯').setStyle('SECONDARY'),
 					new MessageButton().setCustomId('skip').setEmoji('⏭').setStyle('SECONDARY'),
