@@ -42,7 +42,8 @@ module.exports = {
 		}
 
 		const settings = await i.client.db.get(i.guildId);
-		if (!settings?.musicChannel) {
+		const channelExists = await i.guild.channels.fetch(settings.musicChannel);
+		if (!settings?.musicChannel || !channelExists) {
 			await reply({
 				message,
 				interaction,
