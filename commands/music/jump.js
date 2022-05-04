@@ -60,11 +60,11 @@ module.exports = {
 		queue.playing = true;
 
 		if (queue.loop) {
-			for (let i = 0; i < args[0] - 2; i++) {
+			for (let i = 0; i < args[0]; i++) {
 				queue.songs.push(queue.songs.shift());
 			}
 		} else {
-			queue.songs = queue.songs.slice(args[0] - 2);
+			queue.songs = queue.songs.slice(args[0]);
 		}
 		queue.player.emit('jump');
 		reply({
@@ -86,3 +86,4 @@ module.exports = {
 			.catch(console.error);
 	},
 };
+
