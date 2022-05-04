@@ -18,7 +18,7 @@ function isChannel(channelId, interaction) {
 }
 async function runSetup(interaction, channelTag, client, guild) {
 	await interaction.reply({
-		content: i18n.__mf('common.startSetup', { channel: channelTag }),
+		content: i18n.__mf('moderation.setup.start', { channel: channelTag }),
 		ephemeral: true,
 		components: [],
 	});
@@ -114,7 +114,7 @@ async function runSetup(interaction, channelTag, client, guild) {
 module.exports = {
 	name: 'setup',
 	category: 'moderation',
-	description: 'Setup the channel you want to use for the music player',
+	description: i18n.__('moderation.setup.description'),
 	guildOnly: true,
 	permissions: ['ADMINISTRATOR'],
 	testOnly: true,
@@ -122,7 +122,7 @@ module.exports = {
 	options: [
 		{
 			name: 'channel',
-			description: 'The channel to be used for the music player',
+			description: i18n.__('moderation.setup.optionDescription'),
 			type: 'CHANNEL',
 			channelTypes: ['GUILD_TEXT'],
 			required: true,
@@ -133,13 +133,18 @@ module.exports = {
 		let channelTag = args[0];
 
 		const buttons = [
-			new MessageButton().setCustomId('yes').setStyle('SUCCESS').setLabel('Continue'),
-			new MessageButton().setCustomId('no').setStyle('DANGER').setLabel('Cancel'),
+			new MessageButton()
+				.setCustomId('yes')
+				.setStyle('SUCCESS')
+				.setLabel(i18n.__('moderation.setup.continue')),
+			new MessageButton()
+				.setCustomId('no')
+				.setStyle('DANGER')
+				.setLabel(i18n.__('moderation.setup.cancel')),
 		];
 		const row = new MessageActionRow().addComponents(...buttons);
 		const warning = await interaction.reply({
-			content:
-				'**WARNING**: this will first purge *all* messages in the channel you have selected!\nDo you wish to proceed to music channel setup?',
+			content: i18n.__('moderation.setup.warning'),
 			ephemeral: true,
 			components: [row],
 			fetchReply: true,
@@ -150,7 +155,7 @@ module.exports = {
 				if (i.customId === 'yes') {
 					runSetup(i, channelTag, client, guild);
 				} else {
-					i.reply({ content: 'Setup Cancelled', ephemeral: true });
+					i.reply({ content: i18n.__('moderation.setup.cancelled'), ephemeral: true });
 				}
 			})
 			.catch(console.error);
