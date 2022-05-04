@@ -17,7 +17,6 @@ module.exports = {
 	category: 'music',
 	description: i18n.__('play.description'),
 	guildOnly: 'true',
-	testOnly: true,
 	slash: true,
 	options: [
 		{

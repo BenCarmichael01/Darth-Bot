@@ -12,7 +12,6 @@ module.exports = {
 	description: i18n.__('shuffle.description'),
 	guildOnly: true,
 	slash: true,
-	testOnly: true,
 
 	async callback({ interaction, prefix }) {
 		try {

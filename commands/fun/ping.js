@@ -1,6 +1,6 @@
 // const oneLine = require('common-tags').oneLine;
 module.exports = {
-	name: 'pingu',
+	name: 'ping',
 	category: 'fun',
 	description: 'Ping Pong',
 

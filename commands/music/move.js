@@ -14,7 +14,6 @@ module.exports = {
 	description: i18n.__('move.description'),
 	guildOnly: 'true',
 	usage: i18n.__('move.usagesReply'),
-	testOnly: true,
 	slash: true,
 	options: [
 		{

@@ -116,9 +116,8 @@ module.exports = {
 	category: 'moderation',
 	description: i18n.__('moderation.setup.description'),
 	guildOnly: true,
-	permissions: ['ADMINISTRATOR'],
-	testOnly: true,
 	slash: true,
+	ownerOnly: true,
 	options: [
 		{
 			name: 'channel',

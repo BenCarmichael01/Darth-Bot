@@ -7,8 +7,9 @@ module.exports = {
 	category: 'testing',
 	testOnly: true,
 	ownerOnly: true,
-
+	permissions: ['ADMINISTRATOR'],
 	async callback() {
 		throw console.error();
 	},
 };
+

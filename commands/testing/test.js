@@ -6,6 +6,8 @@ module.exports = {
 	description: 'test',
 	category: 'testing',
 	testOnly: true,
+	permissions: ['ADMINISTRATOR'],
 
 	async callback({ message, guild, instance, client }) {},
 };
+

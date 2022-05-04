@@ -18,7 +18,6 @@ module.exports = {
 	description: i18n.__('search.description'),
 	guildOnly: 'true',
 	slash: true,
-	testOnly: true,
 	options: [
 		{
 			name: 'search',
