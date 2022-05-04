@@ -19,13 +19,17 @@ async function getResource(queue) {
 	let source = null;
 	if (song?.url.includes('youtube.com')) {
 		try {
-			source = await playdl.stream(song.url, { discordPlayerCompatibility: false });
+			source = await playdl.stream(song.url, {
+				discordPlayerCompatibility: false,
+			});
 		} catch (error) {
 			console.error(error);
 			return false;
 		}
 	}
-	const resource = voice.createAudioResource(source.stream, { inputType: source.type });
+	const resource = voice.createAudioResource(source.stream, {
+		inputType: source.type,
+	});
 	return resource;
 }
 
@@ -146,7 +150,9 @@ module.exports = {
 							})
 							.catch(console.error);
 					}
-					int.editReply({ content: i18n.__mf('play.skipSong', { author: name }) })
+					int.editReply({
+						content: i18n.__mf('play.skipSong', { author: name }),
+					})
 						.then((reply) => {
 							setTimeout(() => reply.delete(), MSGTIMEOUT);
 						})
@@ -163,7 +169,12 @@ module.exports = {
 					player.removeAllListeners();
 					player.stop();
 					if (queue.songs.length > 0) {
-						module.exports.play({ song: queue.songs[0], message, interaction: int, prefix });
+						module.exports.play({
+							song: queue.songs[0],
+							message,
+							interaction: int,
+							prefix,
+						});
 					} else {
 						await npMessage({
 							message,
@@ -244,7 +255,9 @@ module.exports = {
 								.catch(console.error);
 						}
 					}
-					int.editReply({ content: i18n.__mf('play.stopSong', { author: name }) })
+					int.editReply({
+						content: i18n.__mf('play.stopSong', { author: name }),
+					})
 						.then((reply) => {
 							setTimeout(() => reply.delete(), MSGTIMEOUT);
 						})
@@ -293,12 +306,17 @@ module.exports = {
 			i.client.queue.delete(i.guildId);
 		});
 		player.on('jump', () => {
-			queue = i.client.queue.get(i.guildId);
+			let queue = i.client.queue.get(i.guildId);
 			collector.stop('skipSong');
 			connection.removeAllListeners();
 			player.removeAllListeners();
 			player.stop();
-			module.exports.play({ song: queue.songs[0], message, interaction, prefix });
+			module.exports.play({
+				song: queue.songs[0],
+				message,
+				interaction,
+				prefix,
+			});
 		});
 		player.on(AudioPlayerStatus.Idle, async () => {
 			try {
@@ -315,7 +333,12 @@ module.exports = {
 					npMessage({ message, interaction, prefix });
 					return setTimeout(() => {
 						if (queue?.songs.length >= 1) {
-							module.exports.play({ song: queue.songs[0], message, interaction, prefix });
+							module.exports.play({
+								song: queue.songs[0],
+								message,
+								interaction,
+								prefix,
+							});
 							return;
 						}
 						connection?.destroy();
@@ -332,13 +355,23 @@ module.exports = {
 				if (queue.songs.length > 1 && !queue?.loop) {
 					// songs in queue and queue not looped so play next song
 					queue.songs.shift();
-					module.exports.play({ song: queue.songs[0], message, interaction, prefix });
+					module.exports.play({
+						song: queue.songs[0],
+						message,
+						interaction,
+						prefix,
+					});
 				} else if (queue.songs.length >= 1 && queue.loop) {
 					// at least one song in queue and queue is looped so push finished
 					// song to back of queue then play next song
 					let lastSong = queue.songs.shift();
 					queue.songs.push(lastSong);
-					module.exports.play({ song: queue.songs[0], message, interaction, prefix });
+					module.exports.play({
+						song: queue.songs[0],
+						message,
+						interaction,
+						prefix,
+					});
 				} else if (queue.songs.length === 1 && !queue.loop) {
 					// If there are no more songs in the queue and queue not looped then:
 					// - wait for STAY_TIME before leaving vc
@@ -347,7 +380,12 @@ module.exports = {
 					queue.songs.shift();
 					setTimeout(() => {
 						if (queue.songs.length >= 1) {
-							module.exports.play({ song: queue.songs[0], message, interaction, prefix });
+							module.exports.play({
+								song: queue.songs[0],
+								message,
+								interaction,
+								prefix,
+							});
 							return;
 						}
 						connection?.destroy();
