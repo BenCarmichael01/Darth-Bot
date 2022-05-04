@@ -244,7 +244,6 @@ module.exports = {
 								.catch(console.error);
 						}
 					}
-					int.client.queue.delete(int.guildId);
 					int.editReply({ content: i18n.__mf('play.stopSong', { author: name }) })
 						.then((reply) => {
 							setTimeout(() => reply.delete(), MSGTIMEOUT);
