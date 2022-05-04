@@ -340,8 +340,9 @@ module.exports = {
 					queue.songs.push(lastSong);
 					module.exports.play({ song: queue.songs[0], message, interaction, prefix });
 				} else if (queue.songs.length === 1 && !queue.loop) {
-					// If there are no more songs in the queue then wait for STAY_TIME before leaving vc
-					// unless a song was added during the timeout
+					// If there are no more songs in the queue and queue not looped then:
+					// - wait for STAY_TIME before leaving vc
+					//   unless a song was added during the timeout
 					npMessage({ message, interaction, prefix });
 					queue.songs.shift();
 					setTimeout(() => {
