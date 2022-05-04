@@ -1,7 +1,7 @@
 on: 
   push:
     branches:
-    - 'DJS_v13'
+    - 'master'
 name: 🚀 Deploy Bot on push
 jobs:
   web-deploy:
