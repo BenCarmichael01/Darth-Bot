@@ -6,7 +6,7 @@ const voice = require('@discordjs/voice');
 const playdl = require('play-dl');
 const YouTubeAPI = require('simple-youtube-api');
 
-const { MAX_PLAYLIST_SIZE, DEFAULT_VOLUME, LOCALE } = require(`${__base}/include/utils`);
+const { MAX_PLAYLIST_SIZE, DEFAULT_VOLUME, LOCALE, deEscape } = require(`${__base}/include/utils`);
 const { reply, followUp } = require('../../include/responses');
 
 i18n.setLocale(LOCALE);
@@ -142,7 +142,7 @@ module.exports = {
 				let vidInfo = playlist.videos;
 				vidInfo.slice(0, MAX_PLAYLIST_SIZE + 1).forEach((video) => {
 					let song = {
-						title: video.title,
+						title: deEscape(video.title),
 						url: video.url,
 						thumbUrl: video.thumbnails[video.thumbnails.length - 1].url,
 						duration: video.durationInSec,
@@ -187,7 +187,7 @@ module.exports = {
 					const searchResult = results[0];
 					if (!searchResult) continue;
 					let song = {
-						title: searchResult?.title,
+						title: deEscape(searchResult?.title),
 						url: searchResult?.url,
 						thumbUrl: searchResult?.maxRes.url,
 						duration: searchResult?.durationInSec,
@@ -296,3 +296,4 @@ module.exports = {
 		// return;
 	},
 };
+

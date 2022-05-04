@@ -23,6 +23,14 @@ exports.canModifyQueue = (member) => {
 
 	return true;
 };
+exports.deEscape = (htmlStr) => {
+	htmlStr = htmlStr.replace(/&lt;/g, '<');
+	htmlStr = htmlStr.replace(/&gt;/g, '>');
+	htmlStr = htmlStr.replace(/&quot;/g, '"');
+	htmlStr = htmlStr.replace(/&#39;/g, "'");
+	htmlStr = htmlStr.replace(/&amp;/g, '&');
+	return htmlStr;
+};
 
 exports.PREFIX = config ? config.PREFIX : process.env.PREFIX;
 exports.YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
@@ -31,3 +39,4 @@ exports.PRUNING = config ? config.PRUNING : process.env.PRUNING;
 exports.STAY_TIME = config ? config.STAY_TIME : process.env.STAY_TIME;
 exports.MSGTIMEOUT = config ? config.MSGTIMEOUT : process.env.MSGTIMEOUT;
 exports.LOCALE = config ? config.LOCALE : process.env.LOCALE;
+
