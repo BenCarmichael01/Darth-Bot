@@ -1,68 +1,116 @@
-const { play } = require('@include/play');
+/* global __base */
+const { play } = require(`${__base}include/play`);
 const { npMessage } = require(`${__base}include/npmessage`);
-const YouTubeAPI = require('simple-youtube-api');
-const scdl = require('soundcloud-downloader').default;
-const Commando = require('discord.js-commando');
 const i18n = require('i18n');
+const voice = require('@discordjs/voice');
+const playdl = require('play-dl');
+const YouTubeAPI = require('simple-youtube-api');
 
-const {
-	YOUTUBE_API_KEY,
-	SOUNDCLOUD_CLIENT_ID,
-	MAX_PLAYLIST_SIZE,
-	DEFAULT_VOLUME,
-	LOCALE,
-	MSGTIMEOUT,
-} = require(`${__base}util/utils`);
+const { MAX_PLAYLIST_SIZE, DEFAULT_VOLUME, LOCALE, deEscape } = require(`${__base}/include/utils`);
+const { reply, followUp } = require('../../include/responses');
 
 i18n.setLocale(LOCALE);
-const youtube = new YouTubeAPI(YOUTUBE_API_KEY);
+const youtube = new YouTubeAPI(process.env.YOUTUBE_API_KEY);
 
-module.exports = class playlistCommand extends Commando.Command {
-	constructor(client) {
-		super(client, {
-			name: 'playlist',
-			group: 'music',
-			memberName: 'playlist',
-			description: i18n.__('playlist.description'),
-			guildOnly: 'true',
-			args: [{
-				key: 'playlist',
-				prompt: i18n.__('playlist.prompt'),
-				type: 'string',
-			}],
-			argsType: 'multiple',
+module.exports = {
+	name: 'playlist',
+	category: 'music',
+	description: i18n.__('playlist.description'),
+	guildOnly: 'true',
+	testOnly: true,
+	slash: true,
+	options: [
+		{
+			name: 'music',
+			description: i18n.__('play.option'),
+			type: 'STRING',
+			required: true,
+		},
+	],
+	async callback({ message, interaction, args, prefix }) {
+		var i;
+		if (!message) {
+			i = interaction;
+			if (!interaction.deferred && !interaction.replied) {
+				await interaction.deferReply({ ephemeral: true });
+			}
+		} else if (!interaction) {
+			i = message;
+		}
+
+		const settings = await i.client.db.get(i.guildId);
+		const channelExists = await i.guild.channels.fetch(settings.musicChannel);
+		if (!settings?.musicChannel || !channelExists) {
+			reply({ message, interaction, content: i18n.__('common.noSetup'), ephemeral: true });
+			message?.delete();
+			return;
+		}
+
+		const { channel } = i.member.voice;
+		const serverQueue = i.client.queue.get(i.guildId);
+		if (!channel) {
+			reply({
+				message,
+				interaction,
+				content: i18n.__('playlist.errorNotChannel'),
+				ephemeral: true,
+			});
+			message?.delete();
+			return;
+		}
+		const permissions = channel.permissionsFor(i.client.user);
+		if (!permissions.has('CONNECT')) {
+			reply({
+				message,
+				interaction,
+				content: i18n.__('playlist.missingPermissionConnect'),
+				ephemeral: true,
+			});
+			message?.delete();
+			return;
+		}
+		if (!permissions.has('SPEAK')) {
+			reply({
+				message,
+				interaction,
+				content: i18n.__('missingPermissionSpeak'),
+				ephemeral: true,
+			});
+			message?.delete();
+			return;
+		}
+		if (serverQueue && channel !== i.guild.me.voice.channel) {
+			reply({
+				message,
+				interaction,
+				content: i18n.__mf('play.errorNotInSameChannel', {
+					user: i.client.user.id,
+				}),
+				ephemeral: true,
+			});
+			message?.delete();
+			return;
+		}
+
+		await playdl.setToken({
+			spotify: {
+				client_id: process.env.SPOTIFY_CLIENT,
+				client_secret: process.env.SPOTIFY_SECRET,
+				refresh_token: process.env.SPOTIFY_REFRESH,
+				market: process.env.SPOTIFY_MARKET,
+			},
 		});
-	}
 
-	async run(message, args) {
-		message.delete({ TIMEOUT: MSGTIMEOUT });
-		const { channel } = message.member.voice;
-		const serverQueue = message.client.queue.get(message.guild.id);
-		
-		if (!args.playlist) {
-			return message
-				.reply(i18n.__mf('playlist.usageReply', { prefix: message.guild.commandPrefix }))
-				.catch(console.error);
-		}
-		if (!channel) return message.reply(i18n.__('playlist.errorNotChannel')).catch(console.error);
-
-		const permissions = channel.permissionsFor(message.client.user);
-		if (!permissions.has('CONNECT')) return message.reply(i18n.__('playlist.missingPermissionConnect'));
-		if (!permissions.has('SPEAK')) return message.reply(i18n.__('missingPermissionSpeak'));
-
-		if (serverQueue && channel !== message.guild.me.voice.channel) {
-			return message
-				.reply(i18n.__mf('play.errorNotInSameChannel', { user: message.client.user }))
-				.catch(console.error);
+		if (playdl.is_expired()) {
+			await playdl.refreshToken(); // This will check if access token has expired or not. If yes, then refresh the token.
 		}
 
-		const pattern = /^.*(youtu.be\/|list=)([^#&?]*).*/gi;
-		const url = args.playlist;
-		const urlValid = pattern.test(args.playlist);
-		const search = args.playlist;
+		const url = args[0];
+		const isSpotify = playdl.sp_validate(url);
+		const isYt = playdl.yt_validate(url);
 
 		const queueConstruct = {
-			textChannel: message.channel,
+			textChannel: i.channel,
 			channel,
 			connection: null,
 			songs: [],
@@ -71,77 +119,182 @@ module.exports = class playlistCommand extends Commando.Command {
 			playing: true,
 		};
 
-		let playlist = null;
-		let videos = [];
-
-		if (urlValid) {
-			try {
-				playlist = await youtube.getPlaylist(url, { part: 'snippet' });
-				videos = await playlist.getVideos(MAX_PLAYLIST_SIZE || 10, { part: 'snippet' });
-			} catch (error) {
-				console.error(error);
-				return message.reply(i18n.__('playlist.errorNotFoundPlaylist')).catch(console.error);
-			}
-		} else if (scdl.isValidUrl(args.playlist)) {
-			if (args.playlist.includes('/sets/')) {
-				message.channel.send(i18n.__('playlist.fetchingPlaylist'));
-				playlist = await scdl.getSetInfo(args.playlist, SOUNDCLOUD_CLIENT_ID);
-				videos = playlist.tracks.map((track) => ({
-					title: track.title,
-					url: track.permalink_url,
-					duration: track.duration / 1000,
-				}));
-			}
-		} else {
-			try {
-				const results = await youtube.searchPlaylists(search, 1, { part: 'snippet' });
-				[playlist] = results;
-				videos = await playlist.getVideos(MAX_PLAYLIST_SIZE || 10, { part: 'snippet' });
-			} catch (error) {
-				console.error(error);
-				return message.reply(error.message).catch(console.error);
-			}
-		}
-
-		const newSongs = videos
-			.filter((video) => video.title !== 'Private video' && video.title !== 'Deleted video')
-			.map((video) => {
-				const { thumbnails } = video;
-				const thumbIndex = Object.keys(thumbnails).length - 1;
-				const song = {
-					title: video.title,
-					url: video.url,
-					thumbUrl: thumbnails[Object.keys(thumbnails)[thumbIndex]].url,
-					duration: video.durationSeconds,
-				};
-				return song;
+		var searching = {};
+		if (message) {
+			searching = await message.reply(i18n.__('playlist.searching'));
+		} else if (interaction) {
+			searching = await interaction.editReply({
+				content: i18n.__('playlist.searching'),
+				ephemeral: true,
 			});
-		// console.log(newSongs);
-		if (serverQueue) {
-			serverQueue.songs.push(...newSongs);
-		} else {
-			queueConstruct.songs.push(...newSongs);
 		}
-		// serverQueue ? serverQueue.songs.push(...newSongs) : queueConstruct.songs.push(...newSongs);
+		if (message) {
+			message.delete();
+			console.log(message.id);
+		}
+
+		var videos = [];
+		var playlistTitle = '';
+		if (isYt === 'playlist') {
+			try {
+				let playlist = await playdl.playlist_info(url, { incomplete: true });
+				playlistTitle = playlist.title;
+				await playlist.fetch(MAX_PLAYLIST_SIZE);
+				let vidInfo = playlist.videos;
+				vidInfo.slice(0, MAX_PLAYLIST_SIZE + 1).forEach((video) => {
+					let song = {
+						title: deEscape(video.title),
+						url: video.url,
+						thumbUrl: video.thumbnails[video.thumbnails.length - 1].url,
+						duration: video.durationInSec,
+					};
+					videos.push(song);
+				});
+				if (message) {
+					searching.delete().catch(console.error);
+				}
+			} catch (error) {
+				console.error(error);
+				if (message) {
+					searching.delete().catch(console.error);
+				}
+				return reply({
+					message,
+					interaction,
+					content: i18n.__('playlist.errorNotFoundPlaylist'),
+					ephemeral: true,
+				});
+			}
+		} else if (isSpotify === 'playlist' || isSpotify === 'album') {
+			try {
+				let playlist = await playdl.spotify(url);
+				await playlist.fetch(MAX_PLAYLIST_SIZE);
+				playlistTitle = playlist.name;
+				const tracks = await playlist.fetched_tracks.get('1');
+
+				if (tracks.length > MAX_PLAYLIST_SIZE) {
+					reply({
+						message,
+						interaction,
+						content: i18n.__mf('playlist.maxSize', { maxSize: MAX_PLAYLIST_SIZE }),
+						ephemeral: true,
+					});
+				}
+				for (let i = 0; i <= (MAX_PLAYLIST_SIZE ? MAX_PLAYLIST_SIZE : 20) && i < tracks.length; i++) {
+					let search = tracks[i].name + ' ' + tracks[i].artists[0].name;
+					const results = await youtube.searchVideos(search, 1, {
+						part: 'snippet.title, snippet.maxRes, snippet.durationSeconds',
+					});
+					const searchResult = results[0];
+					if (!searchResult) continue;
+					let song = {
+						title: deEscape(searchResult?.title),
+						url: searchResult?.url,
+						thumbUrl: searchResult?.maxRes.url,
+						duration: searchResult?.durationInSec,
+					};
+					videos.push(song);
+				}
+				if (message) {
+					searching.delete().catch(console.error);
+				}
+			} catch (error) {
+				console.error(error);
+				if (message) {
+					searching.delete().catch(console.error);
+				}
+				return reply({ message, interaction, content: error.message, ephemeral: true });
+			}
+		} else {
+			if (message) {
+				searching.delete().catch(console.error);
+			}
+			reply({ message, interaction, content: i18n.__('playlist.notPlaylist'), ephemeral: true });
+			return;
+		}
+		// else {
+		// 	try {
+		// 		let [playlist] = await playdl.search(search, {
+		// 			source: { youtube: 'playlist' },
+		// 			limit: 1,
+		// 		});
+		// 		await playlist.all_videos();
+		// 		for (
+		// 			let i = 0;
+		// 			i <= (MAX_PLAYLIST_SIZE ? MAX_PLAYLIST_SIZE : 100) && i < playlist.videos.length;
+		// 			i++
+		// 		) {
+		// 			let video = playlist.videos[i];
+		// 			let song = {
+		// 				title: video.title,
+		// 				url: video.url,
+		// 				thumbUrl: video.thumbnails[search.thumbnails.length - 1].url,
+		// 				duration: video.durationInSec,
+		// 			};
+		// 			videos.push(song);
+		// 		}
+		// 		if (message) {
+		// 			searching.delete().catch(console.error);
+		// 		}
+		// 	} catch (error) {
+		// 		if (message) {
+		// 			searching.delete().catch(console.error);
+		// 		}
+		// 		console.error(error);
+		// 		return reply({ message, interaction, content: error.message, ephemeral: true });
+		// 	}
+		// }
 		if (serverQueue) {
-			npMessage({ message, npSong: serverQueue.songs[0] });
+			serverQueue.songs.push(...videos);
+			npMessage({ message, interaction, npSong: serverQueue.songs[0], prefix });
+			followUp({
+				message,
+				interaction,
+				content: i18n.__mf('playlist.queueAdded', {
+					playlist: playlistTitle,
+					author: i.member.id,
+				}),
+				ephemeral: false,
+			});
+		} else {
+			queueConstruct.songs.push(...videos);
 		}
 		if (!serverQueue) {
-			message.client.queue.set(message.guild.id, queueConstruct);
+			i.client.queue.set(i.guildId, queueConstruct);
 
 			try {
-				queueConstruct.connection = await channel.join();
-				await queueConstruct.connection.voice.setSelfDeaf(true);
-				play(queueConstruct.songs[0], message, newSongs);
-				// console.log(queueConstruct.songs[0]);
+				if (!voice.getVoiceConnection(i.guildId)) {
+					queueConstruct.connection = await voice.joinVoiceChannel({
+						channelId: channel.id,
+						guildId: channel.guildId,
+						selfDeaf: true,
+						adapterCreator: channel.guild.voiceAdapterCreator,
+					});
+				}
+				followUp({
+					message,
+					interaction,
+					content: i18n.__mf('playlist.queueAdded', {
+						playlist: playlistTitle,
+						author: i.member.id,
+					}),
+					ephemeral: false,
+				});
+				play({ song: queueConstruct.songs[0], message, interaction, prefix });
 			} catch (error) {
 				console.error(error);
-				message.client.queue.delete(message.guild.id);
-				await channel.leave();
-				return message.channel.send(i18n.__('play.cantJoinChannel', { error })).catch(console.error);
+				i.client.queue.delete(i.guildId);
+				await queueConstruct.connection.destroy();
+				return followUp({
+					message,
+					interaction,
+					content: i18n.__('play.cantJoinChannel', { error }),
+					ephemeral: true,
+				});
 			}
 		}
 		// TODO this used to return 1 but i cant remember why so i've removed it
-		return;
-	}
+		// return;
+	},
 };
+

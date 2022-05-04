@@ -1,41 +1,80 @@
+/* global __base */
 const move = require('array-move');
-const { canModifyQueue, LOCALE } = require(`${__base}util/utils`);
 const i18n = require('i18n');
-const Commando = require('discord.js-commando');
+
+const { canModifyQueue, LOCALE, MSGTIMEOUT } = require(`${__base}/include/utils`);
+const { npMessage } = require(`${__base}include/npmessage`);
 
 i18n.setLocale(LOCALE);
 
-module.exports = class moveCommand extends Commando.Command {
-	constructor(client) {
-		super(client, {
-			name: 'move',
-			aliases: ['mv'],
-			group: 'music',
-			memberName: 'move',
-			description: i18n.__('move.description'),
-			guildOnly: 'true',
-			argsType: 'multiple',
-		});
-	}
+module.exports = {
+	name: 'move',
+	aliases: ['mv'],
+	category: 'music',
+	description: i18n.__('move.description'),
+	guildOnly: 'true',
+	usage: i18n.__('move.usagesReply'),
+	testOnly: true,
+	slash: true,
+	options: [
+		{
+			name: 'from',
+			description: i18n.__('move.fromDescription'),
+			type: 'INTEGER',
+			required: true,
+		},
+		{
+			name: 'to',
+			description: i18n.__('move.toDescription'),
+			type: 'INTEGER',
+			required: true,
+		},
+	],
 
-	async run(message, args) {
-		const queue = message.client.queue.get(message.guild.id);
-		if (!queue) return message.channel.send(i18n.__('move.errorNotQueue')).catch(console.error);
-		if (!canModifyQueue(message.member)) return;
+	async callback({ interaction, args, prefix, client }) {
+		try {
+			await interaction.deferReply({ ephemeral: true });
+			const queue = client.queue.get(interaction.guildId);
+			if (!queue) {
+				return interaction.editReply({ content: i18n.__('move.errorNotQueue'), ephemeral: true });
+			}
+			if (!canModifyQueue(interaction.member)) return;
+			if (Number.isNaN(args[0]) || args[0] < 1) {
+				return interaction.editReply({
+					content: i18n.__mf('move.usagesReply', { prefix }),
+					ephemeral: true,
+				});
+			}
 
-		if (!args.length) return message.reply(i18n.__mf('move.usagesReply', { prefix: message.client.prefix }));
-		if (Number.isNaN(args[0]) || args[0] <= 1) {
-			return message.reply(i18n.__mf('move.usagesReply', { prefix: message.client.prefix }));
+			const currentPos = args[0];
+			const newPos = args[1];
+			const song = queue.songs[newPos];
+			if (currentPos > queue.songs.length - 1 || newPos > queue.songs.length - 1) {
+				return interaction.editReply({ content: i18n.__('move.range'), ephemeral: true });
+			}
+			queue.songs = move(queue.songs, currentPos, newPos);
+			npMessage({ interaction, npSong: queue.songs[0], prefix });
+			await interaction.editReply({ content: i18n.__('move.success'), ephemeral: true });
+			interaction
+				.followUp(
+					i18n.__mf('move.result', {
+						author: interaction.member.id,
+						title: song.title,
+						index: newPos,
+					}),
+				)
+				.then((msg) => {
+					setTimeout(() => {
+						msg.delete();
+					}, MSGTIMEOUT);
+				})
+				.catch(console.error);
+		} catch (error) {
+			console.error(error);
+			interaction
+				.followUp({ content: 'Sorry, an unexpected error has occured.', ephemeral: true })
+				.catch(console.error);
 		}
-		const song = queue.songs[args[0] - 1];
-
-		queue.songs = move(queue.songs, args[0] - 1, args[1] === 1 ? 1 : args[1] - 1);
-		queue.textChannel.send(
-			i18n.__mf('move.result', {
-				author: message.author,
-				title: song.title,
-				index: args[1] === 1 ? 1 : args[1],
-			}),
-		);
-	}
+	},
 };
+
