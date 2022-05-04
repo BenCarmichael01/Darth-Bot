@@ -34,10 +34,19 @@ module.exports = {
 		await interaction.deferReply({ ephemeral: true });
 
 		const queue = interaction.client.queue.get(interaction.guildId);
-		if (!queue) return reply({ interaction, content: i18n.__('jump.errorNotQueue'), ephemeral: true });
+		if (!queue)
+			return reply({
+				interaction,
+				content: i18n.__('jump.errorNotQueue'),
+				ephemeral: true,
+			});
 
 		if (!canModifyQueue(interaction.member)) {
-			return reply({ interaction, content: i18n.__('common.errorNotChannel'), ephemeral: true });
+			return reply({
+				interaction,
+				content: i18n.__('common.errorNotChannel'),
+				ephemeral: true,
+			});
 		}
 		if (args[0] > queue.songs.length) {
 			return reply({
@@ -58,7 +67,10 @@ module.exports = {
 			queue.songs = queue.songs.slice(args[0] - 2);
 		}
 		queue.player.emit('jump');
-		reply({ interaction, content: i18n.__mf('jump.success', { track: args[0] }) });
+		reply({
+			interaction,
+			content: i18n.__mf('jump.success', { track: args[0] }),
+		});
 		queue.textChannel
 			.send(
 				i18n.__mf('jump.result', {
