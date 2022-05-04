@@ -51,6 +51,7 @@ module.exports = {
 		const connection = voice.getVoiceConnection(i.guildId);
 		const { VoiceConnectionStatus, AudioPlayerStatus } = voice;
 
+		if (!queue) return;
 		let attempts = 0;
 		var resource = {};
 		while (!(queue?.songs.length < 1 || attempts >= 5)) {
