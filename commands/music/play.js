@@ -43,7 +43,12 @@ module.exports = {
 
 		const settings = await i.client.db.get(i.guildId);
 		if (!settings?.musicChannel) {
-			await reply({ message, interaction, content: i18n.__('common.noSetup'), ephemeral: true });
+			await reply({
+				message,
+				interaction,
+				content: i18n.__('common.noSetup'),
+				ephemeral: true,
+			});
 			message?.delete();
 			return;
 		}
@@ -53,7 +58,12 @@ module.exports = {
 		const serverQueue = await i.client.queue.get(i.guildId);
 
 		if (!userVc) {
-			reply({ message, interaction, content: i18n.__('play.errorNotChannel'), ephemeral: true });
+			reply({
+				message,
+				interaction,
+				content: i18n.__('play.errorNotChannel'),
+				ephemeral: true,
+			});
 			message?.delete();
 			return;
 		}
@@ -217,8 +227,18 @@ module.exports = {
 
 		if (serverQueue?.songs.length > 0) {
 			serverQueue.songs.push(song);
-			npMessage({ interaction, message, npSong: serverQueue.songs[0], prefix });
-			await reply({ message, interaction, content: i18n.__('play.success'), ephemeral: true });
+			npMessage({
+				interaction,
+				message,
+				npSong: serverQueue.songs[0],
+				prefix,
+			});
+			await reply({
+				message,
+				interaction,
+				content: i18n.__('play.success'),
+				ephemeral: true,
+			});
 			message ? message.delete() : null;
 			serverQueue.textChannel
 				.send(
@@ -245,8 +265,18 @@ module.exports = {
 					adapterCreator: userVc.guild.voiceAdapterCreator,
 				});
 			}
-			play({ song: queueConstruct.songs[0], message, interaction, prefix });
-			await reply({ message, interaction, content: i18n.__('play.success'), ephemeral: true });
+			play({
+				song: queueConstruct.songs[0],
+				message,
+				interaction,
+				prefix,
+			});
+			await reply({
+				message,
+				interaction,
+				content: i18n.__('play.success'),
+				ephemeral: true,
+			});
 			message ? message.delete() : null;
 			queueConstruct.textChannel
 				.send({
@@ -268,7 +298,9 @@ module.exports = {
 			followUp({
 				message,
 				interaction,
-				content: i18n.__('play.cantJoinChannel', { error: error.message }),
+				content: i18n.__('play.cantJoinChannel', {
+					error: error.message,
+				}),
 				ephemeral: true,
 			});
 			message ? message.delete() : null;
