@@ -36,6 +36,7 @@ i18n.configure({
 	defaultLocale: 'en',
 	objectNotation: true,
 	register: global,
+	autoReload: true,
 
 	logWarnFn: function warn(msg) {
 		console.log('warn', msg);
@@ -183,3 +184,4 @@ client.on('messageCreate', async (message) => {
 		}
 	}
 });
+
