@@ -151,7 +151,13 @@ module.exports = {
 							setTimeout(() => reply.delete(), MSGTIMEOUT);
 						})
 						.catch(console.error);
-					queue.songs.shift();
+
+					if (queue.loop) {
+						let last = queue.songs.shift();
+						queue.songs.push(last);
+					} else {
+						queue.songs.shift();
+					}
 					collector.stop('skipSong');
 					connection.removeAllListeners();
 					player.removeAllListeners();
