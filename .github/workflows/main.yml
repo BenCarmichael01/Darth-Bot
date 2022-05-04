@@ -1,7 +1,7 @@
 on: 
   push:
     branches:
-    - 'master'
+    - 'DJS_v13'
 name: 🚀 Deploy Bot on push
 jobs:
   web-deploy:
@@ -21,3 +21,11 @@ jobs:
           **/.git*
           **/.git*/**
           **/node_modules/**
+    - name: SFTP Deploy
+      uses: wlixcc/SFTP-Deploy-Action@v1.2.2
+      with: 
+        username: 'service_9146'
+        server: '202.165.126.224'
+        ssh_private_key: ${{secrets.SSH_PRIVATE_KEY}}
+        remote_path: '/'
+
