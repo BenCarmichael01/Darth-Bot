@@ -63,9 +63,9 @@ module.exports = {
 			await reply({ interaction, content: 'Successfully removed song(s)', ephemeral: true });
 			followUp({
 				interaction,
-				content: `<@${interaction.member.id}> ❌ removed \n**${removed
+				content: `<@${interaction.member.id}> ❌ removed: \n- **${removed
 					.map((song) => song.title)
-					.join('\n& ')}** \nfrom the queue.`,
+					.join('\n- ')}** \nfrom the queue.`,
 				ephemeral: false,
 			});
 		} else if (!Number.isNaN(args[0]) && args[0] >= 1 && args[0] <= queue.songs.length) {
