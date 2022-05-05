@@ -1,23 +1,30 @@
-on: 
-  push:
-    branches:
-    - 'master'
-name: 🚀 Deploy Bot on push
+on:
+ push:
+   branches: [ master ]
 jobs:
-  web-deploy:
-    name: 🎉 Deploy
-    runs-on: ubuntu-latest
-    steps:
-    - name: 🚚 Get latest code
-      uses: actions/checkout@v2
+ deploy_job:
+   runs-on: ubuntu-latest
+   name: deploy
+   steps:
+     - name: Checkout
+       uses: actions/checkout@v2
 
-    - name: SFTP push
-      uses: zhenyuWang/Upload-File-Action@v1.0.1
-      with:
-          username: "service_9146"
-          server: "202.165.126.224"
-          port: "23"
-          ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY}}
-          local_path: "./*"
-          target_path: "/"
-
+     - name: create ssh folder
+       run: mkdir /home/runner/.ssh/
+       
+     - name: create know hosts
+       run: ssh-keyscan -H your.ftp.host > /home/runner/.ssh/known_hosts
+       
+     - name: create private key
+       run: touch /home/runner/.ssh/private_key.pem
+       
+     - name: copy private key
+       run: 'echo "$SSH_KEY" > /home/runner/.ssh/private_key.pem'
+       env:
+         SSH_KEY: ${{secrets.SSH_PRIVATE_KEY}}
+               
+     - name: change permission to private key
+       run: chmod 400 /home/runner/.ssh/private_key.pem
+                                                                                             
+     - name: sftp run
+       run: sftp -i /home/runner/.ssh/private_key.pem service_9146@202.165.126.224:23
