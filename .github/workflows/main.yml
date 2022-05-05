@@ -17,7 +17,7 @@ jobs:
           username: "service_9146"
           server: "202.165.126.224"
           port: "23"
-          ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY}
+          ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY}}
           local_path: "./*"
           target_path: "/"
 
