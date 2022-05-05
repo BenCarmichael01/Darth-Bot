@@ -23,7 +23,7 @@
 		"ffmpeg": "0.0.4",
 		"ffmpeg-static": "^4.4.1",
 		"fluent-ffmpeg": "^2.1.2",
-		"i18n": "^0.13.3",
+		"i18n": "^0.14.2",
 		"libsodium-wrappers": "^0.7.9",
 		"mongoose": "^6.0.13",
 		"node-gyp": "^8.1.0",
