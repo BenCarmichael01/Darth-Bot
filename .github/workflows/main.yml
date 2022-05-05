@@ -11,15 +11,13 @@ jobs:
     - name: 🚚 Get latest code
       uses: actions/checkout@v2
 
-    - name: 📂 Sync files
-      uses: SamKirkland/FTP-Deploy-Action@4.2.0
+    - name: SFTP push
+      uses: zhenyuWang/Upload-File-Action@v1.0.1
       with:
-        server: ${{ secrets.ftp_server }}
-        port: 23
-        username: ${{ secrets.ftp_username }}
-        password: ${{ secrets.ftp_password }}
-        exclude: |
-          **/.git*
-          **/.git*/**
-          **/node_modules/**
+          username: "service_9146"
+          server: "202.165.126.224"
+          port: "23"
+          ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY}
+          local_path: "./*"
+          target_path: "/"
 
