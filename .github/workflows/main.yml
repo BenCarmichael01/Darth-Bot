@@ -27,7 +27,9 @@ jobs:
        run: chmod 400 /home/runner/.ssh/private_key.pem
       
      - name: logging
-       run: 'cat /home/runner/.ssh/private_key.pem'
+       run: 'echo $SSH_KEY'
+       env:
+         SSH_KEY: ${{secrets.SSH_PRIVATE_KEY}}
                                                                                              
      - name: sftp run
        run: sftp -i /home/runner/.ssh/private_key.pem service_9146@202.165.126.224:23
