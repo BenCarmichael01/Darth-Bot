@@ -16,7 +16,6 @@ jobs:
       with:
         server: ${{ secrets.ftp_server }}
         port: 23
-        METHOD: sftp
         username: ${{ secrets.ftp_username }}
         password: ${{ secrets.ftp_password }}
         exclude: |
