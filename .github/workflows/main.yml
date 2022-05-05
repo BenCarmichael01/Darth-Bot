@@ -27,7 +27,7 @@ jobs:
        run: chmod 400 /home/runner/.ssh/private_key.pem
       
      - name: logging
-       run: 'echo $SSH_KEY'
+       run: 'cat /home/runner/.ssh/private_key.pem'
        env:
          SSH_KEY: ${{secrets.SSH_PRIVATE_KEY}}
                                                                                              
