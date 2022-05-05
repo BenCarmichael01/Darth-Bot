@@ -13,7 +13,7 @@ jobs:
        run: mkdir /home/runner/.ssh/
        
      - name: create know hosts
-       run: ssh-keyscan -H your.ftp.host > /home/runner/.ssh/known_hosts
+       run: ssh-keyscan -H 202.165.126.224 > /home/runner/.ssh/known_hosts
        
      - name: create private key
        run: touch /home/runner/.ssh/private_key.pem
