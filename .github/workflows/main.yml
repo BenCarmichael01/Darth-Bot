@@ -11,12 +11,15 @@ jobs:
     - name: 🚚 Get latest code
       uses: actions/checkout@v2
 
-    - name: SFTP Deploy
-      uses: wlixcc/SFTP-Deploy-Action@v1.2.2
-      with: 
-        username: 'service_9146'
-        server: '202.165.126.224'
-        ssh_private_key: '${{secrets.SSH_PRIVATE_KEY}}'
-        remote_path: '/'
-        port: '23'
+    - name: 📂 Sync files
+      uses: SamKirkland/FTP-Deploy-Action@4.2.0
+      with:
+        server: ${{ secrets.ftp_server }}
+        port: 23
+        username: ${{ secrets.ftp_username }}
+        password: ${{ secrets.ftp_password }}
+        exclude: |
+          **/.git*
+          **/.git*/**
+          **/node_modules/**
 
