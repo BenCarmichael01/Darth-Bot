@@ -16,6 +16,7 @@ jobs:
       with: 
         username: 'service_9146'
         server: '202.165.126.224'
-        ssh_private_key: ${{secrets.SSH_PRIVATE_KEY}}
+        ssh_private_key: '${{secrets.SSH_PRIVATE_KEY}}'
         remote_path: '/'
+        port: '23'
 
