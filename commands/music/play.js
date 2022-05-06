@@ -4,9 +4,10 @@ const YouTubeAPI = require('simple-youtube-api');
 const playdl = require('play-dl');
 const i18n = require('i18n');
 const voice = require('@discordjs/voice');
+const he = require('he');
 
 const { npMessage } = require(`${__base}/include/npmessage`);
-const { YOUTUBE_API_KEY, LOCALE, DEFAULT_VOLUME, MSGTIMEOUT, deEscape } = require(`../../include/utils`);
+const { YOUTUBE_API_KEY, LOCALE, DEFAULT_VOLUME, MSGTIMEOUT } = require(`../../include/utils`);
 const { reply, followUp } = require(`${__base}include/responses`);
 
 i18n.setLocale(LOCALE);
@@ -156,7 +157,7 @@ module.exports = {
 			try {
 				songInfo = await youtube.getVideo(url, { part: 'snippet' });
 				song = {
-					title: deEscape(songInfo.title),
+					title: he.decode(songInfo.title),
 					url: songInfo.url,
 					thumbUrl: songInfo.maxRes.url,
 					duration: songInfo.durationSeconds,
@@ -182,7 +183,7 @@ module.exports = {
 					});
 					const searchResult = results[0];
 					song = {
-						title: deEscape(searchResult.title),
+						title: he.decode(searchResult.title),
 						url: searchResult.url,
 						thumbUrl: searchResult.maxRes.url,
 						duration: searchResult.durationSeconds,
@@ -206,7 +207,7 @@ module.exports = {
 				});
 				const searchResult = results[0];
 				song = {
-					title: deEscape(searchResult.title),
+					title: he.decode(searchResult.title),
 					url: searchResult.url,
 					thumbUrl: searchResult.maxRes.url,
 					duration: searchResult.durationSeconds,
@@ -310,4 +311,3 @@ module.exports = {
 		return;
 	},
 };
-
