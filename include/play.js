@@ -2,7 +2,7 @@
 const playdl = require('play-dl');
 const { npMessage } = require('./npmessage');
 const { canModifyQueue, STAY_TIME, LOCALE, MSGTIMEOUT } = require(`${__base}include/utils`);
-const { followUp } = require('.responses');
+const { followUp } = require('./responses');
 const i18n = require('i18n');
 const voice = require('@discordjs/voice');
 
