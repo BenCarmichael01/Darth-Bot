@@ -10,7 +10,7 @@ module.exports = {
 	permissions: ['ADMINISTRATOR'],
 
 	async callback({ interaction, guild, instance, client }) {
-		interaction.reply('Deleting...');
+		interaction.reply({ content: 'Deleting...', ephemeral: true });
 		guild.commands.cache.forEach((value, key) => {
 			guild.commands.cache.delete(value);
 		});
