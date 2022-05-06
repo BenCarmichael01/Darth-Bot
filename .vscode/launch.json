@@ -6,7 +6,7 @@
 	"configurations": [
 		{
 			"type": "node",
-			"runtimeVersion": "16.9",
+			"runtimeVersion": "16.9.1",
 			"runtimeArgs": ["--preserve-symlinks"],
 			"request": "launch",
 			"name": "Launch Program",
