@@ -202,9 +202,12 @@
 			"fail": "I cannot kick {member}, they are too powerful!"
 		},
 		"status": {
-			"noType": "That activity type is not valid.\nPlease use one of the following: PLAYING, STREAMING, LISTENING, WATCHING, COMPETING\n",
-			"noText": "You need to provide a status message\n",
+			"description": "Updates the bot's activity status",
+			"activityDesc": "The type of activity to be used",
+			"statusDesc": "The status message to display",
+			"urlDesc": "Twitch/Youtube URL must be iincluded when using 'Streaming' option",
 			"usage": "Status command usage: <Activity Type> <Status Message>",
+			"start": "Updating status...",
 			"complete": "My status has been successfully updated"
 		},
 		"setup": {

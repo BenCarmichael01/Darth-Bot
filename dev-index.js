@@ -79,7 +79,6 @@ async function messageStartup(musicGuilds, wok) {
 let wok = {};
 client.on('ready', async () => {
 	console.log(`Logged in as ${client.user.username} (${client.user.id})`);
-	client.user.setActivity('with your mum');
 
 	wok = new WOKCommands(client, {
 		commandsDir: path.join(__dirname, 'commands'),
@@ -184,4 +183,3 @@ client.on('messageCreate', async (message) => {
 		}
 	}
 });
-
