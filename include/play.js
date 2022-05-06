@@ -440,13 +440,13 @@ module.exports = {
 			}
 		});
 		i.client.on('voiceStateUpdate', (oldState, newState) => {
-			if (oldState.member.user.bot) return;
+			if (newState.member.user.bot) return;
 			if (oldState.channelId === queue.connection.joinConfig.channelId && !newState.channelId) {
 				setTimeout(() => {
 					i.client.queue.delete(i.guildId);
 					player.removeAllListeners();
 					player.stop();
-					connection.destroy();
+					connection?.destroy();
 					npMessage({ message, interaction });
 					followUp({
 						message,
