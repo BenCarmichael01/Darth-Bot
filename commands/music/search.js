@@ -1,6 +1,6 @@
 /* global __base */
 const YouTubeAPI = require('simple-youtube-api');
-const { YOUTUBE_API_KEY, LOCALE, deEscape } = require(`${__base}include/utils`);
+const { YOUTUBE_API_KEY, LOCALE } = require(`${__base}include/utils`);
 const youtube = new YouTubeAPI(YOUTUBE_API_KEY);
 const i18n = require('i18n');
 const { MessageEmbed, MessageButton, MessageActionRow } = require('discord.js');
@@ -71,7 +71,7 @@ module.exports = {
 		try {
 			const results = await youtube.searchVideos(search, 5);
 			results.map((video, index) => {
-				video.title = deEscape(video.title);
+				video.title = he.decode(video.title);
 				resultsEmbed.addField(video.shortURL, `${index + 1}. ${video.title}`);
 			});
 			let searchEmbed = new MessageEmbed().setTitle('Searching...').setColor('#F8AA2A');
@@ -163,4 +163,3 @@ module.exports = {
 		}
 	},
 };
-
