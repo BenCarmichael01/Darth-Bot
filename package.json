@@ -14,8 +14,8 @@
 	"author": "",
 	"license": "ISC",
 	"dependencies": {
+		"@discordjs/voice": "^0.8.0",
 		"@discordjs/opus": "^0.7.0",
-		"@discordjs/voice": "^0.7.5",
 		"array-move": "^3.0.1",
 		"discord.js": "^13.1.0",
 		"dotenv": "^8.6.0",
