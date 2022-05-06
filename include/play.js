@@ -1,8 +1,8 @@
 /* global __base */
 const playdl = require('play-dl');
-const { npMessage } = require(`${__base}include/npmessage`);
+const { npMessage } = require('./npmessage');
 const { canModifyQueue, STAY_TIME, LOCALE, MSGTIMEOUT } = require(`${__base}include/utils`);
-const { followUp } = require(`${__base}include/responses`);
+const { followUp } = require('.responses');
 const i18n = require('i18n');
 const voice = require('@discordjs/voice');
 
@@ -85,7 +85,7 @@ module.exports = {
 			behaviors: { noSubscriber: voice.NoSubscriberBehavior.Pause },
 		});
 		queue.player = player;
-
+		/*-----------------Event Listeners-------------------------*/
 		player.on('error', (error) => {
 			console.error(`Error: ${error.message} with resource`);
 		});
@@ -373,10 +373,9 @@ module.exports = {
 						prefix,
 					});
 				} else if (queue.songs.length === 1 && !queue.loop) {
-					// If there are no more songs in the queue and queue not looped then:
-					// - wait for STAY_TIME before leaving vc
-					//   unless a song was added during the timeout
-					npMessage({ message, interaction, prefix });
+					// If there are no more songs in the queue then wait for STAY_TIME before leaving vc
+					// unless a song was added during the timeout
+					npMessage({ message, interaction });
 					queue.songs.shift();
 					setTimeout(() => {
 						if (queue.songs.length >= 1) {
