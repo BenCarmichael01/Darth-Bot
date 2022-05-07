@@ -7,8 +7,6 @@ const WOKCommands = require('wokcommands');
 global.__base = path.join(__dirname, '/');
 const { Intents } = discordjs;
 const { MSGTIMEOUT } = require(`${__base}/include/utils`);
-const { npMessage } = require(`${__base}/include/npmessage`);
-const { findById } = require(`${__base}/include/findById`);
 require('dotenv').config();
 
 const client = new discordjs.Client({
@@ -58,39 +56,6 @@ i18n.configure({
 		disable: false,
 	},
 });
-async function messageStartup(musicGuilds, wok) {
-	for (let i = 0; i <= musicGuilds.length - 1; i++) {
-		const npMessageObj = [];
-		const collectors = [];
-		[npMessageObj[i], collectors[i]] = await npMessage({
-			client,
-			guildIdParam: musicGuilds[i],
-			prefix: wok._prefixes[musicGuilds[i]],
-		});
-		if (!collectors[i] || !npMessageObj[i]) continue;
-		let oldRow = npMessageObj[i].components[0];
-		for (let i = 0; i < oldRow.components.length; i++) {
-			if (oldRow.components[i].customId === 'loop') {
-				oldRow.components[i] = new discordjs.MessageButton()
-					.setCustomId('loop')
-					.setEmoji('🔁')
-					.setStyle('SECONDARY');
-			}
-		}
-		npMessageObj[i].edit({ components: [oldRow] });
-
-		collectors[i].on('collect', (i) => {
-			if (!i.isButton()) return;
-			const queue = i.client.queue.get(i.guildId);
-			if (!queue) {
-				i.reply({
-					content: i18n.__('nowplaying.errorNotQueue'),
-					ephemeral: true,
-				});
-			}
-		});
-	}
-}
 
 let wok = {};
 client.on('ready', async () => {
@@ -98,6 +63,7 @@ client.on('ready', async () => {
 
 	wok = new WOKCommands(client, {
 		commandsDir: path.join(__dirname, 'commands'),
+		featuresDir: path.join(__dirname, 'features'),
 		testServers: ['756990417630789744', '856658520270307339'],
 		botOwners: '337710838469230592',
 		mongoUri: process.env.MONGO_URI,
@@ -105,73 +71,19 @@ client.on('ready', async () => {
 		ephemeral: true,
 	});
 
-	wok.on('databaseConnected', async () => {
-		console.log('MongoDB Connected');
-
-		const musicGuilds = [];
-		await client.guilds.fetch().then((cache) => {
-			cache.each(async (guild) => {
-				findById(guild.id).then(async (dbEntry) => {
-					if (!dbEntry) return;
-					const { _doc } = dbEntry;
-					delete _doc._id;
-					delete _doc.__v;
-					await client.db.set(guild.id, _doc);
-					client.db.each((guildDb) => {
-						if (guildDb.musicChannel) {
-							musicGuilds.push(guild.id);
-						}
-					});
-				});
-			});
-		});
-		setTimeout(() => messageStartup(musicGuilds, wok), 3_000);
-		// console.log(client.db);
-		// console.log(musicGuilds);
-	});
-
 	wok.setCategorySettings([
-		{ name: 'fun', emoji: ':video_game:' },
-		{ name: 'moderation', emoji: ':cop:' },
-		{ name: 'music', emoji: ':musical_note:' },
-		{ name: 'testing', emoji: ':construction:' },
+		{ name: 'fun', emoji: '🎮' },
+		{ name: 'moderation', emoji: '👮' },
+		{ name: 'music', emoji: '🎵' },
+		{ name: 'testing', emoji: '🚧' },
 	]);
-	// TODO Set queue.playing false on statup to ensure queue works correctly
-
-	// // Creates inhibitor to restrict music commands to music channel
-	// client.dispatcher.addInhibitor((msg) => {
-	// 	const musicChannel = msg.guild.settings.get('musicChannel');
-	// 	const prefix = msg.guild.commandPrefix;
-	// 	// If no musicChannel, recommend run setup
-	// 	if (msg.command.groupID === 'music' && !musicChannel) {
-	// 		msg.delete({ timeout: MSGTIMEOUT });
-	// 		return {
-	// 			reason: 'nosetup',
-	// 			response: msg.reply(i18n.__mf('common.noSetup', { prefix }))
-	// 				.then((response) => {
-	// 					response.delete({ timeout: MSGTIMEOUT });
-	// 				}).catch(console.error),
-	// 		};
-	// 	}
-	// 	if (msg.command.groupID === 'music' && (musicChannel !== msg.channel.id)) {
-	// 		msg.delete({ timeout: MSGTIMEOUT });
-	// 		return {
-	// 			reason: 'wrongchannel',
-	// 			response: msg.reply(i18n.__mf('common.channelOnly', { channel: msg.guild.settings.get('musicChannel') }))
-	// 				.then((response) => {
-	// 					response.delete({ timeout: MSGTIMEOUT + 800 });
-	// 				})
-	// 				.catch(console.error),
-	// 		};
-	// 	}
-	// });
 });
 
 client.on('messageCreate', async (message) => {
 	if (message.author.bot) return;
 	const { guildId } = message;
 
-	const settings = await findById(guildId);
+	const settings = client.db.get(guildId);
 	if (!settings) return;
 
 	let MUSIC_CHANNEL_ID = settings.musicChannel;

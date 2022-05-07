@@ -36,7 +36,7 @@ module.exports = {
 
 		let musicChannel = '';
 		if (i === undefined) {
-			musicChannel = await client.guilds.cache.get(guildId).channels.cache.get(MUSIC_CHANNEL_ID);
+			musicChannel = await client.guilds.cache.get(guildId)?.channels.cache.get(MUSIC_CHANNEL_ID);
 			if (!musicChannel) {
 				return [];
 			}
