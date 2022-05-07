@@ -3,6 +3,7 @@ const YouTubeAPI = require('simple-youtube-api');
 const { YOUTUBE_API_KEY, LOCALE } = require(`${__base}include/utils`);
 const youtube = new YouTubeAPI(YOUTUBE_API_KEY);
 const i18n = require('i18n');
+const he = require('he');
 const { MessageEmbed, MessageButton, MessageActionRow } = require('discord.js');
 const { reply } = require(`../../include/responses`);
 
