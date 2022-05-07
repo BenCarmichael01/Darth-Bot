@@ -117,7 +117,7 @@ module.exports = {
 						return int
 							.editReply({ content: i18n.__('common.errorNotChannel') })
 							.then((reply) => {
-								setTimeout(() => reply.delete(), MSGTIMEOUT);
+								setTimeout(() => reply.delete().catch(console.error), MSGTIMEOUT);
 							})
 							.catch(console.error);
 					}
@@ -127,7 +127,7 @@ module.exports = {
 						int.editReply({
 							content: i18n.__mf('play.pauseSong', { author: name }),
 						}).then((reply) => {
-							setTimeout(() => reply.delete(), MSGTIMEOUT);
+							setTimeout(() => reply.delete().catch(console.error), MSGTIMEOUT);
 						});
 					} else {
 						queue.playing = true;
@@ -136,7 +136,7 @@ module.exports = {
 							content: i18n.__mf('play.resumeSong', { author: name }),
 						})
 							.then((reply) => {
-								setTimeout(() => reply.delete(), MSGTIMEOUT);
+								setTimeout(() => reply.delete().catch(console.error), MSGTIMEOUT);
 							})
 							.catch(console.error);
 					}
@@ -147,7 +147,7 @@ module.exports = {
 						return int
 							.editReply({ content: i18n.__('common.errorNotChannel') })
 							.then((reply) => {
-								setTimeout(() => reply.delete(), MSGTIMEOUT);
+								setTimeout(() => reply.delete().catch(console.error), MSGTIMEOUT);
 							})
 							.catch(console.error);
 					}
@@ -155,7 +155,7 @@ module.exports = {
 						content: i18n.__mf('play.skipSong', { author: name }),
 					})
 						.then((reply) => {
-							setTimeout(() => reply.delete(), MSGTIMEOUT);
+							setTimeout(() => reply.delete().catch(console.error), MSGTIMEOUT);
 						})
 						.catch(console.error);
 
@@ -190,7 +190,10 @@ module.exports = {
 						return int
 							.editReply({ content: i18n.__('common.errorNotChannel') })
 							.then((reply) => {
-								setTimeout(() => reply.delete(), MSGTIMEOUT);
+								setTimeout(
+									() => reply.delete().catch(console.error).catch(console.error),
+									MSGTIMEOUT,
+								);
 							})
 							.catch(console.error);
 					}
@@ -214,7 +217,7 @@ module.exports = {
 						}),
 					})
 						.then((reply) => {
-							setTimeout(() => reply.delete(), MSGTIMEOUT);
+							setTimeout(() => reply.delete().catch(console.error), MSGTIMEOUT);
 						})
 						.catch(console.error);
 					break;
@@ -224,7 +227,7 @@ module.exports = {
 						return int
 							.editReply({ content: i18n.__('shuffle.errorNotQueue') })
 							.then((reply) => {
-								setTimeout(() => reply.delete(), MSGTIMEOUT);
+								setTimeout(() => reply.delete().catch(console.error), MSGTIMEOUT);
 							})
 							.catch(console.error);
 					}
@@ -232,7 +235,7 @@ module.exports = {
 						return int
 							.editReply({ content: i18n.__('common.errorNotChannel') })
 							.then((reply) => {
-								setTimeout(() => reply.delete(), MSGTIMEOUT);
+								setTimeout(() => reply.delete().catch(console.error), MSGTIMEOUT);
 							})
 							.catch(console.error);
 					}
@@ -250,7 +253,7 @@ module.exports = {
 						}),
 					})
 						.then((reply) => {
-							setTimeout(() => reply.delete(), MSGTIMEOUT);
+							setTimeout(() => reply.delete().catch(console.error), MSGTIMEOUT);
 						})
 						.catch(console.error);
 					break;
@@ -263,7 +266,7 @@ module.exports = {
 									content: i18n.__('common.errorNotChannel'),
 								})
 								.then((reply) => {
-									setTimeout(() => reply.delete(), MSGTIMEOUT);
+									setTimeout(() => reply.delete().catch(console.error), MSGTIMEOUT);
 								})
 								.catch(console.error);
 						}
@@ -272,7 +275,7 @@ module.exports = {
 						content: i18n.__mf('play.stopSong', { author: name }),
 					})
 						.then((reply) => {
-							setTimeout(() => reply.delete(), MSGTIMEOUT);
+							setTimeout(() => reply.delete().catch(console.error), MSGTIMEOUT);
 						})
 						.catch(console.error);
 					try {
@@ -469,6 +472,7 @@ module.exports = {
 			if (newState.member.user.bot) return;
 			if (oldState.channelId === queue.connection.joinConfig.channelId && !newState.channelId) {
 				setTimeout(() => {
+					if (oldState.channel.members.size > 1) return;
 					i.client.queue.delete(i.guildId);
 					player.emit('queueEnd');
 					player.removeAllListeners();
