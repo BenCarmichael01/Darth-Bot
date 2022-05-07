@@ -5,6 +5,7 @@ const { canModifyQueue, STAY_TIME, LOCALE, MSGTIMEOUT } = require(`${__base}incl
 const { followUp } = require('./responses');
 const i18n = require('i18n');
 const voice = require('@discordjs/voice');
+const { MessageButton } = require('discord.js');
 
 i18n.setLocale(LOCALE);
 
@@ -98,7 +99,7 @@ module.exports = {
 		connection.subscribe(player);
 
 		// vvv Do not remove comma!! it is to skip the first item in the array
-		const [, collector] = await npMessage({
+		const [npmessage, collector] = await npMessage({
 			message,
 			interaction,
 			npSong: song,
@@ -194,6 +195,18 @@ module.exports = {
 							.catch(console.error);
 					}
 					queue.loop = !queue.loop;
+					let oldRow = int.message.components[0];
+					if (queue.loop) {
+						int.component.setStyle('SUCCESS');
+					} else {
+						int.component.setStyle('SECONDARY');
+					}
+					for (let i = 0; i < oldRow.components.length; i++) {
+						if (oldRow.components[i].customId === 'loop') {
+							oldRow.components[i] = int.component;
+						}
+					}
+					int.message.edit({ components: [oldRow] });
 					int.editReply({
 						content: i18n.__mf('play.loopSong', {
 							author: name,
@@ -304,6 +317,16 @@ module.exports = {
 		});
 		player.on('queueEnd', () => {
 			i.client.queue.delete(i.guildId);
+			let oldRow = npmessage.components[0];
+			for (let i = 0; i < oldRow.components.length; i++) {
+				if (oldRow.components[i].customId === 'loop') {
+					oldRow.components[i] = new MessageButton()
+						.setCustomId('loop')
+						.setEmoji('🔁')
+						.setStyle('SECONDARY');
+				}
+			}
+			npmessage.edit({ components: [oldRow] });
 		});
 		player.on('jump', () => {
 			let queue = i.client.queue.get(i.guildId);
@@ -341,6 +364,7 @@ module.exports = {
 							});
 							return;
 						}
+						player.emit('queueEnd');
 						connection?.destroy();
 						followUp({
 							message,
@@ -387,6 +411,7 @@ module.exports = {
 							});
 							return;
 						}
+						player.emit('queueEnd');
 						connection?.destroy();
 						followUp({
 							message,
@@ -425,6 +450,7 @@ module.exports = {
 						throw new Error('Test Error');
 					}
 					if (player) {
+						player.emit('queueEnd');
 						player.stop();
 					}
 				} finally {
@@ -444,6 +470,7 @@ module.exports = {
 			if (oldState.channelId === queue.connection.joinConfig.channelId && !newState.channelId) {
 				setTimeout(() => {
 					i.client.queue.delete(i.guildId);
+					player.emit('queueEnd');
 					player.removeAllListeners();
 					player.stop();
 					connection?.destroy();

@@ -68,6 +68,16 @@ async function messageStartup(musicGuilds, wok) {
 			prefix: wok._prefixes[musicGuilds[i]],
 		});
 		if (!collectors[i] || !npMessageObj[i]) continue;
+		let oldRow = npMessageObj[i].components[0];
+		for (let i = 0; i < oldRow.components.length; i++) {
+			if (oldRow.components[i].customId === 'loop') {
+				oldRow.components[i] = new discordjs.MessageButton()
+					.setCustomId('loop')
+					.setEmoji('🔁')
+					.setStyle('SECONDARY');
+			}
+		}
+		npMessageObj[i].edit({ components: [oldRow] });
 
 		collectors[i].on('collect', (i) => {
 			if (!i.isButton()) return;
