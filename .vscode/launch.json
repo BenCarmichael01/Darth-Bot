@@ -11,8 +11,9 @@
 			"request": "launch",
 			"name": "Launch Program",
 			"skipFiles": ["<node_internals>/**"],
-			"program": "${workspaceFolder}/dev-index.js",
-			"console": "integratedTerminal"
+			"program": "${workspaceFolder}/index.js",
+			"console": "integratedTerminal",
+			"args": ["dev"]
 		}
 	]
 }
