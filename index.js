@@ -72,10 +72,10 @@ client.on('ready', async () => {
 	});
 
 	wok.setCategorySettings([
-		{ name: 'fun', emoji: ':video_game:' },
-		{ name: 'moderation', emoji: ':cop:' },
-		{ name: 'music', emoji: ':musical_note:' },
-		{ name: 'testing', emoji: ':construction:' },
+		{ name: 'fun', emoji: '🎮' },
+		{ name: 'moderation', emoji: '👮' },
+		{ name: 'music', emoji: '🎵' },
+		{ name: 'testing', emoji: '🚧' },
 	]);
 });
 
