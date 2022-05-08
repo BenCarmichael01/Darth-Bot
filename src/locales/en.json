@@ -1,0 +1,49 @@
+{
+	"npmessage": {
+		"emptyQueue": "npmessage.emptyQueue",
+		"outputQueue": "npmessage.outputQueue",
+		"title": "npmessage.title",
+		"footer": "npmessage.footer",
+		"titleSong": "npmessage.titleSong"
+	},
+	"moderation": {
+		"setup": {
+			"description": "moderation.setup.description",
+			"optionDescription": "moderation.setup.optionDescription"
+		},
+		"status": {
+			"description": "moderation.status.description",
+			"activityDesc": "moderation.status.activityDesc",
+			"statusDesc": "moderation.status.statusDesc",
+			"urlDesc": "moderation.status.urlDesc"
+		}
+	},
+	"jump": {
+		"description": "jump.description"
+	},
+	"move": {
+		"description": "move.description",
+		"usagesReply": "move.usagesReply",
+		"fromDescription": "move.fromDescription",
+		"toDescription": "move.toDescription"
+	},
+	"play": {
+		"description": "play.description",
+		"option": "play.option",
+		"success": "play.success",
+		"queueAdded": "play.queueAdded"
+	},
+	"playlist": {
+		"description": "playlist.description"
+	},
+	"remove": {
+		"description": "remove.description",
+		"optionDescription": "remove.optionDescription"
+	},
+	"search": {
+		"description": "search.description"
+	},
+	"shuffle": {
+		"description": "shuffle.description"
+	}
+}

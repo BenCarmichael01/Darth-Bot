@@ -1,0 +1,227 @@
+{
+	"clip": {
+		"description": "Plays a clip sound",
+		"usagesReply": "Usage: /clip <name>",
+		"errorQueue": "Can't play clip because there is an active queue.",
+		"errorNotChannel": "You need to join a voice channel first!"
+	},
+	"clips": {
+		"description": "List all clips"
+	},
+	"help": {
+		"description": "Display all commands and descriptions",
+		"embedTitle": "{botname} Help",
+		"embedDescription": "List of all commands"
+	},
+	"invite": {
+		"description": "Send bot invite link"
+	},
+	"loop": {
+		"description": "Toggle music loop",
+		"errorNotQueue": "There is nothing playing.",
+		"result": "Loop is now {loop}"
+	},
+	"lyrics": {
+		"description": "Get lyrics for the currently playing song",
+		"errorNotQueue": "There is nothing playing.",
+		"lyricsNotFound": "No lyrics found for {title}.",
+		"embedTitle": "{title} - Lyrics"
+	},
+	"move": {
+		"description": "Move songs around in the queue",
+		"errorNotQueue": "There is no queue.",
+		"usagesReply": "Usage: {prefix}move <from queue number> <to queue number>",
+		"result": "<@{author}> moved **{title}** to position **{index}** in the queue.",
+		"range": "Those values are larger than the size of the queue.\n Make sure you have entered the correct queue numbers",
+		"fromDescription": "The number of the song that you want to move",
+		"toDescription": "The position you want to move the song to.",
+		"success": "The song has been successfully moved. "
+	},
+	"nowplaying": {
+		"description": "Show now playing song",
+		"errorNotQueue": "There is nothing in the queue. Add a song to get started.",
+		"embedTitle": "Now playing",
+		"live": "LIVE",
+		"timeRemaining": "Time Remaining: {time}"
+	},
+	"npmessage": {
+		"emptyQueue": "__**Up Next:**__\nSend a url or a song name to start the queue",
+		"overflow": "There are **{overflow}** more songs in the queue..\n {songsQueue}",
+		"outputQueue": "__**Up Next:**__\n {songsQueue}",
+		"title": "🎶 Nothing is playing right now",
+		"titleSong": "🎶 Now playing: {title}",
+		"footer": "Type a / in the chat to see a list of my commands"
+	},
+	"pause": {
+		"description": "Pause the currently playing music",
+		"errorNotQueue": "There is nothing playing.",
+		"result": "<@{author}> paused the music."
+	},
+	"ping": {
+		"description": "Show the bot's average ping",
+		"result": "Average ping to API: {ping} ms"
+	},
+	"roll": {
+		"reply": "{roll}\nPress the button bellow to re-roll with the same range"
+	},
+	"play": {
+		"description": "Plays audio from YouTube or Soundcloud",
+		"errorNotChannel": "You need to join a voice channel first!",
+		"errorNotInSameChannel": "You must be in the same channel as {user}",
+		"usageReply": "Usage: {prefix}play <YouTube URL | Video Name | Spotify URL>",
+		"missingPermissionConnect": "Cannot connect to voice channel, missing permissions",
+		"missingPermissionSpeak": "I cannot speak in this voice channel, make sure I have the proper permissions!",
+		"queueAdded": "✅ **{title}** has been added to the queue by <@{author}>",
+		"cantJoinChannel": "Could not join the channel: {error}",
+		"queueEnded": "❌ Music queue ended.",
+		"queueError": "Sorry, there was a problem playing that song\nHere is the error provided: ```{error}```",
+		"queueFail": "Sorry, something apears to be broken. I could not play any of those songs",
+		"startedPlaying": "🎶 Started playing: **{title}** {url}",
+		"npSetup": "🎶 Nothing is playing",
+		"skipSong": "<@{author}> ⏩ skipped the song",
+		"pauseSong": "<@{author}> ⏸ paused the music.",
+		"resumeSong": "<@{author}> ▶ resumed the music!",
+		"unmutedSong": "<@{author}> 🔊 unmuted the music!",
+		"mutedSong": "<@{author}> 🔇 muted the music!",
+		"decreasedVolume": "<@{author}> 🔉 decreased the volume, the volume is now {volume}%",
+		"increasedVolume": "<@{author}> 🔊 increased the volume, the volume is now {volume}%",
+		"loopSong": "<@{author}> Loop is now {loop}",
+		"stopSong": "<@{author}> ⏹ stopped the music!",
+		"leaveChannel": "Leaving voice channel...",
+		"option": "Name / URL of song or playlist. Spotify | YouTube accepted.",
+		"success": "Song added to the queue"
+	},
+	"playlist": {
+		"description": "Play a playlist from youtube",
+		"usageReply": "Usage: {prefix}playlist <YouTube Playlist URL | Playlist Name>",
+		"errorNotChannel": "You need to join a voice channel first!",
+		"errorNotInSameChannel": "You must be in the same channel as {user}",
+		"missingPermissionConnect": "Cannot connect to voice channel, missing permissions",
+		"missingPermissionSpeak": "I cannot speak in this voice channel, make sure I have the proper permissions!",
+		"errorNotFoundPlaylist": "Playlist not found :(",
+		"fetchingPlaylist": "Fetching the playlist...",
+		"playlistCharLimit": "\nPlaylist larger than character limit...",
+		"startedPlaylist": "<@{author}> Started a playlist",
+		"cantJoinChannel": "Could not join the channel: {error}",
+		"prompt": "Please send a YouTube playlist link",
+		"notPlaylist": "Hmm that doesn't seem like a playlist url",
+		"maxSize": "That playlist is very large so only the first {maxSize} songs will be added to the queue",
+		"searching": ":mag: Searching for songs...\nThis may take a moment",
+		"queueAdded": "✅ The playlist: {playlist} has been added to the queue by <@{author}>"
+	},
+	"pruning": {
+		"description": "Toggle pruning of bot messages",
+		"errorWritingFile": "There was an error writing to the file.",
+		"result": "Message pruning is {result}"
+	},
+	"queue": {
+		"description": "Show the music queue and now playing.",
+		"missingPermissionMessage": "Missing permission to manage messages or add reactions",
+		"errorNotQueue": "**Nothing is playing in this server**",
+		"currentPage": "Current Page - ",
+		"embedTitle": "Song Queue\n",
+		"embedCurrentSong": "**Current Song - [{title}]({url})**\n\n{info}"
+	},
+	"remove": {
+		"description": "Remove song(s) from the queue",
+		"errorNotQueue": "There is no queue.",
+		"usageReply": "Usage: {prefix}remove <Queue Number(s) separated by spaces>",
+		"result": "<@{author}> removed **{title}** from the queue.",
+		"optionDescription": "The number of the song[s] you want to remove, separated by spaces"
+	},
+	"resume": {
+		"description": "Resume currently playing music",
+		"errorNotQueue": "There is nothing playing.",
+		"resultNotPlaying": "<@{author}> resumed the music!",
+		"errorPlaying": "The queue is not paused."
+	},
+	"search": {
+		"description": "Search and select videos to play",
+		"usageReply": "Usage: {prefix}{search} <Video Name>",
+		"errorAlreadyCollector": "A message collector is already active in this channel.",
+		"errorNotChannel": "You need to join a voice channel first!",
+		"resultEmbedTtile": "Reply with the song number you want to play\nYou have **30 seconds** to choose!",
+		"resultEmbedDesc": "Results for: {search}",
+		"timeout": "You have ran out of time! Try searching again"
+	},
+	"shuffle": {
+		"description": "Shuffles the queue",
+		"errorNotQueue": "There is no queue to shuffle.",
+		"result": "<@{author}> has shuffled the queue",
+		"success": "Succesfully shuffled the queue"
+	},
+	"skip": {
+		"description": "Skip the currently playing song",
+		"errorNotQueue": "There is nothing playing that I could skip for you.",
+		"result": "<@{author}> skipped the song"
+	},
+	"jump": {
+		"description": "Jump to the selected queue number",
+		"usageReply": "Usage: {prefix}{name} <Queue Number>",
+		"errorNotQueue": "There is no queue.",
+		"errorNotValid": "The queue is only {length} songs long!",
+		"result": "<@{author}> skipped {arg} songs",
+		"success": "Successfully skipped to track {track}"
+	},
+	"stop": {
+		"description": "Stops the music",
+		"errorNotQueue": "There is nothing playing.",
+		"result": "<@{author}> stopped the music!"
+	},
+	"uptime": {
+		"description": "Check the uptime",
+		"result": "Uptime: `{days} day(s),{hours} hours, {minutes} minutes, {seconds} seconds`"
+	},
+	"volume": {
+		"description": "Change volume of currently playing music",
+		"errorNotQueue": "There is nothing playing.",
+		"errorNotChannel": "You need to join a voice channel first!",
+		"currentVolume": "The current volume is: **{volume}%**",
+		"errorNotNumber": "Please use a number to set volume.",
+		"errorNotValid": "Please use a number between 0 - 100.",
+		"result": "Volume set to: **{arg}%**"
+	},
+	"common": {
+		"on": "**on**",
+		"off": "**off**",
+		"enabled": "**enabled**",
+		"disabled": "**disabled**",
+		"errorNotChannel": "You need to join a voice channel first!",
+		"cooldownMessage": "please wait {time} more second(s) before reusing the `{name}` command.",
+		"errorCommand": "There was an error executing that command.",
+		"channelOnly": "This command can only be used in <#{channel}>",
+		"missingPerms": "You don't have permission to do that",
+		"noSetup": "You need to run `/setup` before you can use this command",
+		"unknownCommand": "That isn't a command. Try running {prefix}help to see a list of my commands"
+	},
+	"moderation": {
+		"kick": {
+			"description": "Kicks a member from the discord server",
+			"prompt": "Please specify a member to kick",
+			"success": "{member} has been kicked",
+			"fail": "I cannot kick {member}, they are too powerful!"
+		},
+		"status": {
+			"description": "Updates the bot's activity status",
+			"activityDesc": "The type of activity to be used",
+			"statusDesc": "The status message to display",
+			"urlDesc": "Twitch/Youtube URL must be iincluded when using 'Streaming' option",
+			"usage": "Status command usage: <Activity Type> <Status Message>",
+			"start": "Updating status...",
+			"complete": "My status has been successfully updated"
+		},
+		"setup": {
+			"description": "Setup the channel you want to use for the music player",
+			"optionDescription": "The channel to be used for the music player",
+			"success": "The music channel has been set to <#{MUSIC_CHANNEL_ID}> \n Setup Complete!",
+			"fail": "Sorry, it doesn't seem like that worked. Please try again",
+			"error": "Sorry there has been an error.\n{error}",
+			"notChannel": "Sorry, that is not a valid channel.\nPlease ensure you have selected a text channel and not a voice channel or channel category",
+			"warning": "**WARNING**: this will purge *all* messages in the channel you have selected!\nDo you wish to proceed to music channel setup?\n**(You have 20 seconds to decide)**",
+			"start": "Beginning setup in <#{channel}> ...",
+			"cancelled": "Setup Cancelled",
+			"continue": "Continue",
+			"cancel": "Cancel"
+		}
+	}
+}
