@@ -1,7 +1,8 @@
-const musicSchema = require('../schemas/musicSchema');
+import discordjs from 'discord.js';
+import { find } from '../schemas/musicSchema';
 
-module.exports = async (client) => {
-	const docs = await musicSchema.find();
+export default async (client:discordjs.Client) => {
+	const docs = await find();
 	docs.forEach((guild) => {
 		const cache = guild._doc;
 		const id = cache._id;
@@ -11,7 +12,7 @@ module.exports = async (client) => {
 	});
 	client.emit('dbCached');
 };
-module.exports.config = {
+export const config = {
 	displayName: 'Database Cache',
 	dbName: 'MUSIC_DATA_CACHE',
 };

@@ -1,11 +1,11 @@
-const { npMessage } = require('../include/npmessage');
-const { LOCALE } = require('../include/utils');
-const discordjs = require('discord.js');
-const i18n = require('i18n');
+import { npMessage } from '../include/npmessage';
+import { LOCALE } from '../include/utils';
+import discordjs from 'discord.js';
+import i18n from 'i18n';
 
-// i18n.setLocale(LOCALE);
+if (LOCALE) i18n.setLocale(LOCALE);
 
-async function messageStartup(musicGuilds, client) {
+async function messageStartup(musicGuilds:Array<string>, client:discordjs.Client) {
 	for (let i = 0; i <= musicGuilds.length - 1; i++) {
 		const npMessageObj = [];
 		const collectors = [];
@@ -15,8 +15,8 @@ async function messageStartup(musicGuilds, client) {
 		});
 		npMessageObj[i] = npmessageOutput.npmessage;
 		collectors[i] = npmessageOutput.collector;
-		if (!collectors[i] || !npMessageObj[i]) continue;
-		let oldRow = npMessageObj[i].components[0];
+		if (!collectors[ i ] || !npMessageObj[ i ]) continue;
+		let oldRow = npMessageObj[i]!.components[0];
 		for (let i = 0; i < oldRow.components.length; i++) {
 			if (oldRow.components[i].customId === 'loop') {
 				oldRow.components[i] = new discordjs.MessageButton()
@@ -25,10 +25,17 @@ async function messageStartup(musicGuilds, client) {
 					.setStyle('SECONDARY');
 			}
 		}
-		npMessageObj[i].edit({ components: [oldRow] });
+		npMessageObj[i]!.edit({ components: [oldRow] });
 
-		collectors[i].on('collect', (i) => {
+		collectors[i]!.on('collect', (i) => {
 			if (!i.isButton()) return;
+			if (!i.guildId) {
+				i.reply({
+					content: i18n.__('common.noSetup'),
+					ephemeral: true,
+				})
+				return;
+			}
 			const queue = i.client.queue.get(i.guildId);
 			if (!queue) {
 				i.reply({
@@ -39,9 +46,9 @@ async function messageStartup(musicGuilds, client) {
 		});
 	}
 }
-module.exports = (client) => {
+module.exports = (client:discordjs.Client) => {
 	client.on('dbCached', () => {
-		let musicGuilds = [];
+		let musicGuilds:Array<string> = [];
 		client.db.each((guildDb, id) => {
 			if (guildDb.musicChannel) {
 				musicGuilds.push(id);

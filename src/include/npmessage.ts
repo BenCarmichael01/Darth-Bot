@@ -4,8 +4,8 @@ import Discord from 'discord.js';
 
 import { LOCALE } from './utils';
 import { findById } from './findById';
-console.log(LOCALE);
-i18n.setLocale('en');
+
+if (LOCALE) i18n.setLocale(LOCALE);
 // TODO update npmessage when prefix is changed
 interface arguments {
 	client?: Discord.Client,
