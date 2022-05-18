@@ -1,51 +1,60 @@
 ﻿﻿/* global __base */
 import i18n from 'i18n';
-import {  MessageEmbed, TextChannel } from 'discord.js';
+import Discord from 'discord.js';
 
 import { LOCALE } from './utils';
 import { findById } from './findById';
 console.log(LOCALE);
 i18n.setLocale('en');
 // TODO update npmessage when prefix is changed
+interface arguments {
+	client?: Discord.Client,
+	npSong?: any,
+	guildIdParam?: string,
+	interaction?: Discord.CommandInteraction,
+	message?: Discord.Message
+}
+interface output {
+	npmessage: Discord.Message | undefined,
+	collector: Discord.InteractionCollector<Discord.ButtonInteraction> | undefined
+}
 export
-	/**
-	 *
-	 * @param {object} args
-	 * @param {DiscordClient} args.client
-	 * @param {DiscordMessage} args.message
-	 * @param {object} args.npSong
-	 * @param {String} args.guildIdParam
-	 * @param {String} args.prefix
-	 * @param {DiscordInteraction} args.interaction
-	 * @returns {[DiscordMessage, MessageReactionCollector]} An array where the first item is the sent message object and the second is the reaction collector
-	 */
-	async function npMessage({ client, npSong, guildIdParam, interaction, message }) {
+	async function npMessage(args: arguments):
+	Promise<{
+	npmessage?: Discord.Message | undefined,
+	collector?: Discord.InteractionCollector<Discord.ButtonInteraction> | undefined
+}> {
+	const { client, npSong, guildIdParam, interaction, message } = args;
 	let i;
 	if (!message && interaction && !guildIdParam) {
 		i = interaction;
 	} else if (message) {
 		i = message;
-	} else {
-		i = undefined;
-	}
-	const guildId = guildIdParam ? guildIdParam : i.guildId;
+	};
+	const guildId =(guildIdParam ? guildIdParam : i?.guildId) as string;
 	const settings = await findById(guildId);
 
 	const MUSIC_CHANNEL_ID = settings.musicChannel;
 	const playingMessageId = settings.playingMessage;
 
-	let musicChannel:TextChannel;
-	if (i === undefined) {
+	let musicChannel;
+	if (i === undefined && client) {
 		musicChannel = await client.guilds.cache.get(guildId)?.channels.cache.get(MUSIC_CHANNEL_ID);
 		if (!musicChannel) {
-			return [];
+			return {};
 		}
-	} else {
+	} else if (i){
 		musicChannel = await i.client.channels.cache.get(MUSIC_CHANNEL_ID);
 	}
+
+	if (!musicChannel) {
+		if (!i) return {};
+		i.reply({ content: 'There has been an error with the Now Playing message\nPlease consult an administrator to re-run setup.'})
+		return {};
+	}
 	let queue = [];
-	if (i !== undefined && npSong !== undefined) {
-		queue = i.client.queue.get(i.guildId)?.songs;
+	if (i && npSong && guildId !== null) {
+		queue = i.client.queue.get(guildId)?.songs;
 	}
 
 	var outputQueue = i18n.__('npmessage.emptyQueue');
@@ -72,37 +81,37 @@ export
 	}
 	let newEmbed = {};
 	if (npSong === undefined) {
-		newEmbed = new MessageEmbed()
+		newEmbed = new Discord.MessageEmbed()
 			.setColor('#5865F2')
 			.setTitle(i18n.__('npmessage.title'))
 			.setURL('')
 			.setImage('https://i.imgur.com/TObp4E6.jpg')
-			.setFooter(i18n.__('npmessage.footer'));
+			.setFooter({ text: i18n.__('npmessage.footer') });
 	} else {
-		newEmbed = new MessageEmbed()
+		newEmbed = new Discord.MessageEmbed()
 			.setColor('#5865F2')
 			.setTitle(i18n.__mf('npmessage.titleSong', { title: npSong.title }))
 			.setURL(npSong.url)
 			.setImage(npSong.thumbUrl)
-			.setFooter(i18n.__('npmessage.footer'));
+			.setFooter({ text: i18n.__('npmessage.footer') });
 	}
 
-	const output1 = await musicChannel.messages
+	const output = await (musicChannel as Discord.TextChannel).messages
 		.fetch({ limit: 10 })
 		.then(async (messages) => {
-			const outputArr = [];
-			outputArr[0] = await messages.get(playingMessageId);
+			const npmessage = messages.get(playingMessageId);
+			// output.npmessage = await messages.get(playingMessageId);
 			// Change now playing message to match current song
-			outputArr[0].edit({ content: outputQueue, embeds: [newEmbed] });
+			npmessage?.edit({ content: outputQueue, embeds: [newEmbed] });
 			// outputArr[0].edit({ content: outputQueue, embeds: [newEmbed] });
-			return outputArr;
+			return npmessage;
 		})
-		.then(async (outputArr) => {
-			const outputVar = outputArr;
-			outputVar[1] = outputArr[0].createMessageComponentCollector({ componentType: 'BUTTON' });
-			return outputVar;
+		.then(async (npmessage) => {
+			const collector = npmessage?.createMessageComponentCollector({ componentType: 'BUTTON' });
+			const output: output = { npmessage, collector };
+			return output;
 		})
 		.catch(console.error);
 
-	return output1;
+	return output as output;
 }

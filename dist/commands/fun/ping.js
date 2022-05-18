@@ -1,10 +1,10 @@
-// const oneLine = require('common-tags').oneLine;
+"use strict";
 module.exports = {
     name: 'ping',
     category: 'fun',
     description: 'Ping Pong',
-    callback: function (_a) {
-        var message = _a.message;
+    callback({ message }) {
         message.channel.send('Pong');
     },
 };
+//# sourceMappingURL=ping.js.map

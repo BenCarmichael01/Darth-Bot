@@ -1,26 +1,21 @@
-/* global __base */
+"use strict";
 require('dotenv').config();
-var config;
+let config;
 try {
-    config = require("".concat(__base, "config.json"));
+    config = require('../config.json');
 }
 catch (error) {
     config = null;
 }
-/**
- * Determines if the member is in the same voice channel as the bot
- * @param {discordMember} member
- * @returns True or False
- */
-exports.canModifyQueue = function (member) {
-    var channelId = member.voice.channelId;
-    var botChannel = member.guild.me.voice.channelId;
+exports.canModifyQueue = (member) => {
+    const { channelId } = member.voice;
+    const botChannel = member.guild.me.voice.channelId;
     if (channelId !== botChannel) {
         return false;
     }
     return true;
 };
-exports.deEscape = function (htmlStr) {
+exports.deEscape = (htmlStr) => {
     htmlStr = htmlStr.replace(/&lt;/g, '<');
     htmlStr = htmlStr.replace(/&gt;/g, '>');
     htmlStr = htmlStr.replace(/&quot;/g, '"');
@@ -35,3 +30,4 @@ exports.PRUNING = config ? config.PRUNING : process.env.PRUNING;
 exports.STAY_TIME = config ? config.STAY_TIME : process.env.STAY_TIME;
 exports.MSGTIMEOUT = config ? config.MSGTIMEOUT : process.env.MSGTIMEOUT;
 exports.LOCALE = config ? config.LOCALE : process.env.LOCALE;
+//# sourceMappingURL=utils.js.map

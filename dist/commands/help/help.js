@@ -1,4 +1,5 @@
-var MSGTIMEOUT = require("../../include/utils").MSGTIMEOUT;
+"use strict";
+const { MSGTIMEOUT } = require(`../../include/utils`);
 module.exports = {
     name: 'help',
     category: 'help',
@@ -6,8 +7,7 @@ module.exports = {
     slash: 'both',
     testOnly: true,
     ownerOnly: true,
-    callback: function (_a) {
-        var message = _a.message, interaction = _a.interaction;
+    callback({ message, interaction }) {
         if (interaction) {
             interaction.reply({
                 content: 'The help menu is under maintainance.\nType a `/` to see a list of my commands',
@@ -17,11 +17,12 @@ module.exports = {
         else {
             message
                 .reply('The help menu is under maintainance.\nType a `/` to see a list of my commands')
-                .then(function (msg) {
-                setTimeout(function () {
+                .then((msg) => {
+                setTimeout(() => {
                     msg.delete();
                 }, MSGTIMEOUT);
             });
         }
     },
 };
+//# sourceMappingURL=help.js.map

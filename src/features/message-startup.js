@@ -3,16 +3,18 @@ const { LOCALE } = require('../include/utils');
 const discordjs = require('discord.js');
 const i18n = require('i18n');
 
-// // i18n.setLocale(LOCALE);
+// i18n.setLocale(LOCALE);
 
 async function messageStartup(musicGuilds, client) {
 	for (let i = 0; i <= musicGuilds.length - 1; i++) {
 		const npMessageObj = [];
 		const collectors = [];
-		[npMessageObj[i], collectors[i]] = await npMessage({
+		const npmessageOutput = await npMessage({
 			client,
 			guildIdParam: musicGuilds[i],
 		});
+		npMessageObj[i] = npmessageOutput.npmessage;
+		collectors[i] = npmessageOutput.collector;
 		if (!collectors[i] || !npMessageObj[i]) continue;
 		let oldRow = npMessageObj[i].components[0];
 		for (let i = 0; i < oldRow.components.length; i++) {

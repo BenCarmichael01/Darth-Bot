@@ -2,11 +2,12 @@ import path from 'path';
 import i18n from 'i18n';
 import discordjs from 'discord.js';
 import WOKCommands from 'wokcommands';
-import './types/common/discord';
+//  import './types/discord';
 
 global.__base = path.join(__dirname, '/');
 const { Intents } = discordjs;
 import { MSGTIMEOUT } from './include/utils';
+import { DiscordGatewayAdapterCreator } from '@discordjs/voice';
 require('dotenv').config();
 
 const client = new discordjs.Client({
@@ -22,7 +23,7 @@ const client = new discordjs.Client({
 // i18n locale config
 i18n.configure({
 	locales: ['en', 'es', 'ko', 'fr', 'tr', 'pt_br', 'zh_cn', 'zh_tw'],
-	directory: path.join(__dirname, 'locales'),
+	directory: path.join(__dirname,'..', 'locales'),
 	defaultLocale: 'en',
 	objectNotation: true,
 	register: global,
@@ -59,7 +60,7 @@ client.on('warn', (info) => console.log(info));
 client.on('error', console.error);
 
 let wok: WOKCommands;
-client.on('ready', async () => {
+client.on('ready', async (client) => {
 	console.log(`Logged in as ${client.user.username} (${client.user.id})`);
 
 	wok = new WOKCommands(client, {
@@ -80,11 +81,11 @@ client.on('ready', async () => {
 	]);
 });
 
-client.on('messageCreate', async (message) => {
+client.on('messageCreate', async (message: discordjs.Message) => {
 	if (message.author.bot) return;
 	const { guildId } = message;
 
-	const settings = client.db.get(guildId);
+	const settings = client.db.get(guildId!);
 	if (!settings) return;
 
 	let MUSIC_CHANNEL_ID = settings.musicChannel;

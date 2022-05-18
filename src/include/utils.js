@@ -1,10 +1,9 @@
-/* global __base */
 require('dotenv').config();
 
 let config;
 
 try {
-	config = require(`${__base}config.json`);
+	config = require('../config.json');
 } catch (error) {
 	config = null;
 }
@@ -39,4 +38,3 @@ exports.PRUNING = config ? config.PRUNING : process.env.PRUNING;
 exports.STAY_TIME = config ? config.STAY_TIME : process.env.STAY_TIME;
 exports.MSGTIMEOUT = config ? config.MSGTIMEOUT : process.env.MSGTIMEOUT;
 exports.LOCALE = config ? config.LOCALE : process.env.LOCALE;
-
