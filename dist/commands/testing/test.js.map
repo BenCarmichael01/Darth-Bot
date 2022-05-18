@@ -1,1 +1,0 @@
-{"version":3,"file":"test.js","sourceRoot":"","sources":["../../../src/commands/testing/test.js"],"names":[],"mappings":";AAGA,MAAM,CAAC,OAAO,GAAG;IAChB,IAAI,EAAE,MAAM;IACZ,WAAW,EAAE,MAAM;IACnB,QAAQ,EAAE,SAAS;IACnB,QAAQ,EAAE,IAAI;IACd,WAAW,EAAE,CAAC,eAAe,CAAC;IAE9B,KAAK,CAAC,QAAQ,CAAC,EAAE,OAAO,EAAE,KAAK,EAAE,QAAQ,EAAE,MAAM,EAAE,IAAG,CAAC;CACvD,CAAC"}
