@@ -1,6 +1,6 @@
 {
 	"compilerOptions": {
-		"target": "es2022",
+		"target": "es2021",
 		"module": "commonjs",
 		"rootDir": "src/",
 		"outDir": "dist/",
@@ -19,7 +19,7 @@
 		"baseUrl": "./",
 		"allowJs": true
 	},
-	"files": ["src/index.ts", "src/types/npmessage.d.ts"],
+	"files": ["src/index.ts", "src/types/typings.d.ts"],
 	"include": ["./src/**/*.ts", "./src/**/*.js"],
 	"exclude": ["node_modules", "dist"]
 }
