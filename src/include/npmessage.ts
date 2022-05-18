@@ -1,9 +1,8 @@
-/* global __base */
+﻿﻿/* global __base */
 import i18n from 'i18n';
 import Discord from 'discord.js';
 
 import { LOCALE } from './utils';
-import findById from './findById';
 
 if (LOCALE) i18n.setLocale(LOCALE);
 // TODO update npmessage when prefix is changed
@@ -32,8 +31,13 @@ export
 		i = message;
 	};
 	const guildId =(guildIdParam ? guildIdParam : i?.guildId) as string;
-	const settings = await findById(guildId);
-
+	let settings;
+	if (client) {
+		settings = client.db.get(guildId);
+	} else if (i) {
+		settings = i.client.db.get(guildId);
+	}
+	if (!settings) return {} as output;
 	const MUSIC_CHANNEL_ID = settings.musicChannel;
 	const playingMessageId = settings.playingMessage;
 
