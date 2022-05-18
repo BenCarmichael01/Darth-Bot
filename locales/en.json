@@ -187,7 +187,7 @@
 		"enabled": "**enabled**",
 		"disabled": "**disabled**",
 		"errorNotChannel": "You need to join a voice channel first!",
-		"cooldownMessage": "please wait {time} more second(s) before reusing the `{name}` command.",
+		"cooldownMessage": "Please wait {time} more second(s) before reusing the `{name}` command.",
 		"errorCommand": "There was an error executing that command.",
 		"channelOnly": "This command can only be used in <#{channel}>",
 		"missingPerms": "You don't have permission to do that",
