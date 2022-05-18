@@ -1,9 +1,9 @@
-﻿﻿/* global __base */
+/* global __base */
 import i18n from 'i18n';
 import Discord from 'discord.js';
 
 import { LOCALE } from './utils';
-import { findById } from './findById';
+import findById from './findById';
 
 if (LOCALE) i18n.setLocale(LOCALE);
 // TODO update npmessage when prefix is changed
