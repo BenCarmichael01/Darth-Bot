@@ -3,6 +3,7 @@ lockfileVersion: 5.3
 specifiers:
   '@discordjs/opus': ^0.5.3
   '@discordjs/voice': ^0.9.0
+  '@types/he': ^1.1.2
   '@types/i18n': ^0.13.2
   '@types/node': ^17.0.34
   array-move: ^3.0.1
@@ -69,6 +70,7 @@ dependencies:
   xmlhttprequest: 1.8.0
 
 devDependencies:
+  '@types/he': 1.1.2
   '@types/i18n': 0.13.2
   '@types/node': 17.0.34
   eslint: 7.32.0
@@ -329,6 +331,10 @@ packages:
 
   /@tsconfig/node16/1.0.2:
     resolution: {integrity: sha512-eZxlbI8GZscaGS7kkc/trHTT5xgrjH3/1n2JDwusC9iahPKWMRvRjJSAN5mCXviuTGQ/lHnhvv8Q1YTpnfz9gA==}
+    dev: true
+
+  /@types/he/1.1.2:
+    resolution: {integrity: sha512-kSJPcLO1x+oolc0R89pUl2kozldQ/fVQ1C1p5mp8fPoLdF/ZcBvckaTC2M8xXh3GYendXvCpy5m/a2eSbfgNgw==}
     dev: true
 
   /@types/i18n/0.13.2:
