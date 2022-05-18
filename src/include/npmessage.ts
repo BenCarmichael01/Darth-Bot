@@ -7,21 +7,19 @@ import { LOCALE } from './utils';
 if (LOCALE) i18n.setLocale(LOCALE);
 // TODO update npmessage when prefix is changed
 interface arguments {
-	client?: Discord.Client,
-	npSong?: any,
-	guildIdParam?: string,
-	interaction?: Discord.CommandInteraction,
-	message?: Discord.Message
+	client?: Discord.Client;
+	npSong?: any;
+	guildIdParam?: string;
+	interaction?: Discord.Interaction;
+	message?: Discord.Message;
 }
 interface output {
-	npmessage: Discord.Message | undefined,
-	collector: Discord.InteractionCollector<Discord.ButtonInteraction> | undefined
+	npmessage: Discord.Message | undefined;
+	collector: Discord.InteractionCollector<Discord.ButtonInteraction> | undefined;
 }
-export
-	async function npMessage(args: arguments):
-	Promise<{
-	npmessage?: Discord.Message | undefined,
-	collector?: Discord.InteractionCollector<Discord.ButtonInteraction> | undefined
+export async function npMessage(args: arguments): Promise<{
+	npmessage?: Discord.Message | undefined;
+	collector?: Discord.InteractionCollector<Discord.ButtonInteraction> | undefined;
 }> {
 	const { client, npSong, guildIdParam, interaction, message } = args;
 	let i;
@@ -29,8 +27,8 @@ export
 		i = interaction;
 	} else if (message) {
 		i = message;
-	};
-	const guildId =(guildIdParam ? guildIdParam : i?.guildId) as string;
+	}
+	const guildId = (guildIdParam ? guildIdParam : i?.guildId) as string;
 	let settings;
 	if (client) {
 		settings = client.db.get(guildId);
@@ -47,13 +45,16 @@ export
 		if (!musicChannel) {
 			return {};
 		}
-	} else if (i){
+	} else if (i) {
 		musicChannel = await i.client.channels.cache.get(MUSIC_CHANNEL_ID);
 	}
 
 	if (!musicChannel) {
 		if (!i) return {};
-		i.reply({ content: 'There has been an error with the Now Playing message\nPlease consult an administrator to re-run setup.'})
+		i.reply({
+			content:
+				'There has been an error with the Now Playing message\nPlease consult an administrator to re-run setup.',
+		});
 		return {};
 	}
 	let queue = [];

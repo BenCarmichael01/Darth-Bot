@@ -75,6 +75,7 @@
 		"cantJoinChannel": "Could not join the channel: {error}",
 		"queueEnded": "❌ Music queue ended.",
 		"queueError": "Sorry, there was a problem playing that song\nHere is the error provided: ```{error}```",
+		"songError": "Sorry, I am unable to find that song",
 		"queueFail": "Sorry, something apears to be broken. I could not play any of those songs",
 		"startedPlaying": "🎶 Started playing: **{title}** {url}",
 		"npSetup": "🎶 Nothing is playing",
@@ -89,7 +90,9 @@
 		"stopSong": "<@{author}> ⏹ stopped the music!",
 		"leaveChannel": "Leaving voice channel...",
 		"option": "Name / URL of song or playlist. Spotify | YouTube accepted.",
-		"success": "Song added to the queue"
+		"success": "Song added to the queue",
+		"permsNotFound": "Hmm... I am unable to check your permissions for the channel.",
+		"missingSpot": "You dont have a spotify API key available.\nYou will be unable to search for music from Spotify"
 	},
 	"playlist": {
 		"description": "Play a playlist from youtube",

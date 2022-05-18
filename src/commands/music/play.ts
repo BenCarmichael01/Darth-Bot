@@ -1,24 +1,35 @@
 /* global __base */
-const { play } = require(`${__base}include/play`);
-const YouTubeAPI = require('simple-youtube-api');
-const playdl = require('play-dl');
-const i18n = require('i18n');
-const voice = require('@discordjs/voice');
-const he = require('he');
+import play from '../../include/play';
+import YouTubeAPI from 'simple-youtube-api';
+import playdl, { SpotifyTrack } from 'play-dl';
+import i18n from 'i18n';
+import * as voice from '@discordjs/voice';
+import he from 'he';
+import discordjs from 'discord.js';
+import WOKCommands from 'wokcommands';
 
-const { npMessage } = require(`${__base}/include/npmessage`);
-const { YOUTUBE_API_KEY, LOCALE, DEFAULT_VOLUME, MSGTIMEOUT } = require(`../../include/utils`);
-const { reply, followUp } = require(`${__base}include/responses`);
+import { npMessage } from '../../include/npmessage';
+import { YOUTUBE_API_KEY, LOCALE, MSGTIMEOUT } from '../../include/utils';
+import { reply, followUp } from '../../include/responses';
 
-// i18n.setLocale(LOCALE);
+if (LOCALE) i18n.setLocale(LOCALE);
 const youtube = new YouTubeAPI(YOUTUBE_API_KEY);
 
+interface playArgs {
+	message: discordjs.Message;
+	interaction: discordjs.CommandInteraction;
+	args: Array<string>;
+	prefix: string;
+	instance: WOKCommands;
+	// TODO reference wok instance above
+}
 module.exports = {
 	name: 'play',
 	category: 'music',
 	description: i18n.__('play.description'),
 	guildOnly: 'true',
 	slash: true,
+	testOnly: true,
 	options: [
 		{
 			name: 'music',
@@ -28,22 +39,24 @@ module.exports = {
 		},
 	],
 
-	async callback({ message, interaction, args, prefix, instance }) {
-		var i;
-		if (!message) {
+	async callback(options: playArgs) {
+		const { message, interaction, args, prefix, instance } = options;
+		let i;
+		if (interaction) {
 			if (!interaction.deferred && !interaction.replied) {
 				await interaction.deferReply({ ephemeral: true });
 			}
 			i = interaction;
-			i.isInteraction = true;
-		} else if (!interaction) {
+			// i.isInteraction = true;
+		} else if (message) {
 			i = message;
-			i.isInteraction = false;
+			// i.isInteraction = false;
 		}
+		if (!i) return;
 
-		const settings = await i.client.db.get(i.guildId);
-		const channelExists = await i.guild.channels.fetch(settings.musicChannel);
-		if (!settings?.musicChannel || !channelExists) {
+		// if (!i?.guildId) return;
+		const settings = i.client.db.get(i.guildId!);
+		if (!settings) {
 			await reply({
 				message,
 				interaction,
@@ -54,9 +67,28 @@ module.exports = {
 			return;
 		}
 
-		const userVc = await i.member.voice?.channel;
-		const channel = await i.guild.me.voice.channel;
-		const serverQueue = await i.client.queue.get(i.guildId);
+		let channelExists: boolean;
+		if (await i.guild!.channels.fetch(settings.musicChannel)) {
+			channelExists = true;
+		} else {
+			channelExists = false;
+		}
+
+		if (!settings?.musicChannel || !channelExists) {
+			await reply({
+				message,
+				interaction,
+				content: i18n.__('common.noSetup'),
+				ephemeral: true,
+			});
+			message?.delete();
+			return;
+		}
+		const member = i.member as discordjs.GuildMember;
+		const guild = i.guild as discordjs.Guild;
+		const userVc = member.voice.channel;
+		const channel = guild.me!.voice.channel;
+		const serverQueue = await i.client.queue.get(guild.id);
 
 		if (!userVc) {
 			reply({
@@ -68,7 +100,7 @@ module.exports = {
 			message?.delete();
 			return;
 		}
-		if (serverQueue && userVc !== i.guild.me.voice.channel) {
+		if (serverQueue && userVc !== guild.me!.voice.channel) {
 			reply({
 				message,
 				interaction,
@@ -90,7 +122,17 @@ module.exports = {
 			message?.delete();
 			return;
 		}
-		const permissions = userVc.permissionsFor(i.client.user);
+		const permissions = userVc.permissionsFor(i.client.user as discordjs.ClientUser);
+		if (!permissions) {
+			reply({
+				message,
+				interaction,
+				content: i18n.__('play.permsNotFound'),
+				ephemeral: true,
+			});
+			message?.delete();
+			return;
+		}
 		if (!permissions.has('CONNECT')) {
 			reply({
 				message,
@@ -111,15 +153,29 @@ module.exports = {
 			message?.delete();
 			return;
 		}
+		if (
+			process.env.SPOTIFY_CLIENT &&
+			process.env.SPOTIFY_SECRET &&
+			process.env.SPOTIFY_REFRESH &&
+			process.env.SPOTIFY_MARKET
+		) {
+			await playdl.setToken({
+				spotify: {
+					client_id: process.env.SPOTIFY_CLIENT,
+					client_secret: process.env.SPOTIFY_SECRET,
+					refresh_token: process.env.SPOTIFY_REFRESH,
+					market: process.env.SPOTIFY_MARKET,
+				},
+			});
+		} else {
+			reply({
+				interaction,
+				message,
+				content: i18n.__('play.missingSpot'),
+				ephemeral: true,
+			});
+		}
 
-		await playdl.setToken({
-			spotify: {
-				client_id: process.env.SPOTIFY_CLIENT,
-				client_secret: process.env.SPOTIFY_SECRET,
-				refresh_token: process.env.SPOTIFY_REFRESH,
-				market: process.env.SPOTIFY_MARKET,
-			},
-		});
 		if (playdl.is_expired()) {
 			await playdl.refreshToken(); // This will check if access token has expired. If yes, then refresh the token.
 		}
@@ -138,15 +194,13 @@ module.exports = {
 			instance.commandHandler.getCommand('playlist').callback({ message, interaction, args, prefix });
 			return;
 		}
-
-		const queueConstruct = {
-			textChannel: await i.guild.channels.fetch(settings.musicChannel),
+		const queueConstruct: Iqueue = {
+			textChannel: (await guild.channels.fetch(settings.musicChannel)) as discordjs.TextBasedChannel,
 			channel,
 			connection: null,
 			player: null,
 			songs: [],
 			loop: false,
-			volume: DEFAULT_VOLUME || 100,
 			playing: true,
 		};
 
@@ -163,6 +217,7 @@ module.exports = {
 					duration: songInfo.durationSeconds,
 				};
 			} catch (error) {
+				if (!(error instanceof Error)) return;
 				console.error(error);
 				followUp({
 					message,
@@ -170,12 +225,13 @@ module.exports = {
 					content: i18n.__mf('play.queueError', {
 						error: error.message ? error.message : error,
 					}),
+					ephemeral: false,
 				});
 				return;
 			}
 		} else if (isSpotify === 'track') {
 			try {
-				const spot = await playdl.spotify(url);
+				const spot = (await playdl.spotify(url)) as SpotifyTrack;
 				if (spot.type === 'track') {
 					let search = spot.name + ' ' + spot.artists[0].name;
 					const results = await youtube.searchVideos(search, 1, {
@@ -190,6 +246,7 @@ module.exports = {
 					};
 				}
 			} catch (error) {
+				if (!(error instanceof Error)) return;
 				console.error(error);
 				followUp({
 					message,
@@ -197,6 +254,7 @@ module.exports = {
 					content: i18n.__mf('play.queueError', {
 						error: error.message ? error.message : error,
 					}),
+					ephemeral: false,
 				});
 				return;
 			}
@@ -213,17 +271,29 @@ module.exports = {
 					duration: searchResult.durationSeconds,
 				};
 			} catch (error) {
+				if (!(error instanceof Error)) return;
 				console.error(error);
 				followUp({
 					message,
 					interaction,
 					content: i18n.__mf('play.queueError', {
 						error: error.message ? error.message : error,
+						ephemeral: false,
 					}),
+					ephemeral: false,
 				});
 				message ? message.delete() : null;
 				return;
 			}
+		}
+		if (!song) {
+			reply({
+				message,
+				interaction,
+				content: i18n.__('play.songError'),
+				ephemeral: true,
+			});
+			return;
 		}
 
 		if (serverQueue?.songs.length > 0) {
@@ -232,7 +302,6 @@ module.exports = {
 				interaction,
 				message,
 				npSong: serverQueue.songs[0],
-				prefix,
 			});
 			await reply({
 				message,
@@ -244,26 +313,26 @@ module.exports = {
 			serverQueue.textChannel
 				.send(
 					i18n.__mf('play.queueAdded', {
-						title: song.title,
-						author: i.member.id,
+						title: song!.title,
+						author: member.id,
 					}),
 				)
-				.then((msg) => {
-					setTimeout(() => msg.delete(), MSGTIMEOUT);
+				.then((msg: discordjs.Message) => {
+					setTimeout(() => msg.delete(), MSGTIMEOUT as number);
 				})
 				.catch(console.error);
 			return;
 		}
 
 		queueConstruct.songs.push(song);
-		i.client.queue.set(i.guildId, queueConstruct);
+		i.client.queue.set(i.guildId!, queueConstruct);
 		try {
-			if (!voice.getVoiceConnection(i.guildId)) {
+			if (!voice.getVoiceConnection(guild.id!)) {
 				queueConstruct.connection = voice.joinVoiceChannel({
 					channelId: userVc.id,
 					guildId: userVc.guildId,
 					selfDeaf: true,
-					adapterCreator: userVc.guild.voiceAdapterCreator,
+					adapterCreator: userVc.guild.voiceAdapterCreator as voice.DiscordGatewayAdapterCreator,
 				});
 			}
 			play({
@@ -283,19 +352,20 @@ module.exports = {
 				.send({
 					content: i18n.__mf('play.queueAdded', {
 						title: queueConstruct.songs[0].title,
-						author: i.member.id,
+						author: member.id,
 					}),
 				})
 				.then((msg) => {
 					setTimeout(() => {
 						msg.delete().catch(console.error);
-					}, MSGTIMEOUT);
+					}, MSGTIMEOUT as number);
 				})
 				.catch(console.error);
 		} catch (error) {
+			if (!(error instanceof Error)) return;
 			console.error(error);
-			i.client.queue.delete(i.guildId);
-			await queueConstruct.connection.destroy();
+			i.client.queue.delete(guild.id);
+			await queueConstruct.connection!?.destroy();
 			followUp({
 				message,
 				interaction,
