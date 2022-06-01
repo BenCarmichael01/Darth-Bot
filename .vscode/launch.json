@@ -7,9 +7,22 @@
 		{
 			"type": "node",
 			"request": "launch",
-			"name": "Build Project",
+			"name": "Build & Run",
 			"skipFiles": ["<node_internals>/**"],
 			"preLaunchTask": "npm: build",
+			"sourceMaps": true,
+			"smartStep": true,
+			"internalConsoleOptions": "openOnSessionStart",
+			"outFiles": ["${workspaceFolder}/dist/**/*.js"],
+			"program": "${workspaceFolder}/src/index.ts",
+			"console": "integratedTerminal",
+			"args": ["dev"]
+		},
+		{
+			"type": "node",
+			"request": "launch",
+			"name": "Run Without Build",
+			"skipFiles": ["<node_internals>/**"],
 			"sourceMaps": true,
 			"smartStep": true,
 			"internalConsoleOptions": "openOnSessionStart",
