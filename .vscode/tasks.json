@@ -5,7 +5,7 @@
 			"type": "npm",
 			"script": "prestart",
 			"problemMatcher": [],
-			"label": "npm: prestart",
+			"label": "pnpm Prestart Build",
 			"detail": "pnpm build"
 		}
 	]
