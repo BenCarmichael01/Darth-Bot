@@ -1,9 +1,19 @@
+import { AudioPlayerEvents } from '@discordjs/voice';
 import { Collection, Guild } from 'discord.js';
 declare module 'discord.js' {
 	export interface Client {
 		queue: Map<String, any>;
 		db: Collection<Guild['id'], { musicChannel: string; playingMessage: string }>;
 	}
+}
+declare module '@discordjs/voice' {
+	declare type AudioPlayer = AudioPlayer | CustomAudioPlayer;
+	declare type CustomAudioPlayer {
+		emit: (reason: string) => CustomAudioPlayerEvents;
+	}
+	declare type CustomAudioPlayerEvents = AudioPlayerEvents extends (...a: infer U) => infer R
+		? (queueEnd: string, ...a: U) => R
+		: never;
 }
 export interface IQueue {
 	textChannel: discordjs.TextBasedChannel;
