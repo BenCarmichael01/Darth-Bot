@@ -19,7 +19,7 @@
 		"baseUrl": "./",
 		"allowJs": true
 	},
-	"files": ["src/index.ts", "src/types/typings.d.ts"],
+	"files": ["src/index.ts", "src/types/index.d.ts"],
 	"include": ["./src/**/*.ts", "./src/**/*.js"],
 	"exclude": ["node_modules", "dist"]
 }
