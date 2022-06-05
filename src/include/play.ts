@@ -4,16 +4,17 @@ import { npMessage } from './npmessage';
 import { canModifyQueue, STAY_TIME, LOCALE, MSGTIMEOUT } from '../include/utils';
 import { followUp } from './responses';
 import i18n from 'i18n';
-import voice, { AudioPlayerStatus, AudioResource, VoiceConnection } from '@discordjs/voice';
+import voice, { AudioResource } from '@discordjs/voice';
 import {
 	ButtonInteraction,
+	CommandInteraction,
 	GuildMember,
 	Message,
 	MessageActionRow,
 	MessageButton,
 	Permissions,
 } from 'discord.js';
-import { IQueue } from 'src/types/typings';
+import { IQueue, playArgs } from 'src/types';
 
 if (LOCALE) i18n.setLocale(LOCALE);
 
@@ -42,26 +43,23 @@ async function getResource(queue: IQueue): Promise<voice.AudioResource> {
 	});
 	return resource;
 }
-/**
- * @name play
- * @param {*} song
- * @param {DiscordMessage} message
- * @param {String} prefix
- * @returns undefined
- */
-export default async function play({ song, message, interaction, prefix }: any): Promise<any> {
-	let i;
+export default async function play({ song, message, interaction, prefix }: playArgs): Promise<any> {
+	let i: CommandInteraction | Message;
 	if (interaction) {
-		i = interaction;
+		i = interaction as CommandInteraction;
 		if (!interaction.deferred && !interaction.replied) {
 			await interaction.deferReply({ ephemeral: false });
 		}
 	} else if (message) {
-		i = message;
+		i = message as Message;
+	} else {
+		return;
 	}
-	if (!i) return;
-	var queue = i.client.queue.get(i.guildId);
-	const connection = voice.getVoiceConnection(i.guildId);
+	const GUILDID = i.guildId as string;
+
+	if (i === undefined) return;
+	var queue = i.client.queue.get(GUILDID);
+	const connection = voice.getVoiceConnection(GUILDID);
 	const { VoiceConnectionStatus, AudioPlayerStatus } = voice;
 
 	if (!queue) return;
@@ -113,11 +111,17 @@ export default async function play({ song, message, interaction, prefix }: any):
 		interaction,
 		npSong: song,
 	});
+	if (npmessage === undefined || npmessage === null) {
+		return followUp({ message, interaction, content: i18n.__('common.unknownError'), ephemeral: true });
+	}
+	if (collector === undefined || collector === null) {
+		return followUp({ message, interaction, content: i18n.__('common.unknownError'), ephemeral: true });
+	}
 
 	collector?.on('collect', async (int: ButtonInteraction) => {
 		if (!int) return;
 		await int.deferReply();
-		const { member } = int;
+		const member = int.member as GuildMember;
 		if (!member) return;
 		const name = (member as GuildMember).id;
 		const queue = await int.client.queue.get(int.guild!.id);
@@ -343,7 +347,8 @@ export default async function play({ song, message, interaction, prefix }: any):
 					})
 					.catch(console.error);
 				try {
-					player.emit('queueEnd');
+					player.eventNames();
+					queueEnd(i, npmessage);
 					player.stop();
 					npMessage({ message, interaction: int });
 				} catch (error) {
@@ -364,7 +369,7 @@ export default async function play({ song, message, interaction, prefix }: any):
 			console.error(error);
 		}
 		connection.destroy();
-		i.client.queue.delete(i.guildId);
+		i.client.queue.delete(GUILDID);
 	});
 	// Check if disconnect is real or is moving to another channel
 	connection.on(VoiceConnectionStatus.Disconnected, async () => {
@@ -379,11 +384,11 @@ export default async function play({ song, message, interaction, prefix }: any):
 			if (connection?.state?.status !== VoiceConnectionStatus.Destroyed) {
 				connection.destroy();
 			}
-			i.client.queue.delete(i.guildId);
+			i.client.queue.delete(GUILDID);
 		}
 	});
-	player.on('queueEnd', () => {
-		i.client.queue.delete(i.guildId);
+	function queueEnd(i: CommandInteraction | Message, npmessage: Message) {
+		i.client.queue.delete(i.guild!.id);
 		let oldRow = npmessage.components[0];
 		for (let i = 0; i < oldRow.components.length; i++) {
 			if (oldRow.components[i].customId === 'loop') {
@@ -394,9 +399,9 @@ export default async function play({ song, message, interaction, prefix }: any):
 			}
 		}
 		npmessage.edit({ components: [oldRow] });
-	});
+	}
 	player.on('jump', () => {
-		let queue = i.client.queue.get(i.guildId);
+		let queue = i.client.queue.get(GUILDID);
 		collector.stop('skipSong');
 		connection.removeAllListeners();
 		player.removeAllListeners();
@@ -408,7 +413,7 @@ export default async function play({ song, message, interaction, prefix }: any):
 			prefix,
 		});
 	});
-	player.on(AudioPlayerStatus.Idle, async () => {
+	player.on(AudioPlayerStatus.Idle, async (): Promise<void> => {
 		try {
 			await Promise.race([
 				voice.entersState(player, AudioPlayerStatus.Playing, 1_000),
@@ -420,8 +425,8 @@ export default async function play({ song, message, interaction, prefix }: any):
 			// apears to be finished current song
 			// decide what to do:
 			if (!queue) {
-				npMessage({ message, interaction, prefix });
-				return setTimeout(() => {
+				npMessage({ message, interaction });
+				setTimeout(() => {
 					if (queue?.songs.length >= 1) {
 						module.exports.play({
 							song: queue.songs[0],
@@ -431,7 +436,7 @@ export default async function play({ song, message, interaction, prefix }: any):
 						});
 						return;
 					}
-					player.emit('queueEnd');
+					queueEnd(i, npmessage);
 					connection?.destroy();
 					followUp({
 						message,
@@ -441,6 +446,7 @@ export default async function play({ song, message, interaction, prefix }: any):
 					});
 					return;
 				}, STAY_TIME * 1_000);
+				return;
 			}
 
 			if (queue.songs.length > 1 && !queue?.loop) {
@@ -478,7 +484,7 @@ export default async function play({ song, message, interaction, prefix }: any):
 						});
 						return;
 					}
-					player.emit('queueEnd');
+					queueEnd(i, npmessage);
 					connection?.destroy();
 					followUp({
 						message,
@@ -486,7 +492,7 @@ export default async function play({ song, message, interaction, prefix }: any):
 						content: i18n.__('play.queueEnded') + '\n' + i18n.__('play.leaveChannel'),
 						ephemeral: false,
 					});
-					return i.client.queue.delete(i.guildId);
+					return i.client.queue.delete(GUILDID);
 				}, STAY_TIME * 1_000);
 			}
 			// must remove these listeners before we call play function again to avoid memory leak and maxListeners exceeded error
@@ -494,7 +500,7 @@ export default async function play({ song, message, interaction, prefix }: any):
 
 			// stop for same reason as connection above
 			if (collector && !collector.ended) {
-				collector.stop(['idleQueue']);
+				collector.stop('idleQueue');
 			}
 		}
 	});
@@ -517,7 +523,7 @@ export default async function play({ song, message, interaction, prefix }: any):
 					throw new Error('Test Error');
 				}
 				if (player) {
-					player.emit('queueEnd');
+					queueEnd(i, npmessage);
 					player.stop();
 				}
 			} finally {
@@ -527,18 +533,19 @@ export default async function play({ song, message, interaction, prefix }: any):
 					content: i18n.__('play.queueEnded') + '\n' + i18n.__('play.leaveChannel'),
 					ephemeral: false,
 				});
-				i.client.queue.delete(i.guildId);
-				npMessage({ message, interaction, prefix });
+				i.client.queue.delete(GUILDID);
+				npMessage({ message, interaction });
 			}
 		}
 	});
 	i.client.on('voiceStateUpdate', (oldState, newState) => {
-		if (newState.member.user.bot) return;
+		if (oldState === null || newState === null) return;
+		if (newState.member!.user.bot) return;
 		if (oldState.channelId === queue.connection.joinConfig.channelId && !newState.channelId) {
 			setTimeout(() => {
-				if (oldState.channel.members.size > 1) return;
-				i.client.queue.delete(i.guildId);
-				player.emit('queueEnd');
+				if (oldState.channel!.members.size > 1) return;
+				i.client.queue.delete(GUILDID);
+				queueEnd(i, npmessage);
 				player.removeAllListeners();
 				player.stop();
 				connection?.destroy();
