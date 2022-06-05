@@ -195,7 +195,8 @@
 		"channelOnly": "This command can only be used in <#{channel}>",
 		"missingPerms": "You don't have permission to do that",
 		"noSetup": "You need to run `/setup` before you can use this command",
-		"unknownCommand": "That isn't a command. Try running {prefix}help to see a list of my commands"
+		"unknownCommand": "That isn't a command. Try running {prefix}help to see a list of my commands",
+		"unknownError": "Sorry, an unknown error has occured. Please try that again"
 	},
 	"moderation": {
 		"kick": {
