@@ -37,17 +37,17 @@ export interface Isong {
 	title: string;
 	url: string;
 	thumbUrl: string;
-	duration: string;
+	duration: number;
 }
 
 export type playArgs = {
 	song: Isong;
-	message: Message;
-	interaction: CommandInteraction | ButtonInteraction;
+	message?: Message;
+	interaction?: CommandInteraction | ButtonInteraction;
 };
 export type playCmdArgs = {
-	message: discordjs.Message;
-	interaction: CommandInteraction;
+	message?: discordjs.Message;
+	interaction?: CommandInteraction;
 	args: Array<string>;
 	prefix: string;
 	instance: WOKCommands;

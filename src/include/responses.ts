@@ -65,8 +65,8 @@ export function followUp({
 	content,
 	ephemeral,
 }: {
-	message: Message;
-	interaction: CommandInteraction | ButtonInteraction;
+	message?: Message;
+	interaction?: CommandInteraction | ButtonInteraction;
 	content: string;
 	ephemeral: boolean;
 }): Promise<Message | void> | undefined {
