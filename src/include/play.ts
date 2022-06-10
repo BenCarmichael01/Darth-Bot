@@ -4,7 +4,7 @@ import { npMessage } from './npmessage';
 import { canModifyQueue, STAY_TIME, LOCALE, MSGTIMEOUT } from '../include/utils';
 import { followUp } from './responses';
 import i18n from 'i18n';
-import voice, { AudioResource } from '@discordjs/voice';
+import * as voice from '@discordjs/voice';
 import {
 	ButtonInteraction,
 	CommandInteraction,
@@ -14,7 +14,7 @@ import {
 	MessageButton,
 	Permissions,
 } from 'discord.js';
-import { IQueue, playArgs } from 'src/types';
+import { CustomConnection, CustomPlayer, IQueue, playArgs } from 'src/types';
 
 if (LOCALE) i18n.setLocale(LOCALE);
 
@@ -59,7 +59,7 @@ export default async function play({ song, message, interaction, prefix }: playA
 
 	if (i === undefined) return;
 	var queue = i.client.queue.get(GUILDID);
-	const connection = voice.getVoiceConnection(GUILDID);
+	const connection = voice.getVoiceConnection(GUILDID) as CustomConnection & voice.VoiceConnection;
 	const { VoiceConnectionStatus, AudioPlayerStatus } = voice;
 
 	if (!queue) return;
@@ -91,15 +91,15 @@ export default async function play({ song, message, interaction, prefix }: playA
 	}
 	const player = voice.createAudioPlayer({
 		behaviors: { noSubscriber: voice.NoSubscriberBehavior.Pause },
-	});
+	}) as CustomPlayer & voice.AudioPlayer;
 	queue.player = player;
 	/*-----------------Event Listeners-------------------------*/
-	player.on('error', (error) => {
+	player.on('error', (error: voice.AudioPlayerError) => {
 		console.error(`Error: ${error.message} with resource`);
 	});
 	// pass stream to audio player
 	try {
-		player.play(resource as AudioResource);
+		player.play(resource as voice.AudioResource);
 	} catch (error) {
 		console.error(error);
 	}

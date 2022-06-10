@@ -10,21 +10,18 @@ declare module 'discord.js' {
 		db: Collection<Guild['id'], { musicChannel: string; playingMessage: string }>;
 	}
 }
-// declare module '@discordjs/voice' {
-// 	export type CustomAudioPlayerEvents = AudioPlayerEvents & {
-// 		queueEnd: (message: string) => Awaited<void>;
-// 	};
-// 	export type ListenerSignature<L> = {
-//     [E in keyof L]: (...args: any[]) => any;
-// };
+export declare interface CustomConnection {
+	on(event: 'setup', listener: (name: string) => void): this;
+	on(event: string, listener: Function): this;
+}
+export class CustomConnection extends typedEventEmitter {}
 
-// export type DefaultListener = {
-//     [k: string]: (...args: any[]) => any;
-// };
+export declare interface CustomPlayer {
+	on(event: 'jump', listener: (name: string) => void): this;
+	on(event: string, listener: Function): this;
+}
+export class CustomPlayer extends typedEventEmitter {}
 
-// 	export class CustomTypedEmitter<L extends ListenerSignature<L> = DefaultListener> extends TypedEmitter<CustomAudioPlayerEvents> {}
-// 	export class CustomAudioPlayer extends AudioPlayer, CustomTypedEmitter{}
-// }
 export interface IQueue {
 	textChannel: discordjs.TextBasedChannel;
 	channel: discordjs.VoiceBasedChannel | null;
