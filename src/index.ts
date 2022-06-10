@@ -2,12 +2,9 @@ import path from 'path';
 import i18n from 'i18n';
 import discordjs from 'discord.js';
 import WOKCommands from 'wokcommands';
-//  import './types/discord';
 
 global.__base = path.join(__dirname, '/');
 const { Intents } = discordjs;
-import { MSGTIMEOUT } from './include/utils';
-import { DiscordGatewayAdapterCreator } from '@discordjs/voice';
 require('dotenv').config();
 
 const client = new discordjs.Client({
@@ -17,13 +14,12 @@ const client = new discordjs.Client({
 		Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
 		Intents.FLAGS.GUILD_VOICE_STATES,
 	],
-	// owner: '337710838469230592',
 });
 
 // i18n locale config
 i18n.configure({
 	locales: ['en', 'es', 'ko', 'fr', 'tr', 'pt_br', 'zh_cn', 'zh_tw'],
-	directory: path.join(__dirname,'..', 'locales'),
+	directory: path.join(__dirname, '..', 'locales'),
 	defaultLocale: 'en',
 	objectNotation: true,
 	register: global,
@@ -54,7 +50,6 @@ if (process.argv[2] === 'dev') {
 }
 client.queue = new Map();
 client.db = new discordjs.Collection();
-// client.commands = new Discord.Collection();
 // client.on('debug', console.log);
 client.on('warn', (info) => console.log(info));
 client.on('error', console.error);
