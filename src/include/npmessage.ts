@@ -10,7 +10,7 @@ interface arguments {
 	client?: Discord.Client;
 	npSong?: any;
 	guildIdParam?: string;
-	interaction?: Discord.Interaction;
+	interaction?: Discord.ButtonInteraction | Discord.CommandInteraction;
 	message?: Discord.Message;
 }
 interface output {
@@ -28,7 +28,9 @@ export async function npMessage(args: arguments): Promise<{
 	} else if (message) {
 		i = message;
 	}
+
 	const guildId = (guildIdParam ? guildIdParam : i?.guildId) as string;
+
 	let settings;
 	if (client) {
 		settings = client.db.get(guildId);
@@ -51,10 +53,12 @@ export async function npMessage(args: arguments): Promise<{
 
 	if (!musicChannel) {
 		if (!i) return {};
-		i.reply({
-			content:
-				'There has been an error with the Now Playing message\nPlease consult an administrator to re-run setup.',
-		});
+		if ('isButton' in i) {
+			i.reply({
+				content:
+					'There has been an error with the Now Playing message\nPlease consult an administrator to re-run setup.',
+			});
+		}
 		return {};
 	}
 	let queue = [];
