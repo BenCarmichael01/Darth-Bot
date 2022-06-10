@@ -1,6 +1,6 @@
 /* global __base */
 const { MSGTIMEOUT } = require(`${__base}include/utils`);
-import { Message, CommandInteraction } from 'discord.js';
+import { Message, CommandInteraction, ButtonInteraction } from 'discord.js';
 import { APIMessage } from 'discord-api-types/v9';
 /**
  * Either replies to a discord message or interaction depending on which is passed to it
@@ -14,7 +14,7 @@ export async function reply({
 	ephemeral,
 }: {
 	message?: Message;
-	interaction?: CommandInteraction;
+	interaction?: CommandInteraction | ButtonInteraction;
 	content: string;
 	ephemeral: boolean;
 }): Promise<Message | undefined> {
@@ -66,7 +66,7 @@ export function followUp({
 	ephemeral,
 }: {
 	message: Message;
-	interaction: CommandInteraction;
+	interaction: CommandInteraction | ButtonInteraction;
 	content: string;
 	ephemeral: boolean;
 }): Promise<Message | void> | undefined {

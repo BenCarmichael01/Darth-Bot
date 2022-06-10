@@ -1,5 +1,5 @@
 import { AudioPlayer, AudioPlayerEvents } from '@discordjs/voice';
-import { Collection, CommandInteraction, Guild, Message } from 'discord.js';
+import { ButtonInteraction, Collection, CommandInteraction, Guild, Message } from 'discord.js';
 import WOKCommands from 'wokcommands';
 declare global {
 	var __base: string;
@@ -43,12 +43,12 @@ export interface Isong {
 export type playArgs = {
 	song: Isong;
 	message: Message;
-	interaction: CommandInteraction;
+	interaction: CommandInteraction | ButtonInteraction;
 	prefix: string;
 };
 export type playCmdArgs = {
 	message: discordjs.Message;
-	interaction: discordjs.CommandInteraction;
+	interaction: CommandInteraction;
 	args: Array<string>;
 	prefix: string;
 	instance: WOKCommands;
