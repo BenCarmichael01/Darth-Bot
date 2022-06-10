@@ -43,7 +43,7 @@ async function getResource(queue: IQueue): Promise<voice.AudioResource> {
 	});
 	return resource;
 }
-export default async function play({ song, message, interaction, prefix }: playArgs): Promise<any> {
+export async function play({ song, message, interaction, prefix }: playArgs): Promise<any> {
 	let i: CommandInteraction | Message;
 	if (interaction) {
 		i = interaction as CommandInteraction;
@@ -206,7 +206,7 @@ export default async function play({ song, message, interaction, prefix }: playA
 				player.removeAllListeners();
 				player.stop();
 				if (queue.songs.length > 0) {
-					module.exports.play({
+					play({
 						song: queue.songs[0],
 						message,
 						interaction: int,
@@ -406,7 +406,7 @@ export default async function play({ song, message, interaction, prefix }: playA
 		connection.removeAllListeners();
 		player.removeAllListeners();
 		player.stop();
-		module.exports.play({
+		play({
 			song: queue.songs[0],
 			message,
 			interaction,
@@ -428,7 +428,7 @@ export default async function play({ song, message, interaction, prefix }: playA
 				npMessage({ message, interaction });
 				setTimeout(() => {
 					if (queue?.songs.length >= 1) {
-						module.exports.play({
+						play({
 							song: queue.songs[0],
 							message,
 							interaction,
@@ -452,7 +452,7 @@ export default async function play({ song, message, interaction, prefix }: playA
 			if (queue.songs.length > 1 && !queue?.loop) {
 				// songs in queue and queue not looped so play next song
 				queue.songs.shift();
-				module.exports.play({
+				play({
 					song: queue.songs[0],
 					message,
 					interaction,
@@ -463,7 +463,7 @@ export default async function play({ song, message, interaction, prefix }: playA
 				// song to back of queue then play next song
 				let lastSong = queue.songs.shift();
 				queue.songs.push(lastSong);
-				module.exports.play({
+				play({
 					song: queue.songs[0],
 					message,
 					interaction,
@@ -476,7 +476,7 @@ export default async function play({ song, message, interaction, prefix }: playA
 				queue.songs.shift();
 				setTimeout(() => {
 					if (queue.songs.length >= 1) {
-						module.exports.play({
+						play({
 							song: queue.songs[0],
 							message,
 							interaction,

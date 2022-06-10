@@ -1,5 +1,5 @@
 /* global __base */
-import play from '../../include/play';
+import { play } from '../../include/play';
 import YouTubeAPI from 'simple-youtube-api';
 import playdl, { SpotifyTrack } from 'play-dl';
 import i18n from 'i18n';
