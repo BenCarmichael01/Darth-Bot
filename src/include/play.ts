@@ -43,7 +43,7 @@ async function getResource(queue: IQueue): Promise<voice.AudioResource> {
 	});
 	return resource;
 }
-export async function play({ song, message, interaction, prefix }: playArgs): Promise<any> {
+export async function play({ song, message, interaction }: playArgs): Promise<any> {
 	let i: CommandInteraction | Message;
 	if (interaction) {
 		i = interaction as CommandInteraction;
@@ -210,7 +210,6 @@ export async function play({ song, message, interaction, prefix }: playArgs): Pr
 						song: queue.songs[0],
 						message,
 						interaction: int,
-						prefix,
 					});
 				} else {
 					await npMessage({
@@ -410,7 +409,6 @@ export async function play({ song, message, interaction, prefix }: playArgs): Pr
 			song: queue.songs[0],
 			message,
 			interaction,
-			prefix,
 		});
 	});
 	player.on(AudioPlayerStatus.Idle, async (): Promise<void> => {
@@ -432,7 +430,6 @@ export async function play({ song, message, interaction, prefix }: playArgs): Pr
 							song: queue.songs[0],
 							message,
 							interaction,
-							prefix,
 						});
 						return;
 					}
@@ -456,7 +453,6 @@ export async function play({ song, message, interaction, prefix }: playArgs): Pr
 					song: queue.songs[0],
 					message,
 					interaction,
-					prefix,
 				});
 			} else if (queue.songs.length >= 1 && queue.loop) {
 				// at least one song in queue and queue is looped so push finished
@@ -467,7 +463,6 @@ export async function play({ song, message, interaction, prefix }: playArgs): Pr
 					song: queue.songs[0],
 					message,
 					interaction,
-					prefix,
 				});
 			} else if (queue.songs.length === 1 && !queue.loop) {
 				// If there are no more songs in the queue then wait for STAY_TIME before leaving vc
@@ -480,7 +475,6 @@ export async function play({ song, message, interaction, prefix }: playArgs): Pr
 							song: queue.songs[0],
 							message,
 							interaction,
-							prefix,
 						});
 						return;
 					}

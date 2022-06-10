@@ -44,7 +44,6 @@ export type playArgs = {
 	song: Isong;
 	message: Message;
 	interaction: CommandInteraction | ButtonInteraction;
-	prefix: string;
 };
 export type playCmdArgs = {
 	message: discordjs.Message;

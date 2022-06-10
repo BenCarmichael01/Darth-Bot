@@ -331,7 +331,6 @@ module.exports = {
 				song: queueConstruct.songs[0],
 				message,
 				interaction,
-				prefix,
 			});
 			await reply({
 				message,
