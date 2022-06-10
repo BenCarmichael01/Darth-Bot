@@ -48,3 +48,11 @@ export type playArgs = {
 	interaction: CommandInteraction;
 	prefix: string;
 };
+export interface playCmdArgs {
+	message: discordjs.Message;
+	interaction: discordjs.CommandInteraction;
+	args: Array<string>;
+	prefix: string;
+	instance: WOKCommands;
+	// TODO reference wok instance above
+}

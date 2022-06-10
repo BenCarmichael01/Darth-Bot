@@ -5,24 +5,16 @@ import playdl, { SpotifyTrack } from 'play-dl';
 import i18n from 'i18n';
 import * as voice from '@discordjs/voice';
 import he from 'he';
-import discordjs from 'discord.js';
-import WOKCommands from 'wokcommands';
+import * as discordjs from 'discord.js';
 
 import { npMessage } from '../../include/npmessage';
 import { YOUTUBE_API_KEY, LOCALE, MSGTIMEOUT } from '../../include/utils';
 import { reply, followUp } from '../../include/responses';
+import { IQueue, playCmdArgs } from 'src/types';
 
 if (LOCALE) i18n.setLocale(LOCALE);
 const youtube = new YouTubeAPI(YOUTUBE_API_KEY);
 
-interface playArgs {
-	message: discordjs.Message;
-	interaction: discordjs.CommandInteraction;
-	args: Array<string>;
-	prefix: string;
-	instance: WOKCommands;
-	// TODO reference wok instance above
-}
 module.exports = {
 	name: 'play',
 	category: 'music',
@@ -39,7 +31,7 @@ module.exports = {
 		},
 	],
 
-	async callback(options: playArgs) {
+	async callback(options: playCmdArgs) {
 		const { message, interaction, args, prefix, instance } = options;
 		let i;
 		if (interaction) {
@@ -194,7 +186,7 @@ module.exports = {
 			instance.commandHandler.getCommand('playlist').callback({ message, interaction, args, prefix });
 			return;
 		}
-		const queueConstruct: Iqueue = {
+		const queueConstruct: IQueue = {
 			textChannel: (await guild.channels.fetch(settings.musicChannel)) as discordjs.TextBasedChannel,
 			channel,
 			connection: null,
@@ -355,7 +347,7 @@ module.exports = {
 						author: member.id,
 					}),
 				})
-				.then((msg) => {
+				.then((msg: discordjs.Message) => {
 					setTimeout(() => {
 						msg.delete().catch(console.error);
 					}, MSGTIMEOUT as number);
