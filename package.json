@@ -41,7 +41,8 @@
 		"tslib": "^2.4.0",
 		"wokcommands": "^1.5.3",
 		"xhr2": "^0.2.1",
-		"xmlhttprequest": "^1.8.0"
+		"xmlhttprequest": "^1.8.0",
+		"youtube.ts": "^0.2.9"
 	},
 	"nodemonConfig": {
 		"ignore": [
