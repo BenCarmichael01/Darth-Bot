@@ -130,7 +130,6 @@ module.exports = {
 		}
 		if (message) {
 			message.delete();
-			console.log(message.id);
 		}
 
 		var videos = [];
