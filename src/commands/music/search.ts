@@ -1,18 +1,17 @@
-/* global __base */
-const YouTubeAPI = require('simple-youtube-api');
-const { YOUTUBE_API_KEY, LOCALE } = require(`${__base}include/utils`);
-const youtube = new YouTubeAPI(YOUTUBE_API_KEY);
-const i18n = require('i18n');
-const he = require('he');
-const { MessageEmbed, MessageButton, MessageActionRow } = require('discord.js');
-const { reply } = require(`../../include/responses`);
+import Youtube from 'youtube.ts';
+import i18n from 'i18n';
+import he from 'he';
+import * as discordjs from 'discord.js';
+import WOKCommands from 'wokcommands';
+import * as voice from '@discordjs/voice';
+
+import { YOUTUBE_API_KEY, LOCALE } from '../../include/utils';
+import { reply } from '../../include/responses';
+
+const { MessageEmbed, MessageButton, MessageActionRow } = discordjs;
+const youtube = new Youtube(YOUTUBE_API_KEY);
 
 // i18n.setLocale(LOCALE);
-/**
- * @typedef {import('discord.js').CommandInteraction} CommandInteraction
- * @typedef {import('discord.js').Message} Message
- */
-
 module.exports = {
 	name: 'search',
 	category: 'music',
@@ -27,31 +26,40 @@ module.exports = {
 			required: true,
 		},
 	],
-	/**
-	 *
-	 * @param {{ interaction: CommandInteraction, args: Array<String>}}
-	 * @returns {undefined}
-	 */
-	async callback({ interaction, instance, args, prefix }) {
+	async callback({
+		interaction,
+		instance,
+		args,
+	}: {
+		interaction: discordjs.CommandInteraction;
+		instance: WOKCommands;
+		args: Array<string>;
+	}): Promise<discordjs.Message | undefined> {
 		await interaction.deferReply({ ephemeral: true });
 
-		const settings = await interaction.client.db.get(interaction.guildId);
+		if (typeof interaction.guildId === 'string') {
+			var GUILDID = interaction.guildId as string;
+		} else return;
+		const settings = interaction.client.db.get(interaction.guildId);
+
 		if (!settings?.musicChannel) {
 			reply({ interaction, content: i18n.__('common.noSetup'), ephemeral: true });
 			return;
 		}
-
-		const userVc = await interaction.member.voice?.channel;
-		const serverQueue = interaction.client.queue.get(interaction.guildId);
-
-		if (!interaction.member.voice) {
+		var userVc;
+		if ('voice' in interaction.member!) {
+			userVc = interaction.member.voice?.channel;
+		} else {
 			return await reply({ interaction, content: i18n.__('search.errorNotChannel'), ephemeral: true });
 		}
+
 		if (!userVc) {
 			reply({ interaction, content: i18n.__('play.errorNotChannel'), ephemeral: true });
 			return;
 		}
-		if (serverQueue && userVc !== interaction.guild.me.voice.channel) {
+		const serverQueue = interaction.client.queue.get(GUILDID);
+		const myVoice = voice.getVoiceConnection(GUILDID);
+		if (serverQueue && myVoice && userVc.id !== myVoice.joinConfig.channelId) {
 			reply({
 				interaction,
 				content: i18n.__mf('play.errorNotInSameChannel', {
@@ -70,14 +78,16 @@ module.exports = {
 			.setColor('#F8AA2A');
 
 		try {
-			const results = await youtube.searchVideos(search, 5);
-			results.map((video, index) => {
-				video.title = he.decode(video.title);
-				resultsEmbed.addField(video.shortURL, `${index + 1}. ${video.title}`);
+			const results = await youtube.videos.search({ q: search, maxResults: 5 });
+			// console.log(results.items[0].id);
+			results.items.map((video, index) => {
+				video.snippet.title = he.decode(video.snippet.title);
+				let vidURL = `https://youtu.be/${video.id.videoId}`;
+				resultsEmbed.addField(`${index + 1}. ${video.snippet.title}`, vidURL);
 			});
 			let searchEmbed = new MessageEmbed().setTitle('Searching...').setColor('#F8AA2A');
 
-			await interaction.editReply({ embeds: [searchEmbed], ephemeral: true });
+			await interaction.editReply({ embeds: [searchEmbed] });
 
 			const buttons = [
 				new MessageButton().setCustomId('one').setLabel('1').setStyle('PRIMARY'),
@@ -91,19 +101,21 @@ module.exports = {
 			await interaction.editReply({
 				embeds: [resultsEmbed],
 				components: [row],
-				ephemeral: true,
 			});
 
 			const collector = await interaction
 				.fetchReply()
 				.then((reply) => {
-					return reply.createMessageComponentCollector({
-						time: 30_000,
-						componentType: 'BUTTON',
-					});
+					if ('createMessageComponentCollector' in reply) {
+						return reply.createMessageComponentCollector({
+							time: 30_000,
+							componentType: 'BUTTON',
+						});
+					}
 				})
 				.catch(console.error);
-
+			// TODO return with error message below
+			if (!collector) return;
 			collector.on('collect', async (i) => {
 				await i.deferReply({ ephemeral: true });
 				switch (i.customId) {
@@ -111,7 +123,7 @@ module.exports = {
 						const choice = resultsEmbed.fields[0].name;
 						instance.commandHandler
 							.getCommand('play')
-							.callback({ interaction: i, args: [choice], prefix });
+							.callback({ interaction: i, args: [choice] });
 						collector.stop('choiceMade');
 						break;
 					}
@@ -119,7 +131,7 @@ module.exports = {
 						const choice = resultsEmbed.fields[1].name;
 						instance.commandHandler
 							.getCommand('play')
-							.callback({ interaction: i, args: [choice], prefix });
+							.callback({ interaction: i, args: [choice] });
 						collector.stop('choiceMade');
 						break;
 					}
@@ -127,7 +139,7 @@ module.exports = {
 						const choice = resultsEmbed.fields[2].name;
 						instance.commandHandler
 							.getCommand('play')
-							.callback({ interaction: i, args: [choice], prefix });
+							.callback({ interaction: i, args: [choice] });
 						collector.stop('choiceMade');
 						break;
 					}
@@ -135,7 +147,7 @@ module.exports = {
 						const choice = resultsEmbed.fields[3].name;
 						instance.commandHandler
 							.getCommand('play')
-							.callback({ interaction: i, args: [choice], prefix });
+							.callback({ interaction: i, args: [choice] });
 						collector.stop('choiceMade');
 						break;
 					}
@@ -143,7 +155,7 @@ module.exports = {
 						const choice = resultsEmbed.fields[4].name;
 						instance.commandHandler
 							.getCommand('play')
-							.callback({ interaction: i, args: [choice], prefix });
+							.callback({ interaction: i, args: [choice] });
 						collector.stop('choiceMade');
 						break;
 					}
@@ -151,10 +163,11 @@ module.exports = {
 			});
 			collector.on('end', (_, reason) => {
 				if (reason === 'time') {
+					const timeEmbed = new MessageEmbed()
+						.setTitle(i18n.__('search.timeout'))
+						.setColor('#F8AA2A');
 					interaction.editReply({
-						content: i18n.__('search.timeout'),
-						ephemeral: true,
-						embeds: [],
+						embeds: [timeEmbed],
 						components: [],
 					});
 				}
