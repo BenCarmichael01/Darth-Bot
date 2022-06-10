@@ -1,10 +1,11 @@
 /* global __base */
-const { play } = require(`${__base}include/play`);
+const { play } = require('../../include/play');
 const { npMessage } = require(`${__base}include/npmessage`);
 const i18n = require('i18n');
 const voice = require('@discordjs/voice');
 const playdl = require('play-dl');
 const YouTubeAPI = require('simple-youtube-api');
+const he = require('he');
 
 const { MAX_PLAYLIST_SIZE, DEFAULT_VOLUME, LOCALE } = require(`${__base}/include/utils`);
 const { reply, followUp } = require('../../include/responses');
