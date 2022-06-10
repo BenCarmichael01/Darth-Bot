@@ -1,14 +1,17 @@
 /* global __base */
-const { play } = require('../../include/play');
-const { npMessage } = require(`${__base}include/npmessage`);
-const i18n = require('i18n');
-const voice = require('@discordjs/voice');
-const playdl = require('play-dl');
-const YouTubeAPI = require('simple-youtube-api');
-const he = require('he');
+import { play } from '../../include/play';
+import { npMessage } from '../../include/npmessage';
+import i18n from 'i18n';
+import * as voice from '@discordjs/voice';
+import * as discordjs from 'discord.js';
+import playdl, { SpotifyTrack } from 'play-dl';
+import YouTubeAPI from 'simple-youtube-api';
+import he from 'he';
 
 const { MAX_PLAYLIST_SIZE, DEFAULT_VOLUME, LOCALE } = require(`${__base}/include/utils`);
-const { reply, followUp } = require('../../include/responses');
+import { reply, followUp } from '../../include/responses';
+import { APIMessage } from 'discord-api-types/v9';
+import { IQueue, Isong } from 'src/types';
 
 // i18n.setLocale(LOCALE);
 const youtube = new YouTubeAPI(process.env.YOUTUBE_API_KEY);
@@ -27,27 +30,41 @@ module.exports = {
 			required: true,
 		},
 	],
-	async callback({ message, interaction, args, prefix }) {
+	async callback({
+		message,
+		interaction,
+		args,
+	}: {
+		message?: discordjs.Message;
+		interaction: discordjs.CommandInteraction;
+		args: Array<any>;
+	}) {
 		var i;
-		if (!message) {
+		if (interaction) {
 			i = interaction;
 			if (!interaction.deferred && !interaction.replied) {
 				await interaction.deferReply({ ephemeral: true });
 			}
-		} else if (!interaction) {
+		} else if (message) {
 			i = message;
-		}
+		} else return;
 
-		const settings = await i.client.db.get(i.guildId);
-		const channelExists = await i.guild.channels.fetch(settings.musicChannel);
-		if (!settings?.musicChannel || !channelExists) {
+		if (!i.guild) return; // TODO return error message here and above ^^
+
+		const settings = i.client.db.get(i.guild.id);
+
+		if (settings === undefined || !settings.musicChannel) {
+			// const channelExists = await i.guild.channels.fetch(settings.musicChannel);
 			reply({ message, interaction, content: i18n.__('common.noSetup'), ephemeral: true });
 			message?.delete();
 			return;
 		}
+		const member = i.member as discordjs.GuildMember;
+		if (member.voice) {
+			var { channel } = member.voice;
+		} else return; // TODO return error message
 
-		const { channel } = i.member.voice;
-		const serverQueue = i.client.queue.get(i.guildId);
+		const serverQueue = i.client.queue.get(i.guild.id);
 		if (!channel) {
 			reply({
 				message,
@@ -58,7 +75,9 @@ module.exports = {
 			message?.delete();
 			return;
 		}
-		const permissions = channel.permissionsFor(i.client.user);
+		if (i.guild.me) {
+			var permissions = channel.permissionsFor(i.guild.me);
+		} else return; // TODO return error message
 		if (!permissions.has('CONNECT')) {
 			reply({
 				message,
@@ -84,20 +103,20 @@ module.exports = {
 				message,
 				interaction,
 				content: i18n.__mf('play.errorNotInSameChannel', {
-					user: i.client.user.id,
+					user: i.client.user!.id,
 				}),
 				ephemeral: true,
 			});
 			message?.delete();
 			return;
 		}
-
+		// TODO remove nullish coalessence and check process.env for vars
 		await playdl.setToken({
 			spotify: {
-				client_id: process.env.SPOTIFY_CLIENT,
-				client_secret: process.env.SPOTIFY_SECRET,
-				refresh_token: process.env.SPOTIFY_REFRESH,
-				market: process.env.SPOTIFY_MARKET,
+				client_id: process.env.SPOTIFY_CLIENT!,
+				client_secret: process.env.SPOTIFY_SECRET!,
+				refresh_token: process.env.SPOTIFY_REFRESH!,
+				market: process.env.SPOTIFY_MARKET!,
 			},
 		});
 
@@ -109,38 +128,40 @@ module.exports = {
 		const isSpotify = playdl.sp_validate(url);
 		const isYt = playdl.yt_validate(url);
 
-		const queueConstruct = {
+		const queueConstruct: IQueue = {
 			textChannel: i.channel,
 			channel,
 			connection: null,
+			player: null,
 			songs: [],
 			loop: false,
-			volume: DEFAULT_VOLUME || 100,
 			playing: true,
 		};
 
-		var searching = {};
+		var searching: discordjs.Message;
 		if (message) {
 			searching = await message.reply(i18n.__('playlist.searching'));
 		} else if (interaction) {
-			searching = await interaction.editReply({
+			searching = (await interaction.editReply({
 				content: i18n.__('playlist.searching'),
-				ephemeral: true,
-			});
-		}
+			})) as discordjs.Message;
+		} else return; // TODO return error message
+
 		if (message) {
 			message.delete();
 		}
 
-		var videos = [];
-		var playlistTitle = '';
+		var videos: Isong[] = [];
+		var playlistTitle: string;
 		if (isYt === 'playlist') {
 			try {
 				let playlist = await playdl.playlist_info(url, { incomplete: true });
+				if (!playlist.title) return;
 				playlistTitle = playlist.title;
 				await playlist.fetch(MAX_PLAYLIST_SIZE);
-				let vidInfo = playlist.videos;
+				const vidInfo = playlist.page(1);
 				vidInfo.slice(0, MAX_PLAYLIST_SIZE + 1).forEach((video) => {
+					if (!video.title) return;
 					let song = {
 						title: he.decode(video.title),
 						url: video.url,
@@ -167,9 +188,13 @@ module.exports = {
 		} else if (isSpotify === 'playlist' || isSpotify === 'album') {
 			try {
 				let playlist = await playdl.spotify(url);
-				await playlist.fetch(MAX_PLAYLIST_SIZE);
+				if ('fetch' in playlist) {
+					await playlist.fetch();
+				}
 				playlistTitle = playlist.name;
-				const tracks = await playlist.fetched_tracks.get('1');
+				if ('page' in playlist) {
+					var tracks = playlist.page(1)!;
+				} else return; // TODO return error message
 
 				if (tracks.length > MAX_PLAYLIST_SIZE) {
 					reply({
@@ -197,7 +222,7 @@ module.exports = {
 				if (message) {
 					searching.delete().catch(console.error);
 				}
-			} catch (error) {
+			} catch (error: any) {
 				console.error(error);
 				if (message) {
 					searching.delete().catch(console.error);
@@ -245,13 +270,13 @@ module.exports = {
 		// }
 		if (serverQueue) {
 			serverQueue.songs.push(...videos);
-			npMessage({ message, interaction, npSong: serverQueue.songs[0], prefix });
+			npMessage({ message, interaction, npSong: serverQueue.songs[0] });
 			followUp({
 				message,
 				interaction,
 				content: i18n.__mf('playlist.queueAdded', {
 					playlist: playlistTitle,
-					author: i.member.id,
+					author: member.id,
 				}),
 				ephemeral: false,
 			});
@@ -259,15 +284,19 @@ module.exports = {
 			queueConstruct.songs.push(...videos);
 		}
 		if (!serverQueue) {
-			i.client.queue.set(i.guildId, queueConstruct);
+			i.client.queue.set(i.guild.id, queueConstruct);
 
 			try {
-				if (!voice.getVoiceConnection(i.guildId)) {
-					queueConstruct.connection = await voice.joinVoiceChannel({
+				if (!voice.getVoiceConnection(i.guild.id)) {
+					queueConstruct.connection = voice.joinVoiceChannel({
 						channelId: channel.id,
 						guildId: channel.guildId,
 						selfDeaf: true,
-						adapterCreator: channel.guild.voiceAdapterCreator,
+						adapterCreator: channel.guild
+							.voiceAdapterCreator as voice.DiscordGatewayAdapterCreator,
+						// TODO this is a temp workaround. discord js github issue #7273:
+						// https://github.com/discordjs/discord.js/issues/7273
+						// will be fixed in v14 not v13
 					});
 				}
 				followUp({
@@ -275,19 +304,19 @@ module.exports = {
 					interaction,
 					content: i18n.__mf('playlist.queueAdded', {
 						playlist: playlistTitle,
-						author: i.member.id,
+						author: member.id,
 					}),
 					ephemeral: false,
 				});
-				play({ song: queueConstruct.songs[0], message, interaction, prefix });
+				play({ song: queueConstruct.songs[0], message, interaction });
 			} catch (error) {
 				console.error(error);
-				i.client.queue.delete(i.guildId);
+				i.client.queue.delete(i.guild.id);
 				await queueConstruct.connection.destroy();
 				return followUp({
 					message,
 					interaction,
-					content: i18n.__('play.cantJoinChannel', { error }),
+					content: i18n.__mf('play.cantJoinChannel', { error }),
 					ephemeral: true,
 				});
 			}
