@@ -1,5 +1,6 @@
 import { AudioPlayer, AudioPlayerEvents } from '@discordjs/voice';
 import { Collection, CommandInteraction, Guild, Message } from 'discord.js';
+import WOKCommands from 'wokcommands';
 declare global {
 	var __base: string;
 }
