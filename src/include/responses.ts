@@ -16,7 +16,7 @@ export async function reply({
 	message?: Message;
 	interaction?: CommandInteraction | ButtonInteraction;
 	content: string;
-	ephemeral: boolean;
+	ephemeral?: boolean;
 }): Promise<Message | undefined> {
 	if (message) {
 		return message
@@ -68,7 +68,7 @@ export function followUp({
 	message?: Message;
 	interaction?: CommandInteraction | ButtonInteraction;
 	content: string;
-	ephemeral: boolean;
+	ephemeral?: boolean;
 }): Promise<Message | void> | undefined {
 	if (message) {
 		return message.channel
