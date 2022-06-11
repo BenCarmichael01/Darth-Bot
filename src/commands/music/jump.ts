@@ -1,13 +1,9 @@
-/* global __base */
-const { canModifyQueue, LOCALE, MSGTIMEOUT } = require(`${__base}include/utils`);
-const i18n = require('i18n');
-const { reply } = require(`../../include/responses`);
+import { canModifyQueue, LOCALE, MSGTIMEOUT } from '../../include/utils';
+import i18n from 'i18n';
+import { reply } from '../../include/responses';
+import { CommandInteraction, GuildMember, Message } from 'discord.js';
 
 // i18n.setLocale(LOCALE);
-/**
- * @typedef {import('discord.js').CommandInteraction} CommandInteraction
- * @typedef {import('discord.js').Message} Message
- */
 
 module.exports = {
 	name: 'jump',
@@ -24,15 +20,11 @@ module.exports = {
 			required: true,
 		},
 	],
-	/**
-	 *
-	 * @param {{interaction: CommandInteraction, args: Array<Strings> }}
-	 * @returns
-	 */
-	async callback({ interaction, args }) {
+	async callback({ interaction, args }: { interaction: CommandInteraction; args: string[] }) {
 		await interaction.deferReply({ ephemeral: true });
 
-		const queue = interaction.client.queue.get(interaction.guildId);
+		if (!interaction.guild) return;
+		const queue = interaction.client.queue.get(interaction.guild.id);
 		if (!queue)
 			return reply({
 				interaction,
@@ -40,14 +32,18 @@ module.exports = {
 				ephemeral: true,
 			});
 
-		if (!canModifyQueue(interaction.member)) {
+		if (interaction.member) {
+			var member = interaction.member as GuildMember;
+		} else return; // TODO return error message
+
+		if (!canModifyQueue(member)) {
 			return reply({
 				interaction,
 				content: i18n.__('common.errorNotChannel'),
 				ephemeral: true,
 			});
 		}
-		if (args[0] > queue.songs.length) {
+		if (parseInt(args[0]) > queue.songs.length) {
 			return reply({
 				interaction,
 				content: i18n.__mf('jump.errorNotValid', {
@@ -59,11 +55,11 @@ module.exports = {
 		queue.playing = true;
 
 		if (queue.loop) {
-			for (let i = 0; i < args[0]; i++) {
+			for (let i = 0; i < parseInt(args[0]); i++) {
 				queue.songs.push(queue.songs.shift());
 			}
 		} else {
-			queue.songs = queue.songs.slice(args[0]);
+			queue.songs = queue.songs.slice(parseInt(args[0]));
 		}
 		queue.player.emit('jump');
 		reply({
@@ -73,11 +69,11 @@ module.exports = {
 		queue.textChannel
 			.send(
 				i18n.__mf('jump.result', {
-					author: interaction.member.id,
-					arg: args[0] - 1,
+					author: member.id,
+					arg: parseInt(args[0]) - 1,
 				}),
 			)
-			.then((msg) => {
+			.then((msg: Message) => {
 				setTimeout(() => {
 					msg.delete().catch(console.error);
 				}, MSGTIMEOUT);
