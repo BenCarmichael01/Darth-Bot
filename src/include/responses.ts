@@ -53,6 +53,7 @@ export async function reply({
 			}
 		}
 	}
+	Promise.reject();
 }
 /**
  * Either replies to a discord message or interaction depending on which is passed to it
@@ -69,7 +70,7 @@ export function followUp({
 	interaction?: CommandInteraction | ButtonInteraction;
 	content: string;
 	ephemeral?: boolean;
-}): Promise<Message | void> | undefined {
+}): Promise<Message | void> {
 	if (message) {
 		return message.channel
 			.send(content)
@@ -96,4 +97,5 @@ export function followUp({
 				.catch(console.error);
 		}
 	}
+	return Promise.reject();
 }
