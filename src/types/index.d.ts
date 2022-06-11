@@ -1,4 +1,5 @@
 import { AudioPlayer, AudioPlayerEvents } from '@discordjs/voice';
+import { Snowflake } from 'discord-api-types/globals';
 import { ButtonInteraction, Collection, CommandInteraction, Guild, Message } from 'discord.js';
 import WOKCommands from 'wokcommands';
 declare global {
@@ -7,7 +8,7 @@ declare global {
 
 declare module 'discord.js' {
 	export interface Client {
-		queue: Map<String, any>;
+		queue: Map<Snowflake, IQueue>;
 		db: Collection<Guild['id'], { musicChannel: string; playingMessage: string }>;
 	}
 }

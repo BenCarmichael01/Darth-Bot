@@ -3,6 +3,7 @@ import i18n from 'i18n';
 import Discord from 'discord.js';
 
 import { LOCALE } from './utils';
+import { Isong } from 'src/types';
 
 if (LOCALE) i18n.setLocale(LOCALE);
 // TODO update npmessage when prefix is changed
@@ -61,10 +62,11 @@ export async function npMessage(args: arguments): Promise<{
 		}
 		return {};
 	}
-	let queue = [];
+	let queue: Isong[] | undefined;
 	if (i && npSong && guildId !== null) {
 		queue = i.client.queue.get(guildId)?.songs;
 	}
+	if (queue === undefined) return {}; // TODO return error message
 
 	var outputQueue = i18n.__('npmessage.emptyQueue');
 	var songsQueue = '';

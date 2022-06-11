@@ -62,7 +62,7 @@ export async function play({ song, message, interaction }: playArgs): Promise<an
 	const connection = voice.getVoiceConnection(GUILDID) as CustomConnection & voice.VoiceConnection;
 	const { VoiceConnectionStatus, AudioPlayerStatus } = voice;
 
-	if (!queue) return;
+	if (queue === undefined) return;
 	if (!connection) return;
 	let attempts = 0;
 	let resource = {};
@@ -118,13 +118,14 @@ export async function play({ song, message, interaction }: playArgs): Promise<an
 		return followUp({ message, interaction, content: i18n.__('common.unknownError'), ephemeral: true });
 	}
 
-	collector?.on('collect', async (int: ButtonInteraction) => {
+	collector.on('collect', async (int: ButtonInteraction) => {
 		if (!int) return;
 		await int.deferReply();
 		const member = int.member as GuildMember;
 		if (!member) return;
 		const name = (member as GuildMember).id;
-		const queue = await int.client.queue.get(int.guild!.id);
+		const queue = int.client.queue.get(int.guild!.id);
+		if (queue === undefined) return; // TODO return error message
 		switch (int.customId) {
 			case 'playpause': {
 				if (!canModifyQueue(member)) {
@@ -401,6 +402,7 @@ export async function play({ song, message, interaction }: playArgs): Promise<an
 	}
 	player.on('jump', () => {
 		let queue = i.client.queue.get(GUILDID);
+		if (queue === undefined) return; // TODO return error message
 		collector.stop('skipSong');
 		connection.removeAllListeners();
 		player.removeAllListeners();
@@ -425,7 +427,8 @@ export async function play({ song, message, interaction }: playArgs): Promise<an
 			if (!queue) {
 				npMessage({ message, interaction });
 				setTimeout(() => {
-					if (queue?.songs.length >= 1) {
+					if (queue === undefined) return; // TODO return error message
+					if (queue.songs.length >= 1) {
 						play({
 							song: queue.songs[0],
 							message,
@@ -470,6 +473,7 @@ export async function play({ song, message, interaction }: playArgs): Promise<an
 				npMessage({ message, interaction });
 				queue.songs.shift();
 				setTimeout(() => {
+					if (queue === undefined) return; // TODO return error message
 					if (queue.songs.length >= 1) {
 						play({
 							song: queue.songs[0],
@@ -533,6 +537,7 @@ export async function play({ song, message, interaction }: playArgs): Promise<an
 		}
 	});
 	i.client.on('voiceStateUpdate', (oldState, newState) => {
+		if (queue === undefined) return; // TODO return error message
 		if (oldState === null || newState === null) return;
 		if (newState.member!.user.bot) return;
 		if (oldState.channelId === queue.connection.joinConfig.channelId && !newState.channelId) {
