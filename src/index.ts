@@ -2,10 +2,10 @@ import path from 'path';
 import i18n from 'i18n';
 import discordjs from 'discord.js';
 import WOKCommands from 'wokcommands';
+import 'dotenv/config';
 
 global.__base = path.join(__dirname, '/');
 const { Intents } = discordjs;
-require('dotenv').config();
 
 const client = new discordjs.Client({
 	intents: [
