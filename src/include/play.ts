@@ -123,7 +123,7 @@ export async function play({ song, message, interaction }: playArgs): Promise<an
 		await int.deferReply();
 		const member = int.member as GuildMember;
 		if (!member) return;
-		const name = (member as GuildMember).id;
+		const name = (member).id;
 		const queue = int.client.queue.get(int.guild!.id);
 		if (queue === undefined) return; // TODO return error message
 		switch (int.customId) {
