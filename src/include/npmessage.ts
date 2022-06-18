@@ -1,4 +1,4 @@
-/* global __base */
+﻿﻿/* global __base */
 import i18n from 'i18n';
 import Discord from 'discord.js';
 
@@ -21,6 +21,7 @@ interface output {
 export async function npMessage(args: arguments): Promise<{
 	npmessage?: Discord.Message | undefined;
 	collector?: Discord.InteractionCollector<Discord.ButtonInteraction> | undefined;
+	error?: string;
 }> {
 	const { client, npSong, guildIdParam, interaction, message } = args;
 	let i;
@@ -38,24 +39,25 @@ export async function npMessage(args: arguments): Promise<{
 	} else if (i) {
 		settings = i.client.db.get(guildId);
 	}
-	if (!settings) return {} as output;
+	if (!settings) return { error: 'nosettings' };
 	const MUSIC_CHANNEL_ID = settings.musicChannel;
 	const playingMessageId = settings.playingMessage;
 
 	let musicChannel;
 	if (i === undefined && client) {
-		musicChannel = await client.guilds.cache.get(guildId)?.channels.cache.get(MUSIC_CHANNEL_ID);
+		let cacheGuild = client.guilds.cache.get(guildId);
+		musicChannel = await cacheGuild?.channels.fetch(MUSIC_CHANNEL_ID);
 		if (!musicChannel) {
-			return {};
+			return { error: 'noMusicChannel1' };
 		}
 	} else if (i) {
-		musicChannel = await i.client.channels.cache.get(MUSIC_CHANNEL_ID);
+		musicChannel = i.client.channels.cache.get(MUSIC_CHANNEL_ID);
 	}
 
 	if (!musicChannel) {
 		if (!i) {
 			console.error('music channel not found');
-			return {};
+			return { error: 'noMusicChannel2' };
 		}
 		if ('isButton' in i) {
 			i.reply({
@@ -63,14 +65,12 @@ export async function npMessage(args: arguments): Promise<{
 					'There has been an error with the Now Playing message\nPlease consult an administrator to re-run setup.',
 			});
 		}
-		return {};
+		return { error: 'noMusicChannel3' };
 	}
 	let queue: Isong[] | undefined;
 	if (i && npSong && guildId !== null) {
 		queue = i.client.queue.get(guildId)?.songs;
 	}
-	if (queue === undefined) return {}; // TODO return error message
-
 	var outputQueue = i18n.__('npmessage.emptyQueue');
 	var songsQueue = '';
 	if (queue) {
