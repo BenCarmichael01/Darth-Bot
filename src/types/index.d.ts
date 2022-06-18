@@ -49,6 +49,12 @@ export interface Isong {
 	duration: number;
 }
 
+export interface IMusData {
+	_id: string;
+	musicChannel: string;
+	playingMessage: string;
+}
+
 export type playArgs = {
 	song: Isong;
 	message?: Message;
@@ -62,4 +68,3 @@ export type playCmdArgs = {
 	instance: WOKCommands;
 	// TODO reference wok instance above
 };
-

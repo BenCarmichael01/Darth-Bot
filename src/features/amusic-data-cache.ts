@@ -1,5 +1,5 @@
 import discordjs from 'discord.js';
-import model from '../schemas/musicSchema';
+import model from '../schemas/musicModel';
 
 export default async (client: discordjs.Client) => {
 	const docs = await model.find();

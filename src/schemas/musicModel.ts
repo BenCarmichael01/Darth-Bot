@@ -1,9 +1,5 @@
 import mongoose from 'mongoose';
-interface IMusData {
-	_id: string,
-	musicChannel: string,
-	playingMessage: string,
-}
+import { IMusData } from 'src/types';
 
 const musicSchema = new mongoose.Schema<IMusData>({
 	_id: String,

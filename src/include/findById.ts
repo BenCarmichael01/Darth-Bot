@@ -1,4 +1,4 @@
-import musicSchema from '../schemas/musicSchema';
+import musicSchema from '../schemas/musicModel';
 
 /**
  *Takes an id string and returns the corresponding entry from the musicData MongoDB table

@@ -1,5 +1,5 @@
 import { IMusData } from 'src/types';
-import model from '../schemas/musicSchema';
+import model from '../schemas/musicModel';
 
 /**
  *
