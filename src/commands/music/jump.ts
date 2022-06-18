@@ -2,6 +2,7 @@ import { canModifyQueue, LOCALE, MSGTIMEOUT } from '../../include/utils';
 import i18n from 'i18n';
 import { reply } from '../../include/responses';
 import { CommandInteraction, GuildMember, Message } from 'discord.js';
+import { play } from '../..//include/play';
 
 // i18n.setLocale(LOCALE);
 
@@ -25,12 +26,14 @@ module.exports = {
 
 		if (!interaction.guild) return;
 		const queue = interaction.client.queue.get(interaction.guild.id);
-		if (!queue)
-			return reply({
+		if (!queue) {
+			reply({
 				interaction,
 				content: i18n.__('jump.errorNotQueue'),
 				ephemeral: true,
 			});
+			return;
+		}
 
 		if (interaction.member) {
 			var member = interaction.member as GuildMember;
@@ -54,6 +57,18 @@ module.exports = {
 		}
 		queue.playing = true;
 
+		if (queue.player) {
+			queue.collector.stop('skipSong');
+			queue.connection.removeAllListeners();
+			queue.player.removeAllListeners();
+			queue.player.stop();
+			play({
+				song: queue.songs[0],
+				interaction,
+			});
+			// queue.player.emit('jump');
+		}
+
 		if (queue.loop) {
 			for (let i = 0; i < parseInt(args[0]); i++) {
 				queue.songs.push(queue.songs.shift());
@@ -61,7 +76,7 @@ module.exports = {
 		} else {
 			queue.songs = queue.songs.slice(parseInt(args[0]));
 		}
-		queue.player.emit('jump');
+
 		reply({
 			interaction,
 			content: i18n.__mf('jump.success', { track: args[0] }),

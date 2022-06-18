@@ -404,19 +404,6 @@ export async function play({ song, message, interaction }: playArgs): Promise<an
 		}
 		npmessage.edit({ components: [oldRow] });
 	}
-	player.on('jump', () => {
-		let queue = i.client.queue.get(GUILDID);
-		if (queue === undefined) return; // TODO return error message
-		collector.stop('skipSong');
-		connection.removeAllListeners();
-		player.removeAllListeners();
-		player.stop();
-		play({
-			song: queue.songs[0],
-			message,
-			interaction,
-		});
-	});
 	player.on(AudioPlayerStatus.Idle, async (): Promise<void> => {
 		try {
 			await Promise.race([
