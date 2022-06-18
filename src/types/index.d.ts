@@ -1,6 +1,13 @@
-import { AudioPlayer, AudioPlayerEvents } from '@discordjs/voice';
+import * as voice from '@discordjs/voice';
 import { Snowflake } from 'discord-api-types/globals';
-import { ButtonInteraction, Collection, CommandInteraction, Guild, Message } from 'discord.js';
+import {
+	ButtonInteraction,
+	Collection,
+	CommandInteraction,
+	Guild,
+	InteractionCollector,
+	Message,
+} from 'discord.js';
 import WOKCommands from 'wokcommands';
 declare global {
 	var __base: string;
@@ -26,9 +33,10 @@ export class CustomPlayer extends typedEventEmitter {}
 
 export interface IQueue {
 	textChannel: discordjs.TextBasedChannel;
-	channel: discordjs.VoiceBasedChannel | null;
-	connection: voice.VoiceConnection | null;
-	player: voice.AudioPlayer | null;
+	collector: InteractionCollector | null;
+	voiceChannel: discordjs.VoiceBasedChannel;
+	connection: voice.VoiceConnection;
+	player: (CustomPlayer & voice.AudioPlayer) | null;
 	songs: Array<ISong>;
 	loop: boolean;
 	playing: boolean;
@@ -54,3 +62,4 @@ export type playCmdArgs = {
 	instance: WOKCommands;
 	// TODO reference wok instance above
 };
+

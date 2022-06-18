@@ -11,6 +11,7 @@ import { npMessage } from '../../include/npmessage';
 import { YOUTUBE_API_KEY, LOCALE, MSGTIMEOUT } from '../../include/utils';
 import { reply, followUp } from '../../include/responses';
 import { IQueue, playCmdArgs } from 'src/types';
+import { error } from 'console';
 
 if (LOCALE) i18n.setLocale(LOCALE);
 const youtube = new YouTubeAPI(YOUTUBE_API_KEY);
@@ -59,7 +60,7 @@ module.exports = {
 			return;
 		}
 
-		var musicChannel = await i.guild!.channels.fetch(settings.musicChannel);
+		const musicChannel = await i.guild!.channels.fetch(settings.musicChannel);
 
 		if (!settings?.musicChannel || !musicChannel) {
 			await reply({
@@ -74,7 +75,7 @@ module.exports = {
 		const member = i.member as discordjs.GuildMember;
 		const guild = i.guild as discordjs.Guild;
 		const userVc = member.voice.channel;
-		const channel = guild.me!.voice.channel;
+		const botVoiceChannel = guild.me!.voice.channel;
 		const serverQueue = await i.client.queue.get(guild.id);
 
 		if (!userVc) {
@@ -87,7 +88,7 @@ module.exports = {
 			message?.delete();
 			return;
 		}
-		if (serverQueue && userVc !== guild.me!.voice.channel) {
+		if (serverQueue && userVc !== botVoiceChannel) {
 			reply({
 				message,
 				interaction,
@@ -181,15 +182,6 @@ module.exports = {
 			instance.commandHandler.getCommand('playlist').callback({ message, interaction, args, prefix });
 			return;
 		}
-		const queueConstruct: IQueue = {
-			textChannel: musicChannel,
-			channel,
-			connection: null,
-			player: null,
-			songs: [],
-			loop: false,
-			playing: true,
-		};
 
 		let songInfo = null;
 		let song = null;
@@ -311,17 +303,32 @@ module.exports = {
 			return;
 		}
 
-		queueConstruct.songs.push(song);
-
+		// queueConstruct.songs.push(song);
 		try {
 			if (!voice.getVoiceConnection(guild.id!)) {
-				queueConstruct.connection = voice.joinVoiceChannel({
+				var newConnection = voice.joinVoiceChannel({
 					channelId: userVc.id,
 					guildId: userVc.guildId,
 					selfDeaf: true,
 					adapterCreator: userVc.guild.voiceAdapterCreator as voice.DiscordGatewayAdapterCreator,
+					// TODO this is a temp workaround. discord js github issue #7273:
+					// https://github.com/discordjs/discord.js/issues/7273
+					// will be fixed in v14 not v13
 				});
+			} else {
+				throw Error;
 			}
+			const queueConstruct: IQueue = {
+				textChannel: musicChannel,
+				collector: null,
+				voiceChannel: userVc,
+				connection: newConnection,
+				player: null,
+				songs: [song],
+				loop: false,
+				playing: true,
+			};
+
 			i.client.queue.set(i.guildId!, queueConstruct);
 			play({
 				song: queueConstruct.songs[0],
@@ -352,7 +359,9 @@ module.exports = {
 			if (!(error instanceof Error)) return;
 			console.error(error);
 			i.client.queue.delete(guild.id);
-			await queueConstruct.connection!?.destroy();
+			let pcon = voice.getVoiceConnection(guild.id!);
+			pcon?.destroy();
+
 			followUp({
 				message,
 				interaction,

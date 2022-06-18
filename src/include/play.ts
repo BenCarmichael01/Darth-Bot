@@ -92,7 +92,7 @@ export async function play({ song, message, interaction }: playArgs): Promise<an
 	const player = voice.createAudioPlayer({
 		behaviors: { noSubscriber: voice.NoSubscriberBehavior.Pause },
 	}) as CustomPlayer & voice.AudioPlayer;
-	queue.player = player;
+
 	/*-----------------Event Listeners-------------------------*/
 	player.on('error', (error: voice.AudioPlayerError) => {
 		console.error(`Error: ${error.message} with resource`);
@@ -117,13 +117,17 @@ export async function play({ song, message, interaction }: playArgs): Promise<an
 	if (collector === undefined || collector === null) {
 		return followUp({ message, interaction, content: i18n.__('common.unknownError'), ephemeral: true });
 	}
+	queue.player = player;
+	queue.collector = collector;
+
+	i.client.queue.set(i.guildId!, queue);
 
 	collector.on('collect', async (int: ButtonInteraction) => {
 		if (!int) return;
 		await int.deferReply();
 		const member = int.member as GuildMember;
 		if (!member) return;
-		const name = (member).id;
+		const name = member.id;
 		const queue = int.client.queue.get(int.guild!.id);
 		if (queue === undefined) return; // TODO return error message
 		switch (int.customId) {

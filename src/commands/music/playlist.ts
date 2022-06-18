@@ -52,8 +52,9 @@ module.exports = {
 		if (!i.guild) return; // TODO return error message here and above ^^
 
 		const settings = i.client.db.get(i.guild.id);
+		const musicChannel = settings?.musicChannel;
 
-		if (settings === undefined || !settings.musicChannel) {
+		if (settings === undefined || !musicChannel) {
 			// const channelExists = await i.guild.channels.fetch(settings.musicChannel);
 			reply({ message, interaction, content: i18n.__('common.noSetup'), ephemeral: true });
 			message?.delete();
@@ -127,16 +128,6 @@ module.exports = {
 		const url = args[0];
 		const isSpotify = playdl.sp_validate(url);
 		const isYt = playdl.yt_validate(url);
-
-		const queueConstruct: IQueue = {
-			textChannel: i.channel,
-			channel,
-			connection: null,
-			player: null,
-			songs: [],
-			loop: false,
-			playing: true,
-		};
 
 		var searching: discordjs.Message;
 		if (message) {
@@ -280,46 +271,54 @@ module.exports = {
 				}),
 				ephemeral: false,
 			});
-		} else {
-			queueConstruct.songs.push(...videos);
+			return;
 		}
-		if (!serverQueue) {
-			i.client.queue.set(i.guild.id, queueConstruct);
-
-			try {
-				if (!voice.getVoiceConnection(i.guild.id)) {
-					queueConstruct.connection = voice.joinVoiceChannel({
-						channelId: channel.id,
-						guildId: channel.guildId,
-						selfDeaf: true,
-						adapterCreator: channel.guild
-							.voiceAdapterCreator as voice.DiscordGatewayAdapterCreator,
-						// TODO this is a temp workaround. discord js github issue #7273:
-						// https://github.com/discordjs/discord.js/issues/7273
-						// will be fixed in v14 not v13
-					});
-				}
-				followUp({
-					message,
-					interaction,
-					content: i18n.__mf('playlist.queueAdded', {
-						playlist: playlistTitle,
-						author: member.id,
-					}),
-					ephemeral: false,
+		try {
+			if (!voice.getVoiceConnection(i.guild.id)) {
+				var newConnection = voice.joinVoiceChannel({
+					channelId: channel.id,
+					guildId: channel.guildId,
+					selfDeaf: true,
+					adapterCreator: channel.guild.voiceAdapterCreator as voice.DiscordGatewayAdapterCreator,
+					// TODO this is a temp workaround. discord js github issue #7273:
+					// https://github.com/discordjs/discord.js/issues/7273
+					// will be fixed in v14 not v13
 				});
-				play({ song: queueConstruct.songs[0], message, interaction });
-			} catch (error) {
-				console.error(error);
-				i.client.queue.delete(i.guild.id);
-				await queueConstruct.connection.destroy();
-				return followUp({
-					message,
-					interaction,
-					content: i18n.__mf('play.cantJoinChannel', { error }),
-					ephemeral: true,
-				});
+			} else {
+				throw Error;
 			}
+			const queueConstruct: IQueue = {
+				textChannel: musicChannel,
+				collector: null,
+				voiceChannel: channel,
+				connection: newConnection,
+				player: null,
+				songs: [...videos],
+				loop: false,
+				playing: true,
+			};
+			i.client.queue.set(i.guild.id, queueConstruct);
+			followUp({
+				message,
+				interaction,
+				content: i18n.__mf('playlist.queueAdded', {
+					playlist: playlistTitle,
+					author: member.id,
+				}),
+				ephemeral: false,
+			});
+			play({ song: queueConstruct.songs[0], message, interaction });
+		} catch (error) {
+			console.error(error);
+			i.client.queue.delete(i.guild.id);
+			let pcon = voice.getVoiceConnection(i.guildId!);
+			pcon?.destroy();
+			return followUp({
+				message,
+				interaction,
+				content: i18n.__mf('play.cantJoinChannel', { error }),
+				ephemeral: true,
+			});
 		}
 		// TODO this used to return 1 but i cant remember why so i've removed it
 		// return;
