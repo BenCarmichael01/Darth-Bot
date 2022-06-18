@@ -1,11 +1,11 @@
 import discordjs from 'discord.js';
 import model from '../schemas/musicSchema';
 
-export default async (client:discordjs.Client) => {
+export default async (client: discordjs.Client) => {
 	const docs = await model.find();
 	docs.forEach((guild) => {
 		const id = guild._id;
-		const { musicChannel, playingMessage } = guild
+		const { musicChannel, playingMessage } = guild;
 		const cache = { musicChannel, playingMessage };
 		client.db.set(id, cache);
 	});
