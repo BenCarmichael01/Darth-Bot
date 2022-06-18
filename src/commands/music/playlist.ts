@@ -52,14 +52,16 @@ module.exports = {
 		if (!i.guild) return; // TODO return error message here and above ^^
 
 		const settings = i.client.db.get(i.guild.id);
-		const musicChannel = settings?.musicChannel;
+		const MUSIC_CHANNEL_ID = settings?.musicChannel;
 
-		if (settings === undefined || !musicChannel) {
+		if (settings === undefined || !MUSIC_CHANNEL_ID) {
 			// const channelExists = await i.guild.channels.fetch(settings.musicChannel);
 			reply({ message, interaction, content: i18n.__('common.noSetup'), ephemeral: true });
 			message?.delete();
 			return;
 		}
+
+		const musicChannel = await i.guild.channels.fetch(MUSIC_CHANNEL_ID);
 		const member = i.member as discordjs.GuildMember;
 		if (member.voice) {
 			var { channel } = member.voice;
