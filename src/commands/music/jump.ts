@@ -2,7 +2,7 @@ import { canModifyQueue, LOCALE, MSGTIMEOUT } from '../../include/utils';
 import i18n from 'i18n';
 import { reply } from '../../include/responses';
 import { CommandInteraction, GuildMember, Message } from 'discord.js';
-import { play } from '../..//include/play';
+import { play } from '../../include/play';
 
 // i18n.setLocale(LOCALE);
 
@@ -57,7 +57,15 @@ module.exports = {
 		}
 		queue.playing = true;
 
-		if (queue.player) {
+		if (queue.loop) {
+			for (let i = 0; i < parseInt(args[0]); i++) {
+				queue.songs.push(queue.songs.shift());
+			}
+		} else {
+			queue.songs = queue.songs.slice(parseInt(args[0]));
+		}
+
+		if (queue.player && queue.connection) {
 			queue.collector.stop('skipSong');
 			queue.connection.removeAllListeners();
 			queue.player.removeAllListeners();
@@ -66,15 +74,6 @@ module.exports = {
 				song: queue.songs[0],
 				interaction,
 			});
-			// queue.player.emit('jump');
-		}
-
-		if (queue.loop) {
-			for (let i = 0; i < parseInt(args[0]); i++) {
-				queue.songs.push(queue.songs.shift());
-			}
-		} else {
-			queue.songs = queue.songs.slice(parseInt(args[0]));
 		}
 
 		reply({
