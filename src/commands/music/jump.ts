@@ -79,6 +79,7 @@ module.exports = {
 		reply({
 			interaction,
 			content: i18n.__mf('jump.success', { track: args[0] }),
+			ephemeral: true,
 		});
 		queue.textChannel
 			.send(
