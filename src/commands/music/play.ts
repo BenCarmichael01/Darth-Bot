@@ -59,14 +59,9 @@ module.exports = {
 			return;
 		}
 
-		let channelExists: boolean;
-		if (await i.guild!.channels.fetch(settings.musicChannel)) {
-			channelExists = true;
-		} else {
-			channelExists = false;
-		}
+		var musicChannel = await i.guild!.channels.fetch(settings.musicChannel);
 
-		if (!settings?.musicChannel || !channelExists) {
+		if (!settings?.musicChannel || !musicChannel) {
 			await reply({
 				message,
 				interaction,
@@ -187,7 +182,7 @@ module.exports = {
 			return;
 		}
 		const queueConstruct: IQueue = {
-			textChannel: (await guild.channels.fetch(settings.musicChannel)) as discordjs.TextBasedChannel,
+			textChannel: musicChannel,
 			channel,
 			connection: null,
 			player: null,
@@ -317,7 +312,7 @@ module.exports = {
 		}
 
 		queueConstruct.songs.push(song);
-		i.client.queue.set(i.guildId!, queueConstruct);
+
 		try {
 			if (!voice.getVoiceConnection(guild.id!)) {
 				queueConstruct.connection = voice.joinVoiceChannel({
@@ -327,6 +322,7 @@ module.exports = {
 					adapterCreator: userVc.guild.voiceAdapterCreator as voice.DiscordGatewayAdapterCreator,
 				});
 			}
+			i.client.queue.set(i.guildId!, queueConstruct);
 			play({
 				song: queueConstruct.songs[0],
 				message,
