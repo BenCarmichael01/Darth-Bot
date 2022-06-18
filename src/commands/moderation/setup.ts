@@ -85,25 +85,26 @@ async function runSetup(interaction: ButtonInteraction, channelTag: string, clie
 		});
 
 		// updates/inserts musicChannel and playingMessage in db
-		await upsert({
+		const doc = await upsert({
 			_id: guild.id,
 			musicChannel: musicChannel.id,
 			playingMessage: playingMessage.id,
 		});
 
 		// Check if db was updated correctly
-		const settings = await findById(guild.id);
-		const MUSIC_CHANNEL_ID = settings?.musicChannel;
-		if (MUSIC_CHANNEL_ID === channelTag) {
+		const MUSIC_CHANNEL_ID = doc?.musicChannel;
+		const PLAYING_MESSAGE_ID = doc?.playingMessage;
+
+		if (MUSIC_CHANNEL_ID === channelTag && PLAYING_MESSAGE_ID === playingMessage.id) {
+			// Push to cached db
+			client.db.set(guild.id, {
+				musicChannel: MUSIC_CHANNEL_ID,
+				playingMessage: PLAYING_MESSAGE_ID,
+			});
 			interaction.followUp({
 				content: i18n.__mf('moderation.setup.success', { MUSIC_CHANNEL_ID }),
 				ephemeral: true,
 			});
-			// Push to cached db
-			let { _doc } = settings;
-			delete _doc._id;
-			delete _doc.__v;
-			await client.db.set(guild.id, _doc);
 		} else {
 			interaction.followUp({
 				content: i18n.__mf('moderation.setup.fail'),
@@ -186,4 +187,3 @@ module.exports = {
 		}
 	},
 };
-
