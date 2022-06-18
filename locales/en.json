@@ -95,7 +95,7 @@
 		"missingSpot": "You dont have a spotify API key available.\nYou will be unable to search for music from Spotify"
 	},
 	"playlist": {
-		"description": "Play a playlist from youtube",
+		"description": "Play a playlist from Youtube or Spotify",
 		"usageReply": "Usage: {prefix}playlist <YouTube Playlist URL | Playlist Name>",
 		"errorNotChannel": "You need to join a voice channel first!",
 		"errorNotInSameChannel": "You must be in the same channel as {user}",
