@@ -53,7 +53,10 @@ export async function npMessage(args: arguments): Promise<{
 	}
 
 	if (!musicChannel) {
-		if (!i) return {};
+		if (!i) {
+			console.error('music channel not found');
+			return {};
+		}
 		if ('isButton' in i) {
 			i.reply({
 				content:
