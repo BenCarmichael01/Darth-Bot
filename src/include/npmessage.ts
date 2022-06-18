@@ -1,4 +1,4 @@
-﻿﻿/* global __base */
+/* global __base */
 import i18n from 'i18n';
 import Discord from 'discord.js';
 
@@ -107,22 +107,15 @@ export async function npMessage(args: arguments): Promise<{
 			.setFooter({ text: i18n.__('npmessage.footer') });
 	}
 
-	const output = await (musicChannel as Discord.TextChannel).messages
-		.fetch({ limit: 10 })
-		.then(async (messages) => {
-			const npmessage = messages.get(playingMessageId);
-			// output.npmessage = await messages.get(playingMessageId);
-			// Change now playing message to match current song
-			npmessage?.edit({ content: outputQueue, embeds: [newEmbed] });
-			// outputArr[0].edit({ content: outputQueue, embeds: [newEmbed] });
-			return npmessage;
-		})
-		.then(async (npmessage) => {
-			const collector = npmessage?.createMessageComponentCollector({ componentType: 'BUTTON' });
-			const output: output = { npmessage, collector };
-			return output;
-		})
-		.catch(console.error);
+	const messages = await (musicChannel as Discord.TextChannel).messages.fetch({ limit: 10 });
 
-	return output as output;
+	const npmessage = messages.get(playingMessageId);
+	// output.npmessage = await messages.get(playingMessageId);
+	// Change now playing message to match current song
+	npmessage?.edit({ content: outputQueue, embeds: [newEmbed] });
+	// outputArr[0].edit({ content: outputQueue, embeds: [newEmbed] });
+
+	const collector = npmessage?.createMessageComponentCollector({ componentType: 'BUTTON' });
+	const output: output = { npmessage, collector };
+	return output;
 }
