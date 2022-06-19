@@ -5,7 +5,7 @@ import { CommandInteraction, GuildMember, Message } from 'discord.js';
 import { play } from '../../include/play';
 import { ICommand } from 'wokcommands';
 
-// i18n.setLocale(LOCALE);
+if (LOCALE) i18n.setLocale(LOCALE);
 
 export default {
 	name: 'jump',

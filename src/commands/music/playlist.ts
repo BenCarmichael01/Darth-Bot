@@ -14,7 +14,7 @@ import { APIMessage } from 'discord-api-types/v9';
 import { IQueue, Isong } from 'src/types';
 import { ICommand } from 'wokcommands';
 
-// i18n.setLocale(LOCALE);
+if (LOCALE) i18n.setLocale(LOCALE);
 const youtube = new YouTubeAPI(process.env.YOUTUBE_API_KEY);
 
 export default {

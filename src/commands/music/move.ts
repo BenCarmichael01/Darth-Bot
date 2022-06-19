@@ -8,7 +8,7 @@ import { Client, CommandInteraction, GuildMember, Message } from 'discord.js';
 import { followUp } from '../../include/responses';
 import { ICommand } from 'wokcommands';
 
-// i18n.setLocale(LOCALE);
+if (LOCALE) i18n.setLocale(LOCALE);
 
 export default {
 	name: 'move',

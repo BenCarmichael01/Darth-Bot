@@ -7,7 +7,7 @@ import { Isong } from 'src/types';
 import i18n from 'i18n';
 import { ICommand } from 'wokcommands';
 
-// i18n.setLocale(LOCALE);
+if (LOCALE) i18n.setLocale(LOCALE);
 
 const pattern = /^[0-9]{1,2}(\s*,\s*[0-9]{1,2})*$/;
 export default {

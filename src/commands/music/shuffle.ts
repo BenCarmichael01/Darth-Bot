@@ -5,7 +5,7 @@ import { reply } from '../../include/responses';
 import { CommandInteraction, GuildMember, Message } from 'discord.js';
 import { ICommand } from 'wokcommands';
 
-// i18n.setLocale(LOCALE);
+if (LOCALE) i18n.setLocale(LOCALE);
 
 export default {
 	name: 'shuffle',

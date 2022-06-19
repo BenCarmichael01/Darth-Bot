@@ -11,7 +11,7 @@ import { reply } from '../../include/responses';
 const { MessageEmbed, MessageButton, MessageActionRow } = discordjs;
 const youtube = new Youtube(YOUTUBE_API_KEY);
 
-// i18n.setLocale(LOCALE);
+if (LOCALE) i18n.setLocale(LOCALE);
 export default {
 	name: 'search',
 	category: 'music',

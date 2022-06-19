@@ -6,7 +6,7 @@ import { LOCALE } from './utils';
 import { Isong } from 'src/types';
 
 if (LOCALE) i18n.setLocale(LOCALE);
-// TODO update npmessage when prefix is changed
+
 interface arguments {
 	client?: Discord.Client;
 	npSong?: any;

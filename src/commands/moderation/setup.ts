@@ -16,7 +16,7 @@ import { upsert } from '../../include/upsert';
 import { CustomConnection, IQueue } from 'src/types';
 import { ICommand } from 'wokcommands';
 
-// // i18n.setLocale(LOCALE);
+if (LOCALE) i18n.setLocale(LOCALE);
 
 async function runSetup(interaction: ButtonInteraction, channelTag: string, client: Client, guild: Guild) {
 	await interaction.reply({
