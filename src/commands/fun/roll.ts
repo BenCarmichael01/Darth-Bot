@@ -1,16 +1,16 @@
-const { MessageActionRow, MessageButton } = require('discord.js');
-const i18n = require('i18n');
+import { MessageActionRow, MessageButton } from 'discord.js';
+import i18n from 'i18n';
+import { ICommand } from 'wokcommands';
 
-function roll(args) {
+function roll(args: number[]) {
 	var min = Math.ceil(args[0]) ? Math.ceil(args[0]) : 1;
 	var max = Math.floor(args[1]) ? Math.floor(args[1]) : 10;
 	const output = Math.floor(Math.random() * (max - min + 1) + min); // returns a random integer from lowerLimit to upperLimit
 	return output;
 }
-module.exports = {
+export default {
 	name: 'roll',
 	category: 'fun',
-	// argsType: 'multiple',
 	description: 'Gives a random number between the specified values',
 	slash: true,
 	options: [
@@ -29,7 +29,8 @@ module.exports = {
 	],
 
 	callback({ client, interaction, args }) {
-		const output = roll(args);
+		const parsedArgs = args.map((arg: string) => parseInt(arg));
+		const output = roll(parsedArgs);
 		const row = new MessageActionRow().addComponents(
 			new MessageButton().setCustomId('reRoll').setLabel('Re-Roll').setStyle('PRIMARY'),
 		);
@@ -41,7 +42,7 @@ module.exports = {
 		client.on('interactionCreate', (i) => {
 			if (!i.isButton()) return;
 			if (i.customId === 'reRoll') {
-				let reRoll = roll(args);
+				let reRoll = roll(parsedArgs);
 				i.update({
 					content: i18n.__mf('roll.reply', { roll: reRoll.toString() }),
 					components: [row],
@@ -49,5 +50,4 @@ module.exports = {
 			}
 		});
 	},
-};
-
+} as ICommand;
