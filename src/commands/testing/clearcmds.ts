@@ -1,10 +1,10 @@
 /* eslint-disable no-unused-vars */
 
 import discordjs from 'discord.js';
-
 import { Client, CommandInteraction, Guild } from 'discord.js';
+import { ICommand } from 'wokcommands';
 
-module.exports = {
+export default {
 	name: 'clearcmds',
 	description: 'Deletes all Guild or Global commands for this bot',
 	category: 'testing',
@@ -55,4 +55,4 @@ module.exports = {
 			interaction.reply({ content: 'Deleted all guild-based commands...', ephemeral: true });
 		}
 	},
-};
+} as ICommand;

@@ -14,6 +14,7 @@ import { LOCALE } from '../../include/utils';
 import findById from '../../include/findById';
 import { upsert } from '../../include/upsert';
 import { CustomConnection, IQueue } from 'src/types';
+import { ICommand } from 'wokcommands';
 
 // // i18n.setLocale(LOCALE);
 
@@ -126,7 +127,7 @@ async function runSetup(interaction: ButtonInteraction, channelTag: string, clie
 	}
 }
 
-module.exports = {
+export default {
 	name: 'setup',
 	category: 'moderation',
 	description: i18n.__('moderation.setup.description'),
@@ -186,4 +187,4 @@ module.exports = {
 				.catch(console.error);
 		}
 	},
-};
+} as ICommand;

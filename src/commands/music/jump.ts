@@ -3,14 +3,15 @@ import i18n from 'i18n';
 import { reply } from '../../include/responses';
 import { CommandInteraction, GuildMember, Message } from 'discord.js';
 import { play } from '../../include/play';
+import { ICommand } from 'wokcommands';
 
 // i18n.setLocale(LOCALE);
 
-module.exports = {
+export default {
 	name: 'jump',
 	category: 'music',
 	description: i18n.__('jump.description'),
-	guildOnly: 'true',
+	guildOnly: true,
 	slash: true,
 	options: [
 		{
@@ -95,4 +96,4 @@ module.exports = {
 			})
 			.catch(console.error);
 	},
-};
+} as ICommand;

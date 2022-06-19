@@ -12,15 +12,16 @@ import { YOUTUBE_API_KEY, LOCALE, MSGTIMEOUT } from '../../include/utils';
 import { reply, followUp } from '../../include/responses';
 import { IQueue, playCmdArgs } from 'src/types';
 import { error } from 'console';
+import { ICommand } from 'wokcommands';
 
 if (LOCALE) i18n.setLocale(LOCALE);
 const youtube = new YouTubeAPI(YOUTUBE_API_KEY);
 
-module.exports = {
+export default {
 	name: 'play',
 	category: 'music',
 	description: i18n.__('play.description'),
-	guildOnly: 'true',
+	guildOnly: true,
 	slash: true,
 	testOnly: true,
 	options: [
@@ -376,4 +377,4 @@ module.exports = {
 
 		return;
 	},
-};
+} as ICommand;

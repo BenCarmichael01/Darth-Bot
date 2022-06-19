@@ -12,15 +12,16 @@ const { MAX_PLAYLIST_SIZE, DEFAULT_VOLUME, LOCALE } = require(`${__base}/include
 import { reply, followUp } from '../../include/responses';
 import { APIMessage } from 'discord-api-types/v9';
 import { IQueue, Isong } from 'src/types';
+import { ICommand } from 'wokcommands';
 
 // i18n.setLocale(LOCALE);
 const youtube = new YouTubeAPI(process.env.YOUTUBE_API_KEY);
 
-module.exports = {
+export default {
 	name: 'playlist',
 	category: 'music',
 	description: i18n.__('playlist.description'),
-	guildOnly: 'true',
+	guildOnly: true,
 	slash: true,
 	options: [
 		{
@@ -325,4 +326,4 @@ module.exports = {
 		// TODO this used to return 1 but i cant remember why so i've removed it
 		// return;
 	},
-};
+} as ICommand;

@@ -3,10 +3,11 @@ import { npMessage } from '../../include/npmessage';
 import i18n from 'i18n';
 import { reply } from '../../include/responses';
 import { CommandInteraction, GuildMember, Message } from 'discord.js';
+import { ICommand } from 'wokcommands';
 
 // i18n.setLocale(LOCALE);
 
-module.exports = {
+export default {
 	name: 'shuffle',
 	category: 'music',
 	description: i18n.__('shuffle.description'),
@@ -69,4 +70,4 @@ module.exports = {
 			console.error(error);
 		}
 	},
-};
+} as ICommand;

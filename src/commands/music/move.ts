@@ -6,15 +6,16 @@ import { canModifyQueue, LOCALE, MSGTIMEOUT } from '../../include/utils';
 import { npMessage } from '../../include/npmessage';
 import { Client, CommandInteraction, GuildMember, Message } from 'discord.js';
 import { followUp } from '../../include/responses';
+import { ICommand } from 'wokcommands';
 
 // i18n.setLocale(LOCALE);
 
-module.exports = {
+export default {
 	name: 'move',
 	aliases: ['mv'],
 	category: 'music',
 	description: i18n.__('move.description'),
-	guildOnly: 'true',
+	guildOnly: true,
 	usage: i18n.__('move.usagesReply'),
 	slash: true,
 	options: [
@@ -92,4 +93,4 @@ module.exports = {
 				.catch(console.error);
 		}
 	},
-};
+} as ICommand;

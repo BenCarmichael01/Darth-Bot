@@ -5,16 +5,16 @@ import { reply, followUp } from '../../include/responses';
 import { CommandInteraction, GuildMember, Message } from 'discord.js';
 import { Isong } from 'src/types';
 import i18n from 'i18n';
+import { ICommand } from 'wokcommands';
 
 // i18n.setLocale(LOCALE);
 
 const pattern = /^[0-9]{1,2}(\s*,\s*[0-9]{1,2})*$/;
-
-module.exports = {
+export default {
 	name: 'remove',
 	category: 'music',
 	description: i18n.__('remove.description'),
-	guildOnly: 'true',
+	guildOnly: true,
 	slash: true,
 	options: [
 		{
@@ -93,4 +93,4 @@ module.exports = {
 			return;
 		}
 	},
-};
+} as ICommand;

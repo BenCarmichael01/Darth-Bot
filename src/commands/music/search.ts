@@ -2,7 +2,7 @@ import Youtube from 'youtube.ts';
 import i18n from 'i18n';
 import he from 'he';
 import * as discordjs from 'discord.js';
-import WOKCommands from 'wokcommands';
+import WOKCommands, { ICommand } from 'wokcommands';
 import * as voice from '@discordjs/voice';
 
 import { YOUTUBE_API_KEY, LOCALE } from '../../include/utils';
@@ -12,11 +12,11 @@ const { MessageEmbed, MessageButton, MessageActionRow } = discordjs;
 const youtube = new Youtube(YOUTUBE_API_KEY);
 
 // i18n.setLocale(LOCALE);
-module.exports = {
+export default {
 	name: 'search',
 	category: 'music',
 	description: i18n.__('search.description'),
-	guildOnly: 'true',
+	guildOnly: true,
 	slash: true,
 	options: [
 		{
@@ -176,4 +176,4 @@ module.exports = {
 			console.error(error);
 		}
 	},
-};
+} as ICommand;
