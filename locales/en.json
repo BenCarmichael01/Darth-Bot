@@ -209,10 +209,12 @@
 			"description": "Updates the bot's activity status",
 			"activityDesc": "The type of activity to be used",
 			"statusDesc": "The status message to display",
-			"urlDesc": "Twitch/Youtube URL must be iincluded when using 'Streaming' option",
+			"urlDesc": "Twitch/Youtube URL; Can only be used with 'Streaming' activity",
 			"usage": "Status command usage: <Activity Type> <Status Message>",
 			"start": "Updating status...",
-			"complete": "My status has been successfully updated"
+			"complete": "My status has been successfully updated",
+			"error": "Sorry there has been an error.\n```{error}```\nPlease contact an adminstrator",
+			"noURL": "Btw, Twitch/Youtube stream URLs can only be used with the 'Streaming' activity type"
 		},
 		"setup": {
 			"description": "Setup the channel you want to use for the music player",
