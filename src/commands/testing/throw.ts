@@ -1,15 +1,14 @@
-/* eslint-disable no-unused-vars */
-/* global __base */
+import { ICommand } from 'wokcommands';
 
-module.exports = {
+export default {
 	name: 'throw',
 	description: 'throws unhandled error to crash the bot',
 	category: 'testing',
 	testOnly: true,
 	ownerOnly: true,
+	slash: true,
 	permissions: ['ADMINISTRATOR'],
 	async callback() {
-		throw console.error();
+		throw new Error('Forced Crash');
 	},
-};
-
+} as ICommand;
