@@ -9,6 +9,7 @@ export default {
 	description: 'Deletes all Guild or Global commands for this bot',
 	category: 'testing',
 	testOnly: true,
+	ownerOnly: true,
 	slash: true,
 	permissions: ['ADMINISTRATOR'],
 	options: [

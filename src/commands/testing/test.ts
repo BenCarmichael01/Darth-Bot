@@ -8,6 +8,7 @@ export default {
 	description: 'test',
 	category: 'testing',
 	testOnly: true,
+	ownerOnly: true,
 	slash: true,
 	permissions: ['ADMINISTRATOR'],
 
