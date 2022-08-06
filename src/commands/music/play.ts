@@ -11,7 +11,6 @@ import { npMessage } from '../../include/npmessage';
 import { YOUTUBE_API_KEY, LOCALE, MSGTIMEOUT } from '../../include/utils';
 import { reply, followUp } from '../../include/responses';
 import { IQueue, playCmdArgs } from 'src/types';
-import { error } from 'console';
 import { ICommand } from 'wokcommands';
 
 if (LOCALE) i18n.setLocale(LOCALE);
@@ -77,7 +76,7 @@ export default {
 		const guild = i.guild as discordjs.Guild;
 		const userVc = member.voice.channel;
 		const botVoiceChannel = guild.me!.voice.channel;
-		const serverQueue = await i.client.queue.get(guild.id);
+		const serverQueue = i.client.queue.get(guild.id);
 
 		if (!userVc) {
 			reply({
@@ -276,7 +275,7 @@ export default {
 			return;
 		}
 
-		if (serverQueue?.songs.length > 0) {
+		if (serverQueue && serverQueue.songs.length > 0) {
 			serverQueue.songs.push(song);
 			npMessage({
 				interaction,
