@@ -388,7 +388,10 @@ export async function play({ song, message, interaction }: playArgs): Promise<an
 		}
 	});
 	function queueEnd(i: CommandInteraction | Message, npmessage: Message) {
-		i.client.queue.delete(i.guild!.id);
+		let queue = i.client.queue.get(i.guildId!);
+		if (queue) {
+			queue.songs.length = 0;
+		}
 		let oldRow = npmessage.components[0];
 		for (let i = 0; i < oldRow.components.length; i++) {
 			if (oldRow.components[i].customId === 'loop') {
