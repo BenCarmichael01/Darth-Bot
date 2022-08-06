@@ -1,15 +1,18 @@
 /* global __base */
-import move from 'array-move';
 import i18n from 'i18n';
-
 import { canModifyQueue, LOCALE, MSGTIMEOUT } from '../../include/utils';
 import { npMessage } from '../../include/npmessage';
-import { Client, CommandInteraction, GuildMember, Message } from 'discord.js';
+import { Client, CommandInteraction, GuildMember } from 'discord.js';
 import { followUp } from '../../include/responses';
 import { ICommand } from 'wokcommands';
 
 if (LOCALE) i18n.setLocale(LOCALE);
-
+function arraymove(arr: any[], fromIndex: number, toIndex: number) {
+	var element = arr[fromIndex];
+	arr.splice(fromIndex, 1);
+	arr.splice(toIndex, 0, element);
+	return arr;
+}
 export default {
 	name: 'move',
 	aliases: ['mv'],
@@ -67,7 +70,7 @@ export default {
 			if (currentPos > queue.songs.length - 1 || newPos > queue.songs.length - 1) {
 				return interaction.editReply({ content: i18n.__('move.range') });
 			}
-			queue.songs = move(queue.songs, currentPos, newPos);
+			queue.songs = arraymove(queue.songs, currentPos, newPos);
 			npMessage({ interaction, npSong: queue.songs[0] });
 			await interaction.editReply({ content: i18n.__('move.success') });
 			followUp({
