@@ -62,7 +62,7 @@ export type playArgs = {
 	interaction?: CommandInteraction | ButtonInteraction;
 };
 export type playCmdArgs = {
-	message?: discordjs.Message;
+	message?: Message;
 	interaction?: CommandInteraction;
 	args: Array<string>;
 	prefix: string;
