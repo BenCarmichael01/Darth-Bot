@@ -308,7 +308,8 @@ export default {
 
 		// queueConstruct.songs.push(song);
 		try {
-			if (!voice.getVoiceConnection(guild.id!)) {
+			const connection = voice.getVoiceConnection(guild.id!);
+			if (!connection) {
 				var newConnection = voice.joinVoiceChannel({
 					channelId: userVc.id,
 					guildId: userVc.guildId,
@@ -319,7 +320,7 @@ export default {
 					// will be fixed in v14 not v13
 				});
 			} else {
-				throw Error;
+				newConnection = connection;
 			}
 			const queueConstruct: IQueue = {
 				textChannel: musicChannel,
