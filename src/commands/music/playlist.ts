@@ -296,6 +296,7 @@ export default {
 				voiceChannel: channel,
 				connection: newConnection,
 				player: null,
+				timeout: null,
 				songs: [...videos],
 				loop: false,
 				playing: true,

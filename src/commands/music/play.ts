@@ -168,6 +168,9 @@ export default {
 			await playdl.refreshToken(); // This will check if access token has expired. If yes, then refresh the token.
 		}
 
+		if (serverQueue?.timeout) {
+			clearTimeout(serverQueue.timeout);
+		}
 		const search = args.join(' ');
 		const url = args[0];
 		const isSpotify = playdl.sp_validate(url);
@@ -324,6 +327,7 @@ export default {
 				voiceChannel: userVc,
 				connection: newConnection,
 				player: null,
+				timeout: null,
 				songs: [song],
 				loop: false,
 				playing: true,

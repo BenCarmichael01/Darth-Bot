@@ -37,6 +37,7 @@ export interface IQueue {
 	voiceChannel: discordjs.VoiceBasedChannel;
 	connection: voice.VoiceConnection;
 	player: (CustomPlayer & voice.AudioPlayer) | null;
+	timeout: NodeJS.Timeout | null;
 	songs: Array<ISong>;
 	loop: boolean;
 	playing: boolean;

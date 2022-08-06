@@ -223,7 +223,7 @@ export async function play({ song, message, interaction }: playArgs): Promise<an
 						interaction: int,
 					});
 				} else {
-					await npMessage({
+					npMessage({
 						message,
 						interaction: int,
 					});
@@ -357,9 +357,11 @@ export async function play({ song, message, interaction }: playArgs): Promise<an
 					})
 					.catch(console.error);
 				try {
-					player.eventNames();
 					queueEnd(i, npmessage);
+					player.removeAllListeners();
+					connection?.removeAllListeners();
 					player.stop();
+					collector.stop();
 					npMessage({ message, interaction: int });
 				} catch (error) {
 					console.error(error);
@@ -411,32 +413,40 @@ export async function play({ song, message, interaction }: playArgs): Promise<an
 		} catch (error) {
 			// apears to be finished current song
 			// decide what to do:
-			if (!queue) {
-				npMessage({ message, interaction });
-				setTimeout(() => {
-					if (queue === undefined) return; // TODO return error message
-					if (queue.songs.length >= 1) {
-						play({
-							song: queue.songs[0],
-							message,
-							interaction,
-						});
-						return;
-					}
-					queueEnd(i, npmessage);
-					connection?.destroy();
-					followUp({
+			const timeout = setTimeout(() => {
+				if (queue === undefined) return; // TODO return error message
+				if (queue.songs.length >= 1) {
+					play({
+						song: queue.songs[0],
 						message,
 						interaction,
-						content: i18n.__('play.queueEnded') + '\n' + i18n.__('play.leaveChannel'),
-						ephemeral: false,
 					});
 					return;
-				}, STAY_TIME * 1_000);
+				}
+				queueEnd(i, npmessage);
+				connection?.destroy();
+				followUp({
+					message,
+					interaction,
+					content: i18n.__('play.queueEnded') + '\n' + i18n.__('play.leaveChannel'),
+					ephemeral: false,
+				});
+				return;
+			}, STAY_TIME * 1_000);
+
+			// // If there is no queue then there was a werid error
+			if (!queue) {
+				clearTimeout(timeout);
+				npMessage({ message, interaction });
+				// TODO possibly more things to kill?
+				connection.destroy();
+				player.stop();
 				return;
 			}
+			queue.timeout = timeout;
 
 			if (queue.songs.length > 1 && !queue?.loop) {
+				clearTimeout(timeout);
 				// songs in queue and queue not looped so play next song
 				queue.songs.shift();
 				play({
@@ -445,6 +455,7 @@ export async function play({ song, message, interaction }: playArgs): Promise<an
 					interaction,
 				});
 			} else if (queue.songs.length >= 1 && queue.loop) {
+				clearTimeout(timeout);
 				// at least one song in queue and queue is looped so push finished
 				// song to back of queue then play next song
 				let lastSong = queue.songs.shift();
@@ -455,6 +466,7 @@ export async function play({ song, message, interaction }: playArgs): Promise<an
 					interaction,
 				});
 			} else if (queue.songs.length === 1 && !queue.loop) {
+				clearTimeout(timeout);
 				// If there are no more songs in the queue then wait for STAY_TIME before leaving vc
 				// unless a song was added during the timeout
 				npMessage({ message, interaction });
