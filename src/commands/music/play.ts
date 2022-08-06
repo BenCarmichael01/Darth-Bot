@@ -333,7 +333,7 @@ export default {
 				playing: true,
 			};
 
-			i.client.queue.set(i.guildId!, queueConstruct);
+			i.client.queue.set(guild.id, queueConstruct);
 			play({
 				song: queueConstruct.songs[0],
 				message,

@@ -329,21 +329,19 @@ export async function play({ song, message, interaction }: playArgs): Promise<an
 			}
 			case 'stop': {
 				let perms = member.permissions as Permissions;
-				if (!perms.has('ADMINISTRATOR')) {
-					if (!canModifyQueue(member)) {
-						return int
-							.editReply({
-								content: i18n.__('common.errorNotChannel'),
-							})
-							.then((reply) => {
-								setTimeout(() => {
-									if ('delete' in reply) {
-										reply.delete().catch(console.error);
-									}
-								}, MSGTIMEOUT as number);
-							})
-							.catch(console.error);
-					}
+				if (!perms.has('ADMINISTRATOR') && !canModifyQueue(member)) {
+					return int
+						.editReply({
+							content: i18n.__('common.errorNotChannel'),
+						})
+						.then((reply) => {
+							setTimeout(() => {
+								if ('delete' in reply) {
+									reply.delete().catch(console.error);
+								}
+							}, MSGTIMEOUT as number);
+						})
+						.catch(console.error);
 				}
 				int.editReply({
 					content: i18n.__mf('play.stopSong', { author: name }),
