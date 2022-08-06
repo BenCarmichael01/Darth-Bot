@@ -124,7 +124,13 @@ export async function play({ song, message, interaction }: playArgs): Promise<an
 
 	collector.on('collect', async (int: ButtonInteraction) => {
 		if (!int) return;
-		await int.deferReply();
+		if (!int.replied && !int.deferred) {
+			try {
+				await int.deferReply();
+			} catch (error) {
+				console.error(error);
+			}
+		}
 		const member = int.member as GuildMember;
 		if (!member) return;
 		const name = member.id;
