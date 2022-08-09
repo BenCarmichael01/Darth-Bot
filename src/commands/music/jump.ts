@@ -1,7 +1,7 @@
 import { canModifyQueue, LOCALE, MSGTIMEOUT } from '../../include/utils';
 import i18n from 'i18n';
 import { reply } from '../../include/responses';
-import { CommandInteraction, GuildMember, Message } from 'discord.js';
+import { CommandInteraction, Constants, GuildMember, Message } from 'discord.js';
 import { play } from '../../include/play';
 import { ICommand } from 'wokcommands';
 
@@ -17,8 +17,8 @@ export default {
 		{
 			name: 'number',
 			description: 'Queue number to skip to',
-			type: 'INTEGER',
-			minValue: 0,
+			type: Constants.ApplicationCommandOptionTypes.INTEGER,
+			minValue: 1,
 			required: true,
 		},
 	],
