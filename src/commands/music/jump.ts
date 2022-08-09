@@ -38,7 +38,10 @@ export default {
 
 		if (interaction.member) {
 			var member = interaction.member as GuildMember;
-		} else return; // TODO return error message
+		} else {
+			reply({ interaction, content: i18n.__('common.unknownError'), ephemeral: true });
+			return;
+		}
 
 		if (!canModifyQueue(member)) {
 			return reply({
