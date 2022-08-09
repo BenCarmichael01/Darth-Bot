@@ -99,7 +99,7 @@
 		"usageReply": "Usage: {prefix}playlist <YouTube Playlist URL | Playlist Name>",
 		"errorNotChannel": "You need to join a voice channel first!",
 		"errorNotInSameChannel": "You must be in the same channel as {user}",
-		"missingPermissionConnect": "Cannot connect to voice channel, missing permissions",
+		"missingPermissionConnect": "I cannot connect to your voice channel, I don't have permission!",
 		"missingPermissionSpeak": "I cannot speak in this voice channel, make sure I have the proper permissions!",
 		"errorNotFoundPlaylist": "Playlist not found :(",
 		"fetchingPlaylist": "Fetching the playlist...",
