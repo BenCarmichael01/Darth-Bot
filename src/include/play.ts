@@ -374,22 +374,7 @@ export async function play({ song, message, interaction }: playArgs): Promise<an
 			}
 		}
 	});
-	// Check if disconnect is real or is moving to another channel
-	connection.on(VoiceConnectionStatus.Disconnected, async () => {
-		try {
-			await Promise.race([
-				voice.entersState(connection, VoiceConnectionStatus.Signalling, 5_000),
-				voice.entersState(connection, VoiceConnectionStatus.Connecting, 5_000),
-			]);
-			// Seems to be reconnecting to a new channel - ignore disconnect
-		} catch (error) {
-			// Seems to be a real disconnect which SHOULDN'T be recovered from
-			if (connection?.state?.status !== VoiceConnectionStatus.Destroyed) {
-				connection.destroy();
-			}
-			i.client.queue.delete(GUILDID);
-		}
-	});
+
 	function queueEnd(i: CommandInteraction | Message, npmessage: Message) {
 		let queue = i.client.queue.get(i.guildId!);
 		if (queue) {
@@ -406,6 +391,24 @@ export async function play({ song, message, interaction }: playArgs): Promise<an
 		}
 		npmessage.edit({ components: [oldRow] });
 	}
+
+	// Check if disconnect is real or is moving to another channel
+	connection.on(VoiceConnectionStatus.Disconnected, async () => {
+		try {
+			await Promise.race([
+				voice.entersState(connection, VoiceConnectionStatus.Signalling, 5_000),
+				voice.entersState(connection, VoiceConnectionStatus.Connecting, 5_000),
+			]);
+			// Seems to be reconnecting to a new channel - ignore disconnect
+		} catch (error) {
+			// Seems to be a real disconnect which SHOULDN'T be recovered from
+			if (connection?.state?.status !== VoiceConnectionStatus.Destroyed) {
+				connection.destroy();
+			}
+			i.client.queue.delete(GUILDID);
+		}
+	});
+
 	player.on(AudioPlayerStatus.Idle, async (): Promise<void> => {
 		try {
 			await Promise.race([
