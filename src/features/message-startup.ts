@@ -35,7 +35,7 @@ async function messageStartup(musicGuilds: Array<string>, client: Client) {
 
 		collector.on('collect', (i: ButtonInteraction) => {
 			const queue = i.client.queue.get(i.guildId!);
-			if (!queue) {
+			if (!queue || queue.songs.length === 0) {
 				i.reply({
 					content: i18n.__('nowplaying.errorNotQueue'),
 					ephemeral: true,
