@@ -10,8 +10,9 @@ import * as discordjs from 'discord.js';
 import { npMessage } from '../../include/npmessage';
 import { YOUTUBE_API_KEY, LOCALE, MSGTIMEOUT } from '../../include/utils';
 import { reply, followUp } from '../../include/responses';
-import { IQueue, playCmdArgs } from 'src/types';
+import { IQueue, Isong, playCmdArgs } from 'src/types';
 import { ICommand } from 'wokcommands';
+import { CommandInteraction, Message } from 'discord.js';
 
 if (LOCALE) i18n.setLocale(LOCALE);
 const youtube = new YouTubeAPI(YOUTUBE_API_KEY);
@@ -277,9 +278,12 @@ export default {
 			});
 			return;
 		}
-
-		if (serverQueue && serverQueue.songs.length > 0) {
-			serverQueue.songs.push(song);
+		async function songAdded(
+			message: Message | undefined,
+			interaction: CommandInteraction | undefined,
+			serverQueue: IQueue,
+			song: Isong,
+		) {
 			npMessage({
 				interaction,
 				message,
@@ -291,7 +295,7 @@ export default {
 				content: i18n.__('play.success'),
 				ephemeral: true,
 			});
-			message ? message.delete() : null;
+
 			serverQueue.textChannel
 				.send(
 					i18n.__mf('play.queueAdded', {
@@ -303,10 +307,25 @@ export default {
 					setTimeout(() => msg.delete(), MSGTIMEOUT as number);
 				})
 				.catch(console.error);
-			return;
 		}
 
-		// queueConstruct.songs.push(song);
+		if (serverQueue) {
+			if (serverQueue.songs.length === 0) {
+				serverQueue.songs.push(song);
+				play({
+					song: serverQueue.songs[0],
+					message,
+					interaction,
+				});
+				await songAdded(message, interaction, serverQueue, song);
+				message?.delete();
+				return;
+			} else {
+				serverQueue.songs.push(song);
+				await songAdded(message, interaction, serverQueue, song);
+			}
+		}
+
 		try {
 			const connection = voice.getVoiceConnection(guild.id!);
 			if (!connection) {
@@ -346,7 +365,9 @@ export default {
 				content: i18n.__('play.success'),
 				ephemeral: true,
 			});
-			message ? message.delete() : null;
+			if (message?.deletable) {
+				message.delete();
+			}
 			queueConstruct.textChannel
 				.send({
 					content: i18n.__mf('play.queueAdded', {
@@ -375,8 +396,10 @@ export default {
 				}),
 				ephemeral: true,
 			});
-			message ? message.delete() : null;
-			return;
+			if (message?.deletable) {
+				message.delete();
+				return;
+			}
 		}
 
 		return;

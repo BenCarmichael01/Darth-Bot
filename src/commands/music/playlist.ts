@@ -4,15 +4,16 @@ import { npMessage } from '../../include/npmessage';
 import i18n from 'i18n';
 import * as voice from '@discordjs/voice';
 import * as discordjs from 'discord.js';
-import playdl, { SpotifyTrack } from 'play-dl';
+import playdl from 'play-dl';
 import YouTubeAPI from 'simple-youtube-api';
 import he from 'he';
 
-const { MAX_PLAYLIST_SIZE, DEFAULT_VOLUME, LOCALE } = require(`${__base}/include/utils`);
+const { MAX_PLAYLIST_SIZE, LOCALE } = require(`${__base}/include/utils`);
 import { reply, followUp } from '../../include/responses';
-import { APIMessage } from 'discord-api-types/v9';
 import { IQueue, Isong } from 'src/types';
 import { ICommand } from 'wokcommands';
+import { CommandInteraction, Message } from 'discord.js';
+import { MSGTIMEOUT } from '../../include/utils';
 
 if (LOCALE) i18n.setLocale(LOCALE);
 const youtube = new YouTubeAPI(process.env.YOUTUBE_API_KEY);
@@ -163,9 +164,6 @@ export default {
 			reply({ interaction, content: i18n.__('common.unknownError'), ephemeral: true });
 			return;
 		}
-		if (message) {
-			message.delete();
-		}
 
 		var videos: Isong[] = [];
 		var playlistTitle: string;
@@ -287,19 +285,49 @@ export default {
 		// 		return reply({ message, interaction, content: error.message, ephemeral: true });
 		// 	}
 		// }
-		if (serverQueue) {
-			serverQueue.songs.push(...videos);
-			npMessage({ message, interaction, npSong: serverQueue.songs[0] });
-			followUp({
+		async function songAdded(
+			message: Message | undefined,
+			interaction: CommandInteraction | undefined,
+			serverQueue: IQueue,
+		) {
+			npMessage({
+				interaction,
+				message,
+				npSong: serverQueue.songs[0],
+			});
+			await reply({
 				message,
 				interaction,
-				content: i18n.__mf('playlist.queueAdded', {
-					playlist: playlistTitle,
-					author: member.id,
-				}),
-				ephemeral: false,
+				content: i18n.__('playlist.success'),
+				ephemeral: true,
 			});
-			return;
+			serverQueue.textChannel
+				.send(
+					i18n.__mf('playlist.queueAdded', {
+						playlist: playlistTitle,
+						author: member.id,
+					}),
+				)
+				.then((msg: discordjs.Message) => {
+					setTimeout(() => msg.delete(), MSGTIMEOUT as number);
+				})
+				.catch(console.error);
+		}
+		if (serverQueue) {
+			if (serverQueue.songs.length === 0) {
+				serverQueue.songs.push(...videos);
+				play({
+					song: serverQueue.songs[0],
+					message,
+					interaction,
+				});
+				await songAdded(message, interaction, serverQueue);
+				message?.delete();
+				return;
+			} else {
+				serverQueue.songs.push(...videos);
+				await songAdded(message, interaction, serverQueue);
+			}
 		}
 		try {
 			if (!voice.getVoiceConnection(i.guild.id)) {
@@ -337,6 +365,7 @@ export default {
 				ephemeral: false,
 			});
 			play({ song: queueConstruct.songs[0], message, interaction });
+			message?.delete();
 		} catch (error) {
 			console.error(error);
 			i.client.queue.delete(i.guild.id);

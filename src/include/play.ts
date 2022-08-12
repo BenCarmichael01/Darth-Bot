@@ -358,12 +358,10 @@ export async function play({ song, message, interaction }: playArgs): Promise<an
 					})
 					.catch(console.error);
 				try {
-					queueEnd(i, npmessage);
-					player.removeAllListeners();
-					connection?.removeAllListeners();
+					queueEnd(int, npmessage);
+					npMessage({ interaction: int });
 					player.stop();
 					collector.stop();
-					npMessage({ message, interaction: int });
 				} catch (error) {
 					console.error(error);
 					if (connection?.state?.status !== VoiceConnectionStatus.Destroyed) {
@@ -375,11 +373,12 @@ export async function play({ song, message, interaction }: playArgs): Promise<an
 		}
 	});
 
-	function queueEnd(i: CommandInteraction | Message, npmessage: Message) {
-		let queue = i.client.queue.get(i.guildId!);
+	function queueEnd(int: CommandInteraction | ButtonInteraction | Message, npmessage: Message) {
+		let queue = int.client.queue.get(i.guildId!);
 		if (queue) {
 			queue.songs.length = 0;
 		}
+		// Cycle through msg components to reset loop button colour
 		let oldRow = npmessage.components[0];
 		for (let i = 0; i < oldRow.components.length; i++) {
 			if (oldRow.components[i].customId === 'loop') {
@@ -434,6 +433,9 @@ export async function play({ song, message, interaction }: playArgs): Promise<an
 					return;
 				}
 				queueEnd(i, npmessage);
+				player.removeAllListeners();
+				i.client.queue.delete(i.guildId!);
+				connection?.removeAllListeners();
 				connection?.destroy();
 				followUp({
 					message,

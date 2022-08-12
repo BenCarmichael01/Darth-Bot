@@ -110,7 +110,8 @@
 		"notPlaylist": "Hmm that doesn't seem like a playlist url",
 		"maxSize": "That playlist is very large so only the first {maxSize} songs will be added to the queue",
 		"searching": ":mag: Searching for songs...\nThis may take a moment",
-		"queueAdded": "✅ The playlist: {playlist} has been added to the queue by <@{author}>"
+		"queueAdded": "✅ The playlist: {playlist} has been added to the queue by <@{author}>",
+		"success": "Playlist has been added to the queue"
 	},
 	"pruning": {
 		"description": "Toggle pruning of bot messages",
