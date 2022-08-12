@@ -1,4 +1,4 @@
-import { canModifyQueue, LOCALE, MSGTIMEOUT } from '../../include/utils';
+import { canModifyQueue, LOCALE, MSGTIMEOUT, TESTING } from '../../include/utils';
 import { npMessage } from '../../include/npmessage';
 import i18n from 'i18n';
 import { reply } from '../../include/responses';
@@ -12,6 +12,7 @@ export default {
 	category: 'music',
 	description: i18n.__('shuffle.description'),
 	guildOnly: true,
+	testOnly: TESTING,
 	slash: true,
 
 	async callback({ interaction }: { interaction: CommandInteraction }): Promise<Message | void> {

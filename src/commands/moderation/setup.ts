@@ -10,7 +10,7 @@
 import i18n from 'i18n';
 import * as voice from '@discordjs/voice';
 
-import { LOCALE } from '../../include/utils';
+import { LOCALE, TESTING } from '../../include/utils';
 import findById from '../../include/findById';
 import { upsert } from '../../include/upsert';
 import { CustomConnection, IQueue } from 'src/types';
@@ -132,6 +132,7 @@ export default {
 	category: 'moderation',
 	description: i18n.__('moderation.setup.description'),
 	guildOnly: true,
+	testOnly: TESTING,
 	slash: true,
 	ownerOnly: true,
 	options: [

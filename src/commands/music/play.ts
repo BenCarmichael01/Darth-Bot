@@ -8,7 +8,7 @@ import he from 'he';
 import * as discordjs from 'discord.js';
 
 import { npMessage } from '../../include/npmessage';
-import { YOUTUBE_API_KEY, LOCALE, MSGTIMEOUT } from '../../include/utils';
+import { YOUTUBE_API_KEY, LOCALE, MSGTIMEOUT, TESTING } from '../../include/utils';
 import { reply, followUp } from '../../include/responses';
 import { IQueue, Isong, playCmdArgs } from 'src/types';
 import { ICommand } from 'wokcommands';
@@ -23,7 +23,7 @@ export default {
 	description: i18n.__('play.description'),
 	guildOnly: true,
 	slash: true,
-	testOnly: true,
+	testOnly: TESTING,
 	options: [
 		{
 			name: 'music',

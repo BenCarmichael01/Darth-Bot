@@ -1,5 +1,5 @@
 //@ts-check
-import { canModifyQueue, LOCALE } from '../../include/utils';
+import { canModifyQueue, LOCALE, TESTING } from '../../include/utils';
 import { npMessage } from '../../include/npmessage';
 import { reply, followUp } from '../../include/responses';
 import { Constants, CommandInteraction, GuildMember, Message } from 'discord.js';
@@ -14,6 +14,7 @@ export default {
 	category: 'music',
 	description: i18n.__('remove.description'),
 	guildOnly: true,
+	testOnly: TESTING,
 	slash: true,
 	options: [
 		{

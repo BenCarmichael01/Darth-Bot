@@ -39,6 +39,7 @@ export const MAX_PLAYLIST_SIZE = (
 	config ? config.MAX_PLAYLIST_SIZE : process.env.MAX_PLAYLIST_SIZE
 ) as number;
 export const PRUNING = (config ? config.PRUNING : process.env.PRUNING) as boolean;
+export const TESTING = (config ? config.TESTING : process.env.TESTING) as boolean;
 export const STAY_TIME = (config ? config.STAY_TIME : process.env.STAY_TIME) as number;
 export const MSGTIMEOUT = (config ? config.MSGTIMEOUT : process.env.MSGTIMEOUT) as number;
 export const LOCALE = (config ? config.LOCALE : process.env.LOCALE) as string;

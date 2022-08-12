@@ -2,7 +2,7 @@ import i18n from 'i18n';
 import { ICommand } from 'wokcommands';
 import discordjs, { ActivityType } from 'discord.js';
 import { ActivityTypes } from 'discord.js/typings/enums';
-import { LOCALE } from '../../include/utils';
+import { LOCALE, TESTING } from '../../include/utils';
 
 if (LOCALE) i18n.setLocale(LOCALE);
 
@@ -11,6 +11,7 @@ export default {
 	description: i18n.__('moderation.status.description'),
 	category: 'moderation',
 	ownerOnly: true,
+	testOnly: TESTING,
 	slash: true,
 	options: [
 		{

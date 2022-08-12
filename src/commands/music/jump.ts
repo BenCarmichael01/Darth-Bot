@@ -1,4 +1,4 @@
-import { canModifyQueue, LOCALE, MSGTIMEOUT } from '../../include/utils';
+import { canModifyQueue, LOCALE, MSGTIMEOUT, TESTING } from '../../include/utils';
 import i18n from 'i18n';
 import { reply } from '../../include/responses';
 import { CommandInteraction, Constants, GuildMember, Message } from 'discord.js';
@@ -12,6 +12,7 @@ export default {
 	category: 'music',
 	description: i18n.__('jump.description'),
 	guildOnly: true,
+	testOnly: TESTING,
 	slash: true,
 	options: [
 		{

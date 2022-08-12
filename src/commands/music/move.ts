@@ -1,6 +1,6 @@
 /* global __base */
 import i18n from 'i18n';
-import { canModifyQueue, LOCALE, MSGTIMEOUT } from '../../include/utils';
+import { canModifyQueue, LOCALE, MSGTIMEOUT, TESTING } from '../../include/utils';
 import { npMessage } from '../../include/npmessage';
 import { Client, CommandInteraction, GuildMember } from 'discord.js';
 import { followUp, reply } from '../../include/responses';
@@ -19,6 +19,7 @@ export default {
 	category: 'music',
 	description: i18n.__('move.description'),
 	guildOnly: true,
+	testOnly: TESTING,
 	usage: i18n.__('move.usagesReply'),
 	slash: true,
 	options: [

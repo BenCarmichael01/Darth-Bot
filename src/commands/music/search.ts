@@ -5,7 +5,7 @@ import * as discordjs from 'discord.js';
 import WOKCommands, { ICommand } from 'wokcommands';
 import * as voice from '@discordjs/voice';
 
-import { YOUTUBE_API_KEY, LOCALE } from '../../include/utils';
+import { YOUTUBE_API_KEY, LOCALE, TESTING } from '../../include/utils';
 import { reply } from '../../include/responses';
 
 const { MessageEmbed, MessageButton, MessageActionRow } = discordjs;
@@ -17,6 +17,7 @@ export default {
 	category: 'music',
 	description: i18n.__('search.description'),
 	guildOnly: true,
+	testOnly: TESTING,
 	slash: true,
 	options: [
 		{

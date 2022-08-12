@@ -1,5 +1,6 @@
 import { MessageActionRow, MessageButton } from 'discord.js';
 import i18n from 'i18n';
+import { TESTING } from '../../include/utils';
 import { ICommand } from 'wokcommands';
 
 function roll(args: number[]) {
@@ -13,6 +14,7 @@ export default {
 	category: 'fun',
 	description: 'Gives a random number between the specified values',
 	slash: true,
+	testOnly: TESTING,
 	options: [
 		{
 			name: 'lowest-value',

@@ -13,7 +13,7 @@ import { reply, followUp } from '../../include/responses';
 import { IQueue, Isong } from 'src/types';
 import { ICommand } from 'wokcommands';
 import { CommandInteraction, Message } from 'discord.js';
-import { MSGTIMEOUT } from '../../include/utils';
+import { MSGTIMEOUT, TESTING } from '../../include/utils';
 
 if (LOCALE) i18n.setLocale(LOCALE);
 const youtube = new YouTubeAPI(process.env.YOUTUBE_API_KEY);
@@ -23,6 +23,7 @@ export default {
 	category: 'music',
 	description: i18n.__('playlist.description'),
 	guildOnly: true,
+	testOnly: TESTING,
 	slash: true,
 	options: [
 		{
