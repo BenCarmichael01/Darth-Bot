@@ -48,9 +48,15 @@ export default {
 			}
 		} else if (message) {
 			i = message;
-		} else return;
+		} else {
+			reply({ interaction, content: i18n.__('common.unknownError'), ephemeral: true });
+			return;
+		}
 
-		if (!i.guild) return; // TODO return error message here and above ^^
+		if (!i.guild) {
+			reply({ interaction, content: i18n.__('common.unknownError'), ephemeral: true });
+			return;
+		}
 
 		const settings = i.client.db.get(i.guild.id);
 		const MUSIC_CHANNEL_ID = settings?.musicChannel;
@@ -66,7 +72,10 @@ export default {
 		const member = i.member as discordjs.GuildMember;
 		if (member.voice) {
 			var { channel } = member.voice;
-		} else return; // TODO return error message
+		} else {
+			reply({ interaction, content: i18n.__('play.errorNotChannel'), ephemeral: true });
+			return;
+		}
 
 		const serverQueue = i.client.queue.get(i.guild.id);
 		if (!channel) {
@@ -81,7 +90,10 @@ export default {
 		}
 		if (i.guild.me) {
 			var permissions = channel.permissionsFor(i.guild.me);
-		} else return; // TODO return error message
+		} else {
+			reply({ interaction, content: i18n.__('common.unknownError'), ephemeral: true });
+			return;
+		}
 		if (!permissions.has('CONNECT')) {
 			reply({
 				message,
@@ -114,15 +126,23 @@ export default {
 			message?.delete();
 			return;
 		}
-		// TODO remove nullish coalessence and check process.env for vars
-		await playdl.setToken({
-			spotify: {
-				client_id: process.env.SPOTIFY_CLIENT!,
-				client_secret: process.env.SPOTIFY_SECRET!,
-				refresh_token: process.env.SPOTIFY_REFRESH!,
-				market: process.env.SPOTIFY_MARKET!,
-			},
-		});
+		if (
+			process.env.SPOTIFY_CLIENT &&
+			process.env.SPOTIFY_SECRET &&
+			process.env.SPOTIFY_REFRESH &&
+			process.env.SPOTIFY_MARKET
+		) {
+			await playdl.setToken({
+				spotify: {
+					client_id: process.env.SPOTIFY_CLIENT,
+					client_secret: process.env.SPOTIFY_SECRET,
+					refresh_token: process.env.SPOTIFY_REFRESH,
+					market: process.env.SPOTIFY_MARKET,
+				},
+			});
+		} else {
+			reply({ interaction, content: i18n.__('play.missingSpot'), ephemeral: true });
+		}
 
 		if (playdl.is_expired()) {
 			await playdl.refreshToken(); // This will check if access token has expired or not. If yes, then refresh the token.
@@ -139,8 +159,10 @@ export default {
 			searching = (await interaction.editReply({
 				content: i18n.__('playlist.searching'),
 			})) as discordjs.Message;
-		} else return; // TODO return error message
-
+		} else {
+			reply({ interaction, content: i18n.__('common.unknownError'), ephemeral: true });
+			return;
+		}
 		if (message) {
 			message.delete();
 		}
@@ -188,7 +210,10 @@ export default {
 				playlistTitle = playlist.name;
 				if ('page' in playlist) {
 					var tracks = playlist.page(1)!;
-				} else return; // TODO return error message
+				} else {
+					reply({ interaction, content: i18n.__('common.unknownError'), ephemeral: true });
+					return;
+				}
 
 				if (tracks.length > MAX_PLAYLIST_SIZE) {
 					reply({
@@ -324,7 +349,5 @@ export default {
 				ephemeral: true,
 			});
 		}
-		// TODO this used to return 1 but i cant remember why so i've removed it
-		// return;
 	},
 } as ICommand;

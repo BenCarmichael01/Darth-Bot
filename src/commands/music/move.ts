@@ -3,7 +3,7 @@ import i18n from 'i18n';
 import { canModifyQueue, LOCALE, MSGTIMEOUT } from '../../include/utils';
 import { npMessage } from '../../include/npmessage';
 import { Client, CommandInteraction, GuildMember } from 'discord.js';
-import { followUp } from '../../include/responses';
+import { followUp, reply } from '../../include/responses';
 import { ICommand } from 'wokcommands';
 
 if (LOCALE) i18n.setLocale(LOCALE);
@@ -47,7 +47,10 @@ export default {
 	}) {
 		try {
 			await interaction.deferReply({ ephemeral: true });
-			if (!interaction.guild) return; // TODO return error message
+			if (!interaction.guild) {
+				reply({ interaction, content: i18n.__('common.unknownError'), ephemeral: true });
+				return;
+			}
 			const queue = client.queue.get(interaction.guild.id);
 			if (!queue) {
 				return interaction.editReply({ content: i18n.__('move.errorNotQueue') });
@@ -55,7 +58,10 @@ export default {
 
 			if (interaction.member) {
 				var member = interaction.member as GuildMember;
-			} else return; // TODO return error message
+			} else {
+				reply({ interaction, content: i18n.__('common.unknownError'), ephemeral: true });
+				return;
+			}
 
 			if (!canModifyQueue(member)) return;
 			if (Number.isNaN(args[0]) || parseInt(args[0]) < 1) {
@@ -92,7 +98,7 @@ export default {
 		} catch (error) {
 			console.error(error);
 			interaction
-				.followUp({ content: 'Sorry, an unexpected error has occured.', ephemeral: true })
+				.followUp({ content: i18n.__('common.unknownError'), ephemeral: true })
 				.catch(console.error);
 		}
 	},

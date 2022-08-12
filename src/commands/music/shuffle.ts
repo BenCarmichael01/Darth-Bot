@@ -22,7 +22,6 @@ export default {
 			} else {
 				return interaction.reply({ content: i18n.__('common.unknownError') });
 			}
-			// TODO add error message with return above^^
 
 			const queue = interaction.client.queue.get(GUILDID);
 			if (!queue) {

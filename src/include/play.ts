@@ -2,7 +2,7 @@
 import playdl from 'play-dl';
 import { npMessage } from './npmessage';
 import { canModifyQueue, STAY_TIME, LOCALE, MSGTIMEOUT } from '../include/utils';
-import { followUp } from './responses';
+import { followUp, reply } from './responses';
 import i18n from 'i18n';
 import * as voice from '@discordjs/voice';
 import {
@@ -135,7 +135,10 @@ export async function play({ song, message, interaction }: playArgs): Promise<an
 		if (!member) return;
 		const name = member.id;
 		const queue = int.client.queue.get(int.guild!.id);
-		if (queue === undefined) return; // TODO return error message
+		if (queue === undefined) {
+			reply({ interaction, content: i18n.__('queue.errorNotQueue'), ephemeral: true });
+			return;
+		}
 		switch (int.customId) {
 			case 'playpause': {
 				if (!canModifyQueue(member)) {
@@ -415,7 +418,10 @@ export async function play({ song, message, interaction }: playArgs): Promise<an
 			// apears to be finished current song
 			// decide what to do:
 			const timeout = setTimeout(() => {
-				if (queue === undefined) return; // TODO return error message
+				if (queue === undefined) {
+					reply({ interaction, content: i18n.__('queue.errorNotQueue'), ephemeral: true });
+					return;
+				}
 				if (queue.songs.length >= 1) {
 					play({
 						song: queue.songs[0],
@@ -473,7 +479,10 @@ export async function play({ song, message, interaction }: playArgs): Promise<an
 				npMessage({ message, interaction });
 				queue.songs.shift();
 				setTimeout(() => {
-					if (queue === undefined) return; // TODO return error message
+					if (queue === undefined) {
+						reply({ interaction, content: i18n.__('queue.errorNotQueue'), ephemeral: true });
+						return;
+					}
 					if (queue.songs.length >= 1) {
 						play({
 							song: queue.songs[0],
@@ -537,7 +546,10 @@ export async function play({ song, message, interaction }: playArgs): Promise<an
 		}
 	});
 	i.client.on('voiceStateUpdate', (oldState, newState) => {
-		if (queue === undefined) return; // TODO return error message
+		if (queue === undefined) {
+			reply({ interaction, content: i18n.__('queue.errorNotQueue'), ephemeral: true });
+			return;
+		}
 		if (oldState === null || newState === null) return;
 		if (newState.member!.user.bot) return;
 		if (oldState.channelId === queue.connection.joinConfig.channelId && !newState.channelId) {

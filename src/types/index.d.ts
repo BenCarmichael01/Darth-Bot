@@ -67,5 +67,4 @@ export type playCmdArgs = {
 	args: Array<string>;
 	prefix: string;
 	instance: WOKCommands;
-	// TODO reference wok instance above
 };

@@ -114,8 +114,11 @@ export default {
 					}
 				})
 				.catch(console.error);
-			// TODO return with error message below
-			if (!collector) return;
+
+			if (!collector) {
+				reply({ interaction, content: i18n.__('common.unknownError'), ephemeral: true });
+				return;
+			}
 			collector.on('collect', async (i) => {
 				await i.deferReply({ ephemeral: true });
 				switch (i.customId) {
