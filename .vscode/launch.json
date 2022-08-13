@@ -6,12 +6,28 @@
 	"configurations": [
 		{
 			"type": "node",
-			"runtimeVersion": "16.9.1",
-			"runtimeArgs": ["--preserve-symlinks", "--trace-warnings"],
 			"request": "launch",
-			"name": "Launch Program",
+			"name": "Build & Run",
 			"skipFiles": ["<node_internals>/**"],
-			"program": "${workspaceFolder}/index.js",
+			"preLaunchTask": "npm: build",
+			"sourceMaps": true,
+			"smartStep": true,
+			"internalConsoleOptions": "openOnSessionStart",
+			"outFiles": ["${workspaceFolder}/dist/**/*.js"],
+			"program": "${workspaceFolder}/src/index.ts",
+			"console": "integratedTerminal",
+			"args": ["dev"]
+		},
+		{
+			"type": "node",
+			"request": "launch",
+			"name": "Run Without Build",
+			"skipFiles": ["<node_internals>/**"],
+			"sourceMaps": true,
+			"smartStep": true,
+			"internalConsoleOptions": "openOnSessionStart",
+			"outFiles": ["${workspaceFolder}/dist/**/*.js"],
+			"program": "${workspaceFolder}/src/index.ts",
 			"console": "integratedTerminal",
 			"args": ["dev"]
 		}

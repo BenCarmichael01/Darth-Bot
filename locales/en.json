@@ -75,6 +75,7 @@
 		"cantJoinChannel": "Could not join the channel: {error}",
 		"queueEnded": "❌ Music queue ended.",
 		"queueError": "Sorry, there was a problem playing that song\nHere is the error provided: ```{error}```",
+		"songError": "Sorry, I am unable to find that song",
 		"queueFail": "Sorry, something apears to be broken. I could not play any of those songs",
 		"startedPlaying": "🎶 Started playing: **{title}** {url}",
 		"npSetup": "🎶 Nothing is playing",
@@ -89,14 +90,16 @@
 		"stopSong": "<@{author}> ⏹ stopped the music!",
 		"leaveChannel": "Leaving voice channel...",
 		"option": "Name / URL of song or playlist. Spotify | YouTube accepted.",
-		"success": "Song added to the queue"
+		"success": "Song added to the queue",
+		"permsNotFound": "Hmm... I am unable to check your permissions for the channel.",
+		"missingSpot": "You dont have a spotify API key available.\nYou will be unable to search for music from Spotify"
 	},
 	"playlist": {
-		"description": "Play a playlist from youtube",
+		"description": "Play a playlist from Youtube or Spotify",
 		"usageReply": "Usage: {prefix}playlist <YouTube Playlist URL | Playlist Name>",
 		"errorNotChannel": "You need to join a voice channel first!",
 		"errorNotInSameChannel": "You must be in the same channel as {user}",
-		"missingPermissionConnect": "Cannot connect to voice channel, missing permissions",
+		"missingPermissionConnect": "I cannot connect to your voice channel, I don't have permission!",
 		"missingPermissionSpeak": "I cannot speak in this voice channel, make sure I have the proper permissions!",
 		"errorNotFoundPlaylist": "Playlist not found :(",
 		"fetchingPlaylist": "Fetching the playlist...",
@@ -107,7 +110,8 @@
 		"notPlaylist": "Hmm that doesn't seem like a playlist url",
 		"maxSize": "That playlist is very large so only the first {maxSize} songs will be added to the queue",
 		"searching": ":mag: Searching for songs...\nThis may take a moment",
-		"queueAdded": "✅ The playlist: {playlist} has been added to the queue by <@{author}>"
+		"queueAdded": "✅ The playlist: {playlist} has been added to the queue by <@{author}>",
+		"success": "Playlist has been added to the queue"
 	},
 	"pruning": {
 		"description": "Toggle pruning of bot messages",
@@ -187,12 +191,13 @@
 		"enabled": "**enabled**",
 		"disabled": "**disabled**",
 		"errorNotChannel": "You need to join a voice channel first!",
-		"cooldownMessage": "please wait {time} more second(s) before reusing the `{name}` command.",
+		"cooldownMessage": "Please wait {time} more second(s) before reusing the `{name}` command.",
 		"errorCommand": "There was an error executing that command.",
 		"channelOnly": "This command can only be used in <#{channel}>",
 		"missingPerms": "You don't have permission to do that",
 		"noSetup": "You need to run `/setup` before you can use this command",
-		"unknownCommand": "That isn't a command. Try running {prefix}help to see a list of my commands"
+		"unknownCommand": "That isn't a command. Try running {prefix}help to see a list of my commands",
+		"unknownError": "Sorry, an unknown error has occured. Please try that again"
 	},
 	"moderation": {
 		"kick": {
@@ -205,10 +210,12 @@
 			"description": "Updates the bot's activity status",
 			"activityDesc": "The type of activity to be used",
 			"statusDesc": "The status message to display",
-			"urlDesc": "Twitch/Youtube URL must be iincluded when using 'Streaming' option",
+			"urlDesc": "Twitch/Youtube URL; Can only be used with 'Streaming' activity",
 			"usage": "Status command usage: <Activity Type> <Status Message>",
 			"start": "Updating status...",
-			"complete": "My status has been successfully updated"
+			"complete": "My status has been successfully updated",
+			"error": "Sorry there has been an error.\n```{error}```\nPlease contact an adminstrator",
+			"noURL": "Btw, Twitch/Youtube stream URLs can only be used with the 'Streaming' activity type"
 		},
 		"setup": {
 			"description": "Setup the channel you want to use for the music player",
