@@ -43,21 +43,6 @@
 		"xmlhttprequest": "^1.8.0",
 		"youtube.ts": "^0.2.9"
 	},
-	"nodemonConfig": {
-		"ignore": [
-			"locales/*.json"
-		],
-		"delay": "2500"
-	},
-	"_moduleAliases": {
-		"@root": "./",
-		"@commands": "./commands",
-		"@include": "./include",
-		"@media": "./media",
-		"@locales": "./locales",
-		"@util": "./util",
-		"@data": "./data"
-	},
 	"devDependencies": {
 		"@types/he": "^1.1.2",
 		"@types/i18n": "^0.13.4",
