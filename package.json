@@ -4,9 +4,9 @@
 	"description": "",
 	"main": "dist/index.js",
 	"scripts": {
-		"build": "tsc",
+		"build": "tsc --build --clean",
 		"dev-start": "pnpm build && set NODE_OPTIONS=--trace-deprecation && node ./dist/index.js dev",
-		"start": "node ./dist/index.js",
+		"start": "npm run build && node ./dist/index.js",
 		"exit": "process.kill(process.pid)"
 	},
 	"engines": {
