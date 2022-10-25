@@ -11,9 +11,6 @@ on:
 
 jobs:
   build-push:
-    concurrency: 
-      group: main
-      cancel-in-progress: true
     runs-on: ubuntu-latest
     name: Builds Typescript
     steps:
@@ -33,10 +30,8 @@ jobs:
           user-email: secrets.GIT_EMAIL
           message: "Automatically built typescript"
   Deploy:
+    needs: build-push
     runs-on: ubuntu-latest
-    concurrency: 
-      group: main
-      cancel-in-progress: true
     steps:
     - name: Install SSH key
       uses: shimataro/ssh-key-action@v2
