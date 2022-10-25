@@ -2,13 +2,25 @@
 # This workflow will automatically deploy your application to www.evennode.com on push to master branch.
 # yar
 
-name: Deploy to EvenNode
+name: Build Typescript then deploy to EvenNode
 
 on:
   push:
     branches: [ master ]
 
 jobs:
+  build-push:
+    runs-on: ubuntu-latest
+    name: Builds Typescript
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Building Typescript
+        uses: FuLagann/tsc-build-push@v1
+        with:
+          user-name: secrets.GIT_NAME
+          user-email: secrets.GIT_EMAIL
+          message: "Automatically built typescript"
   Deploy:
     runs-on: ubuntu-latest
 
@@ -21,9 +33,6 @@ jobs:
     - name: Add git.evennode.com to known_hosts
       run: |
         ssh-keyscan -H git.evennode.com > ~/.ssh/known_hosts
-    - uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
     - name: Deploy to evennode.com
       run: |
         git remote add evennode ${{ secrets.EVENNODE_REPO_URL }}
