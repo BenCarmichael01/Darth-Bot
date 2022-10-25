@@ -6,7 +6,7 @@
 	"scripts": {
 		"build": "tsc --build",
 		"dev-start": "pnpm build && set NODE_OPTIONS=--trace-deprecation && node ./dist/index.js dev",
-		"start": "npm install && npm run build && node ./dist/index.js",
+		"start": "npm install && node ./dist/index.js",
 		"deploy": "git push evennode main",
 		"exit": "process.kill(process.pid)"
 	},
