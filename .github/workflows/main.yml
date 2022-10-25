@@ -22,7 +22,7 @@ jobs:
           node-version: '16.x'
 
       - name: Install packages
-        run: npm install
+        run: npm install --omit=dev
       - name: Building Typescript
         uses: FuLagann/tsc-build-push@v1
         with:
