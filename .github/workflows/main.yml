@@ -5,6 +5,7 @@
 name: Build Typescript then deploy to EvenNode
 
 on:
+  workflow_dispatch:
   push:
     branches: [ master ]
 
