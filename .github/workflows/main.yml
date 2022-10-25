@@ -11,6 +11,9 @@ on:
 
 jobs:
   build-push:
+    concurrency: 
+      group: main
+  cancel-in-progress: true
     runs-on: ubuntu-latest
     name: Builds Typescript
     steps:
@@ -31,7 +34,9 @@ jobs:
           message: "Automatically built typescript"
   Deploy:
     runs-on: ubuntu-latest
-
+    concurrency: 
+      group: main
+      cancel-in-progress: true
     steps:
     - name: Install SSH key
       uses: shimataro/ssh-key-action@v2
