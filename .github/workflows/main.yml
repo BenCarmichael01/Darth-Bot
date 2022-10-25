@@ -29,7 +29,6 @@ jobs:
           user-name: secrets.GIT_NAME
           user-email: secrets.GIT_EMAIL
           message: "Automatically built typescript"
-      - name: Begin Deployement
       - name: Install SSH key
         uses: shimataro/ssh-key-action@v2
         with:
