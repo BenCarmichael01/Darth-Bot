@@ -41,6 +41,8 @@ jobs:
     - name: Add git.evennode.com to known_hosts
       run: |
         ssh-keyscan -H git.evennode.com > ~/.ssh/known_hosts
+    - name: Checkout main Branch
+      uses: actions/checkout@v2
     - name: Deploy to evennode.com
       run: |
         git remote add evennode ${{ secrets.EVENNODE_REPO_URL }}
