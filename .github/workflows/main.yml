@@ -35,6 +35,8 @@ jobs:
     steps:
     - name: Checkout main Branch
       uses: actions/checkout@v2
+    - name: Unshallow the cloned repo
+      run:  git fetch --unshallow
     - name: Install SSH key
       uses: shimataro/ssh-key-action@v2
       with:
