@@ -10,7 +10,7 @@ on:
     branches: [ main ]
 
 jobs:
-  build-push:
+  build-deploy:
     runs-on: ubuntu-latest
     name: Builds Typescript
     steps:
@@ -29,25 +29,18 @@ jobs:
           user-name: secrets.GIT_NAME
           user-email: secrets.GIT_EMAIL
           message: "Automatically built typescript"
-  Deploy:
-    needs: build-push
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout main Branch
-      uses: actions/checkout@v2
-    - name: Unshallow the cloned repo
-      run:  git fetch --unshallow
-    - name: Install SSH key
-      uses: shimataro/ssh-key-action@v2
-      with:
-        key: ${{ secrets.SSH_KEY }}
-        known_hosts: " "
-    - name: Add git.evennode.com to known_hosts
-      run: |
-        ssh-keyscan -H git.evennode.com > ~/.ssh/known_hosts
-    - name: Deploy to evennode.com
-      run: |
-        git remote add evennode ${{ secrets.EVENNODE_REPO_URL }}
-        git config --global user.email "${{ secrets.GIT_EMAIL }}"
-        git config --global user.name "${{ secrets.GIT_NAME }}"
-        git push evennode +main
+      - name: Begin Deployement
+      - name: Install SSH key
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.SSH_KEY }}
+          known_hosts: " "
+      - name: Add git.evennode.com to known_hosts
+        run: |
+          ssh-keyscan -H git.evennode.com > ~/.ssh/known_hosts
+      - name: Deploy to evennode.com
+        run: |
+          git remote add evennode ${{ secrets.EVENNODE_REPO_URL }}
+          git config --global user.email "${{ secrets.GIT_EMAIL }}"
+          git config --global user.name "${{ secrets.GIT_NAME }}"
+          git push evennode +main
