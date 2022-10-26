@@ -56,7 +56,7 @@ client.on('error', console.error);
 
 let wok: WOKCommands;
 client.on('ready', async (client) => {
-	console.log(`Logged in as ${client.user.username} (${client.user.id})`);
+	console.log(`I am Logged in as ${client.user.username} (${client.user.id})`);
 
 	wok = new WOKCommands(client, {
 		commandsDir: path.join(__dirname, 'commands'),
