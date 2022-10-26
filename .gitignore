@@ -348,4 +348,4 @@ ASALocalRun/
 healthchecksdb
 
 # Typescript output files
-dist/*
+# dist/*

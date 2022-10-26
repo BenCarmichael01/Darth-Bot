@@ -1,0 +1,1 @@
+{"version":3,"file":"musicModel.js","sourceRoot":"","sources":["../../src/schemas/musicModel.ts"],"names":[],"mappings":";;;AAAA,gEAAgC;AAGhC,MAAM,WAAW,GAAG,IAAI,kBAAQ,CAAC,MAAM,CAAW;IACjD,GAAG,EAAE,MAAM;IACX,YAAY,EAAE,MAAM;IACpB,cAAc,EAAE,MAAM;CACtB,CAAC,CAAC;AACH,MAAM,KAAK,GAAG,kBAAQ,CAAC,KAAK,CAAW,WAAW,EAAE,WAAW,EAAE,WAAW,CAAC,CAAC;AAC9E,kBAAe,KAAK,CAAC"}
