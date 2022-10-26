@@ -1,1 +1,0 @@
-{"version":3,"file":"throw.js","sourceRoot":"","sources":["../../../src/commands/testing/throw.ts"],"names":[],"mappings":";;AAEA,kBAAe;IACd,IAAI,EAAE,OAAO;IACb,WAAW,EAAE,+CAA+C;IAC5D,QAAQ,EAAE,SAAS;IACnB,QAAQ,EAAE,IAAI;IACd,SAAS,EAAE,IAAI;IACf,KAAK,EAAE,IAAI;IACX,WAAW,EAAE,CAAC,eAAe,CAAC;IAC9B,KAAK,CAAC,QAAQ;QACb,MAAM,IAAI,KAAK,CAAC,cAAc,CAAC,CAAC;IACjC,CAAC;CACW,CAAC"}
