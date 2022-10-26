@@ -348,8 +348,8 @@ ASALocalRun/
 healthchecksdb
 
 # Typescript output files
-# dist/*
+dist/*
 
 
-.eslintrc.json 
-.prettierrc.json
+# .eslintrc.json 
+# .prettierrc.json
