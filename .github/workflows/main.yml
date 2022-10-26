@@ -12,10 +12,12 @@ on:
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
-    name: Builds Typescript
+    name: Build and Deploy
     steps:
-      - name: Checkout
+      - name: Checkout mian branch
         uses: actions/checkout@v2
+        with:
+          ref: 'main'
       - name: Unshallow the cloned repo
         run:  git fetch --unshallow
       - name: Set up Node.js
@@ -31,6 +33,10 @@ jobs:
           user-name: secrets.GIT_NAME
           user-email: secrets.GIT_EMAIL
           message: "Automatically built typescript"
+      - name: Checkout deployment branch
+        uses: actions/checkout@v2
+        with:
+          ref: 'deployment'
       - name: Install SSH key
         uses: shimataro/ssh-key-action@v2
         with:
