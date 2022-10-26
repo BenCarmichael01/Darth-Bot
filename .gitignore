@@ -349,3 +349,7 @@ healthchecksdb
 
 # Typescript output files
 # dist/*
+
+
+.eslintrc.json 
+.prettierrc.json
