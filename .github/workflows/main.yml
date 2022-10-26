@@ -33,10 +33,6 @@ jobs:
           user-name: secrets.GIT_NAME
           user-email: secrets.GIT_EMAIL
           message: "Automatically built typescript"
-      - name: Checkout deployment branch
-        uses: actions/checkout@v2
-        with:
-          ref: 'deployment'
       - name: Install SSH key
         uses: shimataro/ssh-key-action@v2
         with:
@@ -45,6 +41,11 @@ jobs:
       - name: Add git.evennode.com to known_hosts
         run: |
           ssh-keyscan -H git.evennode.com > ~/.ssh/known_hosts
+      - name: Checkout deployment branch
+        uses: actions/checkout@v2
+        with:
+          repository: 'evennode'
+          ref: 'main'
       - name: Deploy to evennode.com
         run: |
           git remote add evennode ${{ secrets.EVENNODE_REPO_URL }}
