@@ -222,7 +222,7 @@
 			"optionDescription": "The channel to be used for the music player",
 			"success": "The music channel has been set to <#{MUSIC_CHANNEL_ID}> \n Setup Complete!",
 			"fail": "Sorry, it doesn't seem like that worked. Please try again",
-			"error": "Sorry there has been an error.\n{error}",
+			"error": "Sorry there has been an error.\n {error}",
 			"notChannel": "Sorry, that is not a valid channel.\nPlease ensure you have selected a text channel and not a voice channel or channel category",
 			"warning": "**WARNING**: this will purge *all* messages in the channel you have selected!\nDo you wish to proceed to music channel setup?\n**(You have 20 seconds to decide)**",
 			"start": "Beginning setup in <#{channel}> ...",

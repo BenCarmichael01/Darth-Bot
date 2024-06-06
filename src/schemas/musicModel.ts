@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { IMusData } from 'src/types';
+import { IMusData } from 'src/types/types';
 
 const musicSchema = new mongoose.Schema<IMusData>({
 	_id: String,

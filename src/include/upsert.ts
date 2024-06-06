@@ -1,4 +1,4 @@
-import { IMusData } from 'src/types';
+import { IMusData } from '../types/types';
 import model from '../schemas/musicModel';
 
 /**

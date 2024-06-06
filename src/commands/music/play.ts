@@ -5,141 +5,147 @@ import playdl, { SpotifyTrack } from 'play-dl';
 import i18n from 'i18n';
 import * as voice from '@discordjs/voice';
 import he from 'he';
-import * as discordjs from 'discord.js';
 
 import { npMessage } from '../../include/npmessage';
 import { YOUTUBE_API_KEY, LOCALE, MSGTIMEOUT, TESTING } from '../../include/utils';
 import { reply, followUp } from '../../include/responses';
-import { IQueue, Isong, playCmdArgs } from 'src/types';
-import { ICommand } from 'wokcommands';
-import { CommandInteraction, Message } from 'discord.js';
+import { IQueue, Isong } from '../../types/types';
+import { 
+	ChannelType,
+	ChatInputCommandInteraction,
+	Guild,
+	GuildMember,
+	Message,
+	PermissionFlagsBits,
+	SlashCommandBuilder,
+	VoiceBasedChannel,
+} from 'discord.js';
 
 if (LOCALE) i18n.setLocale(LOCALE);
 const youtube = new YouTubeAPI(YOUTUBE_API_KEY);
 
-export default {
-	name: 'play',
-	category: 'music',
-	description: i18n.__('play.description'),
-	guildOnly: true,
-	slash: true,
-	testOnly: TESTING,
-	options: [
-		{
-			name: 'music',
-			description: i18n.__('play.option'),
-			type: 'STRING',
-			required: true,
-		},
-	],
-
-	async callback(options: playCmdArgs) {
-		const { message, interaction, args, prefix, instance } = options;
-		let i;
-		if (interaction) {
-			if (!interaction.deferred && !interaction.replied) {
-				await interaction.deferReply({ ephemeral: true });
-			}
-			i = interaction;
-			// i.isInteraction = true;
-		} else if (message) {
-			i = message;
-			// i.isInteraction = false;
-		}
-		if (!i) return;
+module.exports = {
+	data: new SlashCommandBuilder()
+				.setName('play')
+				.setDescription(i18n.__('play.description'))
+				.addStringOption(option => 
+					option.setName('music')
+					.setDescription(i18n.__('play.description'))
+					.setRequired(true)
+				),
+	async execute(interaction: ChatInputCommandInteraction) {
+		interaction.deferReply({ephemeral: true});
+		// if (interaction) {
+		// 	if (!interaction.deferred && !interaction.replied) {
+		// 		await interaction.deferReply({ ephemeral: true });
+		// 	}
+		// 	i = interaction;
+		// 	// i.isInteraction = true;
+		// } else if (message) {
+		// 	i = message;
+		// 	// i.isInteraction = false;
+		// }
+		// if (!i) return;
 
 		// if (!i?.guildId) return;
-		const settings = i.client.db.get(i.guildId!);
-		if (!settings) {
-			await reply({
-				message,
-				interaction,
+		const db = await interaction.client.db.findOne({where: {id: interaction.guildId!}});
+		if (!db) {
+			await interaction.editReply({
 				content: i18n.__('common.noSetup'),
-				ephemeral: true,
 			});
-			message?.delete();
+			return;
+		}
+		const musicChannelId = db.get('musicChannel');
+		if (!musicChannelId) {
+			await interaction.editReply({
+				content: i18n.__('common.noSetup'),
+			});
+			return;
+		};
+
+		const musicChannel = await interaction.guild!.channels.fetch(musicChannelId);
+
+		if (!musicChannel) {
+			await interaction.editReply({
+				content: i18n.__('common.noSetup'),
+			});
 			return;
 		}
 
-		const musicChannel = await i.guild!.channels.fetch(settings.musicChannel);
-
-		if (!settings?.musicChannel || !musicChannel) {
-			await reply({
-				message,
-				interaction,
-				content: i18n.__('common.noSetup'),
-				ephemeral: true,
-			});
-			message?.delete();
-			return;
+		if (musicChannel.type !== ChannelType.GuildText) {
+			throw new Error('Music Channel in database isn\'t of type \'guildText\'.')
+		};
+	
+		const { member, guild } = interaction;
+		
+		if (!(guild instanceof Guild)) {
+			interaction.editReply({
+				 content: 'Cannot read guild from interaction.\nPlease contact my author!',
+				});
+				return;
 		}
-		const member = i.member as discordjs.GuildMember;
-		const guild = i.guild as discordjs.Guild;
-		const userVc = member.voice.channel;
-		const botVoiceChannel = guild.me!.voice.channel;
-		const serverQueue = i.client.queue.get(guild.id);
 
-		if (!userVc) {
-			reply({
-				message,
-				interaction,
+		const serverQueue = interaction.client.queue.get(guild.id);
+		let userVc: VoiceBasedChannel;
+		let botVoiceChannel: VoiceBasedChannel|null;
+
+		if ((member instanceof GuildMember) && member.voice.channel) {
+			userVc = member.voice.channel;
+		} else {
+			interaction.editReply({
 				content: i18n.__('play.errorNotChannel'),
-				ephemeral: true,
 			});
-			message?.delete();
 			return;
 		}
+
+		if (guild.members.me?.voice.channel) {
+			botVoiceChannel = guild.members.me.voice.channel;
+
+		} else {
+			botVoiceChannel = null;
+		}
+
 		if (serverQueue && userVc !== botVoiceChannel) {
-			reply({
-				message,
-				interaction,
+			interaction.editReply({
 				content: i18n.__mf('play.errorNotInSameChannel', {
-					user: i.client.user,
+					user: interaction.client.user,
 				}),
-				ephemeral: true,
 			});
-			message?.delete();
 			return;
 		}
-		if (!args.length) {
-			reply({
-				message,
-				interaction,
-				content: i18n.__mf('play.usageReply', { prefix }),
-				ephemeral: true,
-			});
-			message?.delete();
-			return;
-		}
-		const permissions = userVc.permissionsFor(i.client.user as discordjs.ClientUser);
+
+		// Not needed if slash cmd option is set to required.
+		// We will always receive interaction.options
+		// 
+		// if (!args.length) {
+		// 	reply({
+		// 		message,
+		// 		interaction,
+		// 		// TODO remove prefix references
+		// 		content: i18n.__mf('play.usageReply', { prefix }),
+		// 		ephemeral: true,
+		// 	});
+		// 	message?.delete();
+		// 	return;
+		// }
+
+		const permissions = userVc.permissionsFor(interaction.client.user);
 		if (!permissions) {
-			reply({
-				message,
-				interaction,
+			interaction.editReply({
 				content: i18n.__('play.permsNotFound'),
-				ephemeral: true,
 			});
-			message?.delete();
 			return;
 		}
-		if (!permissions.has('CONNECT')) {
-			reply({
-				message,
-				interaction,
+		if (!permissions.has(PermissionFlagsBits.Connect)) {
+			interaction.editReply({
 				content: i18n.__('play.missingPermissionConnect'),
-				ephemeral: true,
 			});
-			message?.delete();
 			return;
 		}
-		if (!permissions.has('SPEAK')) {
-			reply({
-				message,
-				interaction,
+		if (!permissions.has(PermissionFlagsBits.Speak)) {
+			interaction.editReply({
 				content: i18n.__('play.missingPermissionSpeak'),
-				ephemeral: true,
 			});
-			message?.delete();
 			return;
 		}
 		if (
@@ -157,11 +163,8 @@ export default {
 				},
 			});
 		} else {
-			reply({
-				interaction,
-				message,
+			interaction.editReply({
 				content: i18n.__('play.missingSpot'),
-				ephemeral: true,
 			});
 		}
 
@@ -172,39 +175,44 @@ export default {
 		if (serverQueue?.timeout) {
 			clearTimeout(serverQueue.timeout);
 		}
-		const search = args.join(' ');
-		const url = args[0];
-		const isSpotify = playdl.sp_validate(url);
-		const isYt = playdl.yt_validate(url);
 
+		const music = interaction.options.getString('music');
+		if (!music) throw new Error('Unable to read requested song: getString() failed');
+
+		const isSpotify = playdl.sp_validate(music);
+		const isYt = playdl.yt_validate(music);
+
+		// Fix below ref to playlist command
 		//  Start the playlist if playlist url was provided
-		if (isYt === 'playlist') {
-			instance.commandHandler.getCommand('playlist').callback({ message, interaction, args, prefix });
-			return;
-		}
-		if (isSpotify === 'playlist' || isSpotify === 'album') {
-			instance.commandHandler.getCommand('playlist').callback({ message, interaction, args, prefix });
-			return;
-		}
+		// if (isYt === 'playlist') {
+		// 	instance.commandHandler.getCommand('playlist').callback({ message, interaction, args, prefix });
+		// 	return;
+		// }
+		// if (isSpotify === 'playlist' || isSpotify === 'album') {
+		// 	instance.commandHandler.getCommand('playlist').callback({ message, interaction, args, prefix });
+		// 	return;
+		// }
 
-		let songInfo = null;
-		let song = null;
+		let songInfo:any; //TODO make type 
+		let song:Isong;
 
-		if (isYt === 'video' && url.startsWith('https')) {
+		if (isYt === 'video' && music.startsWith('https')) {
 			try {
-				songInfo = await youtube.getVideo(url, { part: 'snippet' });
-				song = {
-					title: he.decode(songInfo.title),
-					url: songInfo.url,
-					thumbUrl: songInfo.maxRes.url,
-					duration: songInfo.durationSeconds,
+				songInfo = await youtube.getVideo(music, { part: 'snippet' });
+				if (songInfo) {
+					song = {
+						title: he.decode(songInfo.title),
+						url: songInfo.url,
+						thumbUrl: songInfo.maxRes.url,
+						duration: songInfo.durationSeconds,
+					};
+				} else {
+					throw new Error('Search failed. Unable to get song info from youtube');
 				};
 			} catch (error) {
 				if (!(error instanceof Error)) return;
 				console.error(error);
-				followUp({
-					message,
-					interaction,
+				interaction.followUp({
 					content: i18n.__mf('play.queueError', {
 						error: error.message ? error.message : error,
 					}),
@@ -214,7 +222,7 @@ export default {
 			}
 		} else if (isSpotify === 'track') {
 			try {
-				const spot = (await playdl.spotify(url)) as SpotifyTrack;
+				const spot = (await playdl.spotify(music)) as SpotifyTrack;
 				if (spot.type === 'track') {
 					let search = spot.name + ' ' + spot.artists[0].name;
 					const results = await youtube.searchVideos(search, 1, {
@@ -227,13 +235,13 @@ export default {
 						thumbUrl: searchResult.maxRes.url,
 						duration: searchResult.durationSeconds,
 					};
-				}
+				} else {
+					throw new Error('Cannot read type of Spotify.');
+				};
 			} catch (error) {
 				if (!(error instanceof Error)) return;
 				console.error(error);
-				followUp({
-					message,
-					interaction,
+				interaction.followUp({
 					content: i18n.__mf('play.queueError', {
 						error: error.message ? error.message : error,
 					}),
@@ -243,165 +251,146 @@ export default {
 			}
 		} else {
 			try {
-				const results = await youtube.searchVideos(search, 1, {
-					part: 'snippet',
-				});
-				const searchResult = results[0];
-				song = {
-					title: he.decode(searchResult.title),
-					url: searchResult.url,
-					thumbUrl: searchResult.maxRes.url,
-					duration: searchResult.durationSeconds,
+				const results = await youtube.searchVideos(music, 1, { part: 'snippet' });
+
+				if (results) {
+					const searchResult = results[0];
+					song = {
+						title: he.decode(searchResult.title),
+						url: searchResult.url,
+						thumbUrl: searchResult.maxRes.url,
+						duration: searchResult.durationSeconds,
+					};
+				} else {
+					throw new Error('Youtube search failed');
 				};
 			} catch (error) {
-				if (!(error instanceof Error)) return;
 				console.error(error);
-				followUp({
-					message,
-					interaction,
+				if (!(error instanceof Error)) return;
+				interaction.followUp({
 					content: i18n.__mf('play.queueError', {
 						error: error.message ? error.message : error,
 						ephemeral: false,
 					}),
 					ephemeral: false,
 				});
-				message ? message.delete() : null;
 				return;
 			}
 		}
 		if (!song) {
-			reply({
-				message,
-				interaction,
+			interaction.editReply({
 				content: i18n.__('play.songError'),
-				ephemeral: true,
 			});
 			return;
 		}
-		async function songAdded(
-			message: Message | undefined,
-			interaction: CommandInteraction | undefined,
-			serverQueue: IQueue,
-			song: Isong,
-		) {
-			npMessage({
-				interaction,
-				message,
-				npSong: serverQueue.songs[0],
-			});
-			await reply({
-				message,
-				interaction,
-				content: i18n.__('play.success'),
-				ephemeral: true,
-			});
 
-			serverQueue.textChannel
-				.send(
-					i18n.__mf('play.queueAdded', {
-						title: song!.title,
-						author: member.id,
-					}),
-				)
-				.then((msg: discordjs.Message) => {
-					setTimeout(() => msg.delete(), MSGTIMEOUT as number);
-				})
-				.catch(console.error);
-		}
 
-		if (serverQueue) {
-			if (serverQueue.songs.length === 0) {
-				serverQueue.songs.push(song);
-				play({
-					song: serverQueue.songs[0],
-					message,
-					interaction,
-				});
-				await songAdded(message, interaction, serverQueue, song);
-				message?.delete();
-				return;
-			} else {
-				serverQueue.songs.push(song);
-				await songAdded(message, interaction, serverQueue, song);
-			}
-		}
-
-		try {
-			const connection = voice.getVoiceConnection(guild.id!);
-			if (!connection) {
-				var newConnection = voice.joinVoiceChannel({
-					channelId: userVc.id,
-					guildId: userVc.guildId,
-					selfDeaf: true,
-					adapterCreator: userVc.guild.voiceAdapterCreator as voice.DiscordGatewayAdapterCreator,
-					// TODO this is a temp workaround. discord js github issue #7273:
-					// https://github.com/discordjs/discord.js/issues/7273
-					// will be fixed in v14 not v13
-				});
-			} else {
-				newConnection = connection;
-			}
-			const queueConstruct: IQueue = {
-				textChannel: musicChannel,
-				collector: null,
-				voiceChannel: userVc,
-				connection: newConnection,
-				player: null,
-				timeout: null,
-				songs: [song],
-				loop: false,
-				playing: true,
-			};
-
-			i.client.queue.set(guild.id, queueConstruct);
-			play({
-				song: queueConstruct.songs[0],
-				message,
-				interaction,
-			});
-			await reply({
-				message,
-				interaction,
-				content: i18n.__('play.success'),
-				ephemeral: true,
-			});
-			if (message?.deletable) {
-				message.delete();
-			}
-			queueConstruct.textChannel
-				.send({
-					content: i18n.__mf('play.queueAdded', {
-						title: queueConstruct.songs[0].title,
-						author: member.id,
-					}),
-				})
-				.then((msg: discordjs.Message) => {
-					setTimeout(() => {
-						msg.delete().catch(console.error);
-					}, MSGTIMEOUT as number);
-				})
-				.catch(console.error);
-		} catch (error) {
-			if (!(error instanceof Error)) return;
-			console.error(error);
-			i.client.queue.delete(guild.id);
-			let pcon = voice.getVoiceConnection(guild.id!);
-			pcon?.destroy();
-
-			followUp({
-				message,
-				interaction,
-				content: i18n.__('play.cantJoinChannel', {
-					error: error.message,
-				}),
-				ephemeral: true,
-			});
-			if (message?.deletable) {
-				message.delete();
-				return;
-			}
-		}
-
+	if (serverQueue) {
+	if (serverQueue.songs.length === 0) {
+		serverQueue.songs.push(song);
+		play({
+			song: serverQueue.songs[0],
+			interaction,
+		});
+		await songAdded(interaction, serverQueue, song);
 		return;
-	},
-} as ICommand;
+	} else {
+		serverQueue.songs.push(song);
+		await songAdded(interaction, serverQueue, song);
+	}
+	}
+
+	try {
+	const connection = voice.getVoiceConnection(guild.id!);
+	if (!connection) {
+		var newConnection = voice.joinVoiceChannel({
+			channelId: userVc.id,
+			guildId: userVc.guildId,
+			selfDeaf: true,
+			adapterCreator: userVc.guild.voiceAdapterCreator as voice.DiscordGatewayAdapterCreator,
+			// TODO this is a temp workaround. discord js github issue #7273:
+			// https://github.com/discordjs/discord.js/issues/7273
+			// will be fixed in v14 not v13
+		});
+	} else {
+		newConnection = connection;
+	}
+	const queueConstruct: IQueue = {
+		textChannel: musicChannel,
+		collector: null,
+		voiceChannel: userVc,
+		connection: newConnection,
+		player: null,
+		timeout: null,
+		songs: [song],
+		loop: false,
+		playing: true,
+	};
+
+	interaction.client.queue.set(guild.id, queueConstruct);
+	play({
+		song: queueConstruct.songs[0],
+		interaction,
+	});
+	await interaction.editReply({
+		content: i18n.__('play.success'),
+	});
+
+	queueConstruct.textChannel
+		.send({
+			content: i18n.__mf('play.queueAdded', {
+				title: queueConstruct.songs[0].title,
+				author: member.id,
+			}),
+		})
+		.then((msg: Message) => {
+			setTimeout(() => {
+				msg.delete().catch(console.error);
+			}, MSGTIMEOUT as number);
+		})
+		.catch(console.error);
+	} catch (error) {
+		if (!(error instanceof Error)) return;
+
+		console.error(error);
+		interaction.client.queue.delete(guild.id);
+		let pcon = voice.getVoiceConnection(guild.id!);
+		pcon?.destroy();
+
+		interaction.followUp({
+			content: i18n.__('play.cantJoinChannel', {
+				error: error.message,
+			}),
+			ephemeral: true,
+		});
+	};
+
+}
+}
+async function songAdded(
+	//message: Message | undefined,
+	interaction: ChatInputCommandInteraction,
+	serverQueue: IQueue,
+	song: Isong) {
+	if (!interaction || !(interaction.member instanceof GuildMember)) return; 
+
+	npMessage({
+		interaction,
+		npSong: serverQueue.songs[0],
+	});
+	await interaction.editReply({
+		content: i18n.__('play.success'),
+	});
+
+	serverQueue.textChannel
+		.send(
+			i18n.__mf('play.queueAdded', {
+				title: song!.title,
+				author: !interaction.member.id,
+			}),
+		)
+		.then((msg: Message) => {
+			setTimeout(() => msg.delete(), MSGTIMEOUT);
+		})
+		.catch(console.error);
+};

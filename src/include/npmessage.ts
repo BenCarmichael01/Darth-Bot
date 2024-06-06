@@ -1,9 +1,9 @@
 ﻿﻿/* global __base */
 import i18n from 'i18n';
-import Discord from 'discord.js';
+import Discord, { ButtonInteraction, ComponentType, Embed, EmbedBuilder } from 'discord.js';
 
 import { LOCALE } from './utils';
-import { Isong } from 'src/types';
+import { Isong } from 'src/types/types';
 
 if (LOCALE) i18n.setLocale(LOCALE);
 
@@ -16,11 +16,11 @@ interface arguments {
 }
 interface output {
 	npmessage: Discord.Message | undefined;
-	collector: Discord.InteractionCollector<Discord.ButtonInteraction> | undefined;
+	collector: Discord.InteractionCollector<ButtonInteraction<"cached">> | undefined;
 }
 export async function npMessage(args: arguments): Promise<{
 	npmessage?: Discord.Message | undefined;
-	collector?: Discord.InteractionCollector<Discord.ButtonInteraction> | undefined;
+	collector?: Discord.InteractionCollector<ButtonInteraction<"cached">> | undefined;
 	error?: string;
 }> {
 	const { client, npSong, guildIdParam, interaction, message } = args;
@@ -35,13 +35,13 @@ export async function npMessage(args: arguments): Promise<{
 
 	let settings;
 	if (client) {
-		settings = client.db.get(guildId);
+		settings = await client.db.findOne({where: {id: guildId}});
 	} else if (i) {
-		settings = i.client.db.get(guildId);
+		settings = await i.client.db.findOne({where: {id: guildId}});
 	}
 	if (!settings) return { error: 'nosettings' };
-	const MUSIC_CHANNEL_ID = settings.musicChannel;
-	const playingMessageId = settings.playingMessage;
+	const MUSIC_CHANNEL_ID = settings.get('musicChannel');
+	const playingMessageId = settings.get('playingMessage');
 
 	let musicChannel;
 	if (i === undefined && client) {
@@ -95,14 +95,14 @@ export async function npMessage(args: arguments): Promise<{
 	}
 	let newEmbed = {};
 	if (npSong === undefined) {
-		newEmbed = new Discord.MessageEmbed()
+		newEmbed = new EmbedBuilder()
 			.setColor('#5865F2')
 			.setTitle(i18n.__('npmessage.title'))
 			.setURL('')
 			.setImage('https://i.imgur.com/TObp4E6.jpg')
 			.setFooter({ text: i18n.__('npmessage.footer') });
 	} else {
-		newEmbed = new Discord.MessageEmbed()
+		newEmbed = new EmbedBuilder()
 			.setColor('#5865F2')
 			.setTitle(i18n.__mf('npmessage.titleSong', { title: npSong.title }))
 			.setURL(npSong.url)
@@ -113,12 +113,16 @@ export async function npMessage(args: arguments): Promise<{
 	const messages = await (musicChannel as Discord.TextChannel).messages.fetch({ limit: 10 });
 
 	const npmessage = messages.get(playingMessageId);
+	if (!npmessage) {
+		throw new Error('cannot get npmessage');
+	}
 	// output.npmessage = await messages.get(playingMessageId);
 	// Change now playing message to match current song
 	npmessage?.edit({ content: outputQueue, embeds: [newEmbed] });
 	// outputArr[0].edit({ content: outputQueue, embeds: [newEmbed] });
 
-	const collector = npmessage?.createMessageComponentCollector({ componentType: 'BUTTON' });
+	const collector = npmessage?.createMessageComponentCollector({ componentType: ComponentType.Button });
+
 	const output: output = { npmessage, collector };
 	return output;
 }

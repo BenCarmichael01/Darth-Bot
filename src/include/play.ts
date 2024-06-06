@@ -1,20 +1,24 @@
 /* global __base */
-import playdl from 'play-dl';
+import playdl, { YouTubeStream } from 'play-dl';
 import { npMessage } from './npmessage';
 import { canModifyQueue, STAY_TIME, LOCALE, MSGTIMEOUT } from '../include/utils';
 import { followUp, reply } from './responses';
 import i18n from 'i18n';
 import * as voice from '@discordjs/voice';
 import {
+	ButtonBuilder,
 	ButtonInteraction,
 	CommandInteraction,
 	GuildMember,
+	InteractionType,
 	Message,
-	MessageActionRow,
-	MessageButton,
+	MessageType,
+	PermissionFlagsBits,
 	Permissions,
 } from 'discord.js';
-import { CustomConnection, CustomPlayer, IQueue, playArgs } from 'src/types';
+import '../types/types';
+import { CustomConnection, CustomPlayer, IQueue, playArgs } from '../types/types';
+import makeButtons from './makebuttons';
 
 if (LOCALE) i18n.setLocale(LOCALE);
 
@@ -26,7 +30,7 @@ if (LOCALE) i18n.setLocale(LOCALE);
 async function getResource(queue: IQueue): Promise<voice.AudioResource> {
 	const song = queue.songs[0];
 	// Get stream from song Url //
-	let source = null;
+	let source: YouTubeStream;
 	if (song?.url.includes('youtube.com')) {
 		try {
 			source = await playdl.stream(song.url, {
@@ -211,6 +215,7 @@ export async function play({ song, message, interaction }: playArgs): Promise<an
 
 				if (queue.loop) {
 					let last = queue.songs.shift();
+					if (!last) throw new Error('Cannot shift songs.\nLooping failed');
 					queue.songs.push(last);
 				} else {
 					queue.songs.shift();
@@ -248,21 +253,17 @@ export async function play({ song, message, interaction }: playArgs): Promise<an
 				}
 				if (int.message.components !== null && int.message.components !== undefined) {
 					queue.loop = !queue.loop;
-					let oldRow = int.message.components[0];
-					if (queue.loop && 'setStyle' in int.component) {
-						int.component.setStyle('SUCCESS');
-					} else if (!queue.loop && 'setStyle' in int.component) {
-						int.component.setStyle('SECONDARY');
-					}
-					let buttons = oldRow.components as Array<MessageButton>;
-					for (let i = 0; i < oldRow.components.length; i++) {
-						if (buttons[i].customId === 'loop') {
-							buttons[i] = int.component as MessageButton;
-						}
-					}
-					oldRow.components = buttons;
-					if ('edit' in int.message) {
-						int.message.edit({ components: [oldRow as MessageActionRow] });
+					let content = int.message.content;
+					let embeds = int.message.embeds;
+
+					if (queue.loop) {
+						let buttons = makeButtons(true);
+						int.update({ content, embeds, components: [buttons]
+						})
+					} else if (!queue.loop) {
+						let buttons = makeButtons(false);
+						int.update({ content, embeds, components: [buttons]
+						})
 					}
 				}
 				int.editReply({
@@ -331,8 +332,8 @@ export async function play({ song, message, interaction }: playArgs): Promise<an
 				break;
 			}
 			case 'stop': {
-				let perms = member.permissions as Permissions;
-				if (!perms.has('ADMINISTRATOR') && !canModifyQueue(member)) {
+				let perms = member.permissions;
+				if (!perms.has(PermissionFlagsBits.Administrator) && !canModifyQueue(member)) {
 					return int
 						.editReply({
 							content: i18n.__('common.errorNotChannel'),
@@ -378,17 +379,23 @@ export async function play({ song, message, interaction }: playArgs): Promise<an
 		if (queue) {
 			queue.songs.length = 0;
 		}
-		// Cycle through msg components to reset loop button colour
-		let oldRow = npmessage.components[0];
-		for (let i = 0; i < oldRow.components.length; i++) {
-			if (oldRow.components[i].customId === 'loop') {
-				oldRow.components[i] = new MessageButton()
-					.setCustomId('loop')
-					.setEmoji('🔁')
-					.setStyle('SECONDARY');
-			}
+		if (int.type === InteractionType.MessageComponent) {
+			npMessage({interaction: int})
+		} else if (int.type === MessageType.Default){
+			npMessage({message: int});
 		}
-		npmessage.edit({ components: [oldRow] });
+		// I dont think this is needed at the moment. 
+		// if (int.type === InteractionType.MessageComponent) {
+		// 	let content = int.message.content;
+		// 	let embeds = int.message.embeds;
+		// 	let buttons = makeButtons(false);
+		// 	npmessage.edit({content, embeds, components:[buttons]});
+		// } else if (int?.type === MessageType.Default) {
+		// 	let content = int.content;
+		// 	let embeds = int.embeds;
+		// 	let buttons = makeButtons(false);
+		// 	npmessage.edit({content, embeds, components:[buttons]})
+		// }
 	}
 
 	// Check if disconnect is real or is moving to another channel
@@ -471,6 +478,9 @@ export async function play({ song, message, interaction }: playArgs): Promise<an
 				// at least one song in queue and queue is looped so push finished
 				// song to back of queue then play next song
 				let lastSong = queue.songs.shift();
+				
+				if (!lastSong) throw new Error('Cannot shift songs. Looping failed');
+
 				queue.songs.push(lastSong);
 				play({
 					song: queue.songs[0],

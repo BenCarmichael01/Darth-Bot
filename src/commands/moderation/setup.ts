@@ -1,26 +1,28 @@
 ﻿import {
 	Client,
-	CommandInteraction,
 	Guild,
-	MessageEmbed,
-	MessageActionRow,
-	MessageButton,
+	ActionRowBuilder,
+	ButtonBuilder,
 	ButtonInteraction,
+	ChannelType,
+	ComponentType,
+	EmbedBuilder,
+	ButtonStyle,
+	SlashCommandBuilder,
+	ChatInputCommandInteraction,
+	TextChannel,
+	PermissionFlagsBits,
 } from 'discord.js';
 import i18n from 'i18n';
 import * as voice from '@discordjs/voice';
 
-import { LOCALE, TESTING } from '../../include/utils';
-import findById from '../../include/findById';
-import { upsert } from '../../include/upsert';
-import { CustomConnection, IQueue } from 'src/types';
-import { ICommand } from 'wokcommands';
-
+import { LOCALE } from '../../include/utils';
+import { CustomConnection, IQueue } from '../../types/types';
 if (LOCALE) i18n.setLocale(LOCALE);
 
-async function runSetup(interaction: ButtonInteraction, channelTag: string, client: Client, guild: Guild) {
+async function runSetup(interaction: ButtonInteraction, musicChannel: TextChannel, client: Client, guild: Guild) {
 	await interaction.reply({
-		content: i18n.__mf('moderation.setup.start', { channel: channelTag }),
+		content: i18n.__mf('moderation.setup.start', { channel: musicChannel.id }),
 		ephemeral: true,
 		components: [],
 	});
@@ -41,9 +43,7 @@ async function runSetup(interaction: ButtonInteraction, channelTag: string, clie
 	}
 
 	try {
-		const musicChannel = interaction.guild?.channels.cache.get(channelTag);
-
-		if (!musicChannel || musicChannel.type != 'GUILD_TEXT') {
+		if (!musicChannel || musicChannel.type != ChannelType.GuildText) {
 			interaction.followUp({
 				content: i18n.__('moderation.setup.notChannel'),
 				ephemeral: true,
@@ -55,27 +55,26 @@ async function runSetup(interaction: ButtonInteraction, channelTag: string, clie
 		await musicChannel?.bulkDelete(100, true);
 
 		const outputQueue = i18n.__('npmessage.emptyQueue');
-		const newEmbed = new MessageEmbed()
+		const newEmbed = new EmbedBuilder()
 			.setColor('#5865F2')
 			.setTitle(i18n.__('npmessage.title'))
-			.setURL('')
 			.setImage('https://i.imgur.com/TObp4E6.jpg')
 			.setFooter({ text: i18n.__('npmessage.footer') });
 		const buttons = [
-			new MessageButton().setCustomId('playpause').setEmoji('⏯').setStyle('SECONDARY'),
-			new MessageButton().setCustomId('skip').setEmoji('⏭').setStyle('SECONDARY'),
-			new MessageButton().setCustomId('loop').setEmoji('🔁').setStyle('SECONDARY'),
-			new MessageButton().setCustomId('shuffle').setEmoji('🔀').setStyle('SECONDARY'),
-			new MessageButton().setCustomId('stop').setEmoji('⏹').setStyle('SECONDARY'),
+			new ButtonBuilder().setCustomId('playpause').setEmoji('⏯').setStyle(ButtonStyle.Secondary),
+			new ButtonBuilder().setCustomId('skip').setEmoji('⏭').setStyle(ButtonStyle.Secondary),
+			new ButtonBuilder().setCustomId('loop').setEmoji('🔁').setStyle(ButtonStyle.Secondary),
+			new ButtonBuilder().setCustomId('shuffle').setEmoji('🔀').setStyle(ButtonStyle.Secondary),
+			new ButtonBuilder().setCustomId('stop').setEmoji('⏹').setStyle(ButtonStyle.Secondary),
 		];
-		const row = new MessageActionRow().addComponents(...buttons);
+		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(...buttons);
 
 		const playingMessage = await musicChannel.send({
 			content: outputQueue,
 			embeds: [newEmbed],
 			components: [row],
 		});
-		const collector = playingMessage.createMessageComponentCollector({ componentType: 'BUTTON' });
+		const collector = playingMessage.createMessageComponentCollector({ componentType: ComponentType.Button });
 
 		collector.on('collect', (i) => {
 			if (!i.isButton()) return;
@@ -85,33 +84,30 @@ async function runSetup(interaction: ButtonInteraction, channelTag: string, clie
 			}
 		});
 
-		// updates/inserts musicChannel and playingMessage in db
-		const doc = await upsert({
-			_id: guild.id,
-			musicChannel: musicChannel.id,
-			playingMessage: playingMessage.id,
+		// Push to database
+		try {
+			client.db.create({
+				id: guild.id,
+				musicChannel: musicChannel.id,
+				playingMessage: playingMessage.id,
+			});
+		} catch(error) {
+			console.log(error);
+			interaction.editReply('Failed to write to database:\n' + error);
+		};
+
+		// Ensure data was written to db
+		const checkId = await client.db.findOne({where: {id: guild.id}});
+
+		if (checkId) {
+		interaction.followUp({
+			content: i18n.__mf('moderation.setup.success', { MUSIC_CHANNEL_ID: checkId.get('musicChannel') }),
+			ephemeral: true,
 		});
-
-		// Check if db was updated correctly
-		const MUSIC_CHANNEL_ID = doc?.musicChannel;
-		const PLAYING_MESSAGE_ID = doc?.playingMessage;
-
-		if (MUSIC_CHANNEL_ID === channelTag && PLAYING_MESSAGE_ID === playingMessage.id) {
-			// Push to cached db
-			client.db.set(guild.id, {
-				musicChannel: MUSIC_CHANNEL_ID,
-				playingMessage: PLAYING_MESSAGE_ID,
-			});
-			interaction.followUp({
-				content: i18n.__mf('moderation.setup.success', { MUSIC_CHANNEL_ID }),
-				ephemeral: true,
-			});
 		} else {
-			interaction.followUp({
-				content: i18n.__mf('moderation.setup.fail'),
-				ephemeral: true,
-			});
-		}
+			throw new Error('Database was not updated correctly');
+		} ;
+
 	} catch (e) {
 		var e;
 		if (typeof e === 'string') {
@@ -124,51 +120,38 @@ async function runSetup(interaction: ButtonInteraction, channelTag: string, clie
 			content: i18n.__('moderation.setup.error', { error }),
 			ephemeral: true,
 		});
-	}
+	};
 }
 
-export default {
-	name: 'setup',
-	category: 'moderation',
-	description: i18n.__('moderation.setup.description'),
-	guildOnly: true,
-	testOnly: TESTING,
-	slash: true,
-	ownerOnly: true,
-	options: [
-		{
-			name: 'channel',
-			description: i18n.__('moderation.setup.optionDescription'),
-			type: 'CHANNEL',
-			channelTypes: ['GUILD_TEXT'],
-			required: true,
-		},
-	],
+module.exports = { 
+	data: new SlashCommandBuilder()
+	.setName('setup')
+	.setDescription(i18n.__('moderation.setup.description').toString())
+	.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+	.addChannelOption(option => 
+		option
+			.setName('channel')
+			.setDescription(i18n.__('moderation.setup.optionDescription'))
+			.setRequired(true)
+	),
+	
+	async execute(interaction: ChatInputCommandInteraction) {
+	  if (!interaction.isCommand()) return;
+	   let musicChannel = interaction.options.getChannel('channel') as TextChannel;
 
-	async callback({
-		interaction,
-		args,
-		guild,
-		client,
-	}: {
-		interaction: CommandInteraction;
-		args: string[];
-		guild: Guild;
-		client: Client;
-	}) {
-		let channelTag = args[0];
+	   if (musicChannel && musicChannel.type !== ChannelType.GuildText ) return;
 
 		const buttons = [
-			new MessageButton()
+			new ButtonBuilder()
 				.setCustomId('yes')
-				.setStyle('SUCCESS')
+				.setStyle(ButtonStyle.Success)
 				.setLabel(i18n.__('moderation.setup.continue')),
-			new MessageButton()
+			new ButtonBuilder()
 				.setCustomId('no')
-				.setStyle('DANGER')
+				.setStyle(ButtonStyle.Danger)
 				.setLabel(i18n.__('moderation.setup.cancel')),
 		];
-		const row = new MessageActionRow().addComponents(...buttons);
+		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(...buttons);
 		const warning = await interaction.reply({
 			content: i18n.__('moderation.setup.warning'),
 			ephemeral: true,
@@ -177,15 +160,46 @@ export default {
 		});
 		if ('awaitMessageComponent' in warning) {
 			warning
-				.awaitMessageComponent({ componentType: 'BUTTON', time: 20_000 })
+				.awaitMessageComponent({ componentType: ComponentType.Button, time: 20_000 })
 				.then((i) => {
-					if (i.customId === 'yes') {
-						runSetup(i, channelTag, client, guild);
+					if (i.customId === 'yes' && interaction.guild) {
+						runSetup(i, musicChannel, interaction.client, interaction.guild);
 					} else {
 						i.reply({ content: i18n.__('moderation.setup.cancelled'), ephemeral: true });
 					}
 				})
 				.catch(console.error);
 		}
+
 	},
-} as ICommand;
+}
+
+
+
+	// guildOnly: true,
+	// testOnly: TESTING,
+	// slash: true,
+	// ownerOnly: true,
+	// options: [
+	// 	{
+	// 		name: 'channel',
+	// 		description: i18n.__('moderation.setup.optionDescription'),
+	// 		type: 'CHANNEL',
+	// 		channelTypes: ['GUILD_TEXT'],
+	// 		required: true,
+	// 	},
+	// ],
+// 	async callback({
+// 		interaction,
+// 		args,
+// 		guild,
+// 		client,
+// 	}: {
+// 		interaction: CommandInteraction;
+// 		args: string[];
+// 		guild: Guild;
+// 		client: Client;
+// 	}) {
+		
+// 	},
+// } as ICommand;

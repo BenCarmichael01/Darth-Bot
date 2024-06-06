@@ -1,40 +1,51 @@
 import { npMessage } from '../include/npmessage';
 import { LOCALE } from '../include/utils';
-import { Client, MessageButton, ButtonInteraction } from 'discord.js';
+import { ButtonBuilder, ButtonStyle, ActionRowBuilder, EmbedBuilder, ChannelType, ComponentType, Client } from 'discord.js';
 import i18n from 'i18n';
+import '../types/types';
 
 if (LOCALE) i18n.setLocale(LOCALE);
 
-async function messageStartup(musicGuilds: Array<string>, client: Client) {
-	for (let i = 0; i <= musicGuilds.length - 1; i++) {
-		const npmessageOutput = await npMessage({
-			client,
-			guildIdParam: musicGuilds[i],
-		});
-		let message = npmessageOutput.npmessage;
-		let collector = npmessageOutput.collector;
-		// TODO handle errors properly
-		if (!message) {
-			console.log('no npmessage found');
-			continue;
-		}
-		if (!collector) {
-			console.log('no collector found');
-			continue;
-		}
-		let oldRow = message.components[0];
-		for (let i = 0; i < oldRow.components.length; i++) {
-			if (oldRow.components[i].customId === 'loop') {
-				oldRow.components[i] = new MessageButton()
-					.setCustomId('loop')
-					.setEmoji('🔁')
-					.setStyle('SECONDARY');
-			}
-		}
-		message.edit({ components: [oldRow] });
+async function messageStartup(musicGuilds: Array<string>, musicChannels: Array<string>, client: Client) {
 
-		collector.on('collect', (i: ButtonInteraction) => {
-			const queue = i.client.queue.get(i.guildId!);
+
+		const outputQueue = i18n.__('npmessage.emptyQueue');
+		const newEmbed = new EmbedBuilder()
+			.setColor('#5865F2')
+			.setTitle(i18n.__('npmessage.title'))
+			.setURL('')
+			.setImage('https://i.imgur.com/TObp4E6.jpg')
+			.setFooter({ text: i18n.__('npmessage.footer') });
+		const buttons = [
+			new ButtonBuilder().setCustomId('playpause').setEmoji('⏯').setStyle(ButtonStyle.Secondary),
+			new ButtonBuilder().setCustomId('skip').setEmoji('⏭').setStyle(ButtonStyle.Secondary),
+			new ButtonBuilder().setCustomId('loop').setEmoji('🔁').setStyle(ButtonStyle.Secondary),
+			new ButtonBuilder().setCustomId('shuffle').setEmoji('🔀').setStyle(ButtonStyle.Secondary),
+			new ButtonBuilder().setCustomId('stop').setEmoji('⏹').setStyle(ButtonStyle.Secondary),
+		];
+		const row = new ActionRowBuilder<ButtonBuilder>().setComponents(...buttons);
+
+
+		
+	for (let i = 0; i <= musicChannels.length - 1; i++) {
+
+		let channel = client.guilds.resolve(musicGuilds[i])?.channels.resolve(musicChannels[i]);
+
+		if (channel?.type == ChannelType.GuildText) {
+			var playingMessage = await channel.send({ 
+				content: outputQueue,
+				embeds: [newEmbed],
+				components: [row] })
+				.then((msg)=> {
+					channel.bulkDelete(100, true);
+					return msg;
+		}); // error handling
+		} else return;
+
+		let collector = playingMessage?.createMessageComponentCollector({ componentType: ComponentType.Button });
+
+		collector.on('collect', (i) => {
+			const queue = client.queue.get(i.guildId!);
 			if (!queue || queue.songs.length === 0) {
 				i.reply({
 					content: i18n.__('nowplaying.errorNotQueue'),
@@ -57,15 +68,18 @@ async function isBotInGuild(guildId: string, client: Client) {
 export default (client: Client) => {
 	client.once('dbCached', async () => {
 		const musicGuilds: Array<string> = [];
+		const musicChannels: Array<string> = [];
 		await Promise.all(
 			client.db.each(async (guildDb, id) => {
 				let inGuild = await isBotInGuild(id, client);
 				if (guildDb.musicChannel && inGuild) {
 					musicGuilds.push(id);
+					musicChannels.push(guildDb.musicChannel);
+
 				}
 			}),
 		);
-		messageStartup(musicGuilds, client);
+		messageStartup(musicGuilds, musicChannels, client);
 	});
 };
 

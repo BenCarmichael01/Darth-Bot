@@ -1,6 +1,6 @@
 import { npMessage } from '../include/npmessage';
 import { LOCALE } from '../include/utils';
-import { Client, MessageButton, ButtonInteraction, ApplicationCommand } from 'discord.js';
+import { Client, ApplicationCommand } from 'discord.js';
 import i18n from 'i18n';
 import WOKCommands from 'wokcommands';
 

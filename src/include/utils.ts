@@ -1,4 +1,5 @@
-import { GuildMember } from 'discord.js';
+import { Client, GuildMember } from 'discord.js';
+import { getVoiceConnection } from '@discordjs/voice';
 
 require('dotenv').config();
 
@@ -11,18 +12,19 @@ try {
 }
 /**
  * Determines if the member is in the same voice channel as the bot
- * @param {discordMember} member
+ * @param {GuildMember} member
+ * @param {Client} client
  * @returns True or False
  */
 export const canModifyQueue = (member: GuildMember) => {
-	const { channelId } = member.voice;
-	const botChannel = member.guild.me!.voice.channelId;
+	const memberVoiceState = member.voice;
+	const botVoiceState = member.guild.members.me?.voice
 
-	if (channelId !== botChannel) {
-		return false;
+	if (memberVoiceState === botVoiceState) {
+		return true
 	}
 
-	return true;
+	return false;
 };
 exports.deEscape = (htmlStr: string) => {
 	htmlStr = htmlStr.replace(/&lt;/g, '<');
