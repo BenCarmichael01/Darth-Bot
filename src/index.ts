@@ -5,6 +5,7 @@ import { Sequelize, STRING} from 'sequelize';
 import { ApplicationCommand, channelLink, Client, Collection, Events, GatewayIntentBits, Message, REST, Routes, SlashCommandBuilder } from 'discord.js';
 // import WOKCommands from 'wokcommands';
 import 'dotenv/config';
+import messageStartup from './features/message-startup'
 
 global.__base = path.join(__dirname, '/');
 
@@ -16,31 +17,33 @@ const client = new Client({
 		GatewayIntentBits.GuildVoiceStates,
 	],
 });
+async function createDatabase() {
 
-const sequelize = new Sequelize('database', 'user', 'password', {
-	host: 'localhost',
-	dialect: 'sqlite',
-	logging: false,
-	// SQLite only
-	storage: 'database.sqlite',
-});
+	const sequelize = new Sequelize('database', 'user', 'password', {
+		host: 'localhost',
+		dialect: 'sqlite',
+		logging: false,
+		// SQLite only
+		storage: 'database.sqlite',
+	});
 
-client.db = sequelize.define('musicGuilds', {
-	id: {
-		type: STRING,
-		unique: true,
-		primaryKey: true,
-	},
-	musicChannel: {
-		type: STRING,
-		allowNull: false,	
-	},
-	playingMessage: {
-		type: STRING,
-		allowNull: false,
-	}
-})
-
+	client.db = sequelize.define('musicGuilds', {
+		id: {
+			type: STRING,
+			unique: true,
+			primaryKey: true,
+		},
+		musicChannel: {
+			type: STRING,
+			allowNull: false,	
+		},
+		playingMessage: {
+			type: STRING,
+			allowNull: false,
+		}
+	})
+	await client.db.sync();
+};
 // i18n locale config
 i18n.configure({
 	locales: ['en', 'es', 'ko', 'fr', 'tr', 'pt_br', 'zh_cn', 'zh_tw'],
@@ -110,7 +113,9 @@ client.on(Events.Error, (error) => console.error(error));
 
 client.once(Events.ClientReady, async (client) => {
 	console.log(`Logged in as ${client.user.username} (${client.user.id})`);
-	client.db.sync({ force: true });
+	createDatabase();
+
+	messageStartup(client);
 
 	try {
         if (!clientId || !guildId || !token) throw "Bad vars";

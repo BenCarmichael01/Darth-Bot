@@ -34,7 +34,7 @@ module.exports = {
 					.setRequired(true)
 				),
 	async execute(interaction: ChatInputCommandInteraction) {
-		interaction.deferReply({ephemeral: true});
+		await interaction.deferReply({ephemeral: true});
 		// if (interaction) {
 		// 	if (!interaction.deferred && !interaction.replied) {
 		// 		await interaction.deferReply({ ephemeral: true });

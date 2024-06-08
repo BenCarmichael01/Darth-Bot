@@ -7,7 +7,7 @@ export default async (client: discordjs.Client) => {
 		const id = guild._id;
 		const { musicChannel, playingMessage } = guild;
 		const cache = { musicChannel, playingMessage };
-		client.db.set(id, cache);
+		//client.db.set(id, cache);
 	});
 	client.emit('dbCached');
 };

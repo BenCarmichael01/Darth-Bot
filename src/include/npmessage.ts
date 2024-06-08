@@ -98,7 +98,6 @@ export async function npMessage(args: arguments): Promise<{
 		newEmbed = new EmbedBuilder()
 			.setColor('#5865F2')
 			.setTitle(i18n.__('npmessage.title'))
-			.setURL('')
 			.setImage('https://i.imgur.com/TObp4E6.jpg')
 			.setFooter({ text: i18n.__('npmessage.footer') });
 	} else {

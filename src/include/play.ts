@@ -542,7 +542,7 @@ export async function play({ song, message, interaction }: playArgs): Promise<an
 			try {
 				if (connection?.state?.status !== VoiceConnectionStatus.Destroyed) {
 					connection.destroy();
-					throw new Error('Test Error');
+					//throw new Error('Test Error');
 				}
 				if (player) {
 					queueEnd(i, npmessage);

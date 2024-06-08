@@ -86,14 +86,15 @@ async function runSetup(interaction: ButtonInteraction, musicChannel: TextChanne
 
 		// Push to database
 		try {
-			client.db.create({
+			await client.db.upsert({
 				id: guild.id,
 				musicChannel: musicChannel.id,
 				playingMessage: playingMessage.id,
 			});
 		} catch(error) {
-			console.log(error);
+			console.error(error);
 			interaction.editReply('Failed to write to database:\n' + error);
+			return;
 		};
 
 		// Ensure data was written to db
