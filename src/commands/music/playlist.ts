@@ -264,13 +264,19 @@ module.exports = {
 				playing: true,
 			};
 			interaction.client.queue.set(interaction.guild.id, queueConstruct);
-			interaction.followUp({
+			const finalQueue = interaction.client.queue.get(interaction.guild.id);
+			finalQueue?.textChannel.send({
 				content: i18n.__mf('playlist.queueAdded', {
 					playlist: playlistTitle,
 					author: member.id,
 				}),
-				ephemeral: false,
-			});
+			})
+			.then((msg: Message) => {
+				setTimeout(() => {
+					msg.delete().catch(console.error);
+				}, MSGTIMEOUT);
+			})
+			.catch(console.error);
 			play({ song: queueConstruct.songs[0], interaction });
 		} catch (error) {
 			console.error(error);
@@ -299,15 +305,18 @@ async function songAdded(
 	await interaction.editReply({
 		content: i18n.__('playlist.success'),
 	});
-	serverQueue.textChannel
-		.send(
-			i18n.__mf('playlist.queueAdded', {
+	await serverQueue.textChannel
+		.send({
+			content: i18n.__mf('playlist.queueAdded', {
 				playlist: playlistTitle,
 				author: interaction.member.user.id,
 			}),
-		)
+		})
 		.then((msg: Message) => {
-			setTimeout(() => msg.delete(), MSGTIMEOUT as number);
+			setTimeout(() => {
+				msg.delete().catch(console.error);
+			}, MSGTIMEOUT);
 		})
 		.catch(console.error);
+		return;
 }
