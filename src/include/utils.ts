@@ -20,7 +20,7 @@ export const canModifyQueue = (member: GuildMember) => {
 	const memberVoiceState = member.voice;
 	const botVoiceState = member.guild.members.me?.voice
 
-	if (memberVoiceState === botVoiceState) {
+	if (botVoiceState && memberVoiceState.channelId === botVoiceState.channelId) {
 		return true
 	}
 

@@ -1,15 +1,16 @@
 import path from 'path';
 import fs from 'fs';
 import i18n from 'i18n';
-import { Sequelize, STRING} from 'sequelize';
-import { ApplicationCommand, channelLink, Client, Collection, Events, GatewayIntentBits, Message, REST, Routes, SlashCommandBuilder } from 'discord.js';
+import { ModelStatic, Sequelize, STRING} from 'sequelize';
+import { ApplicationCommand, Client, ClientOptions, Collection, Events, GatewayIntentBits, Message, REST, Routes, SlashCommandBuilder, Snowflake } from 'discord.js';
 // import WOKCommands from 'wokcommands';
 import 'dotenv/config';
 import messageStartup from './features/message-startup'
+import { myClient } from './types/types';
 
 global.__base = path.join(__dirname, '/');
 
-const client = new Client({
+const client = new myClient({
 	intents: [
 		GatewayIntentBits.Guilds,
 		GatewayIntentBits.GuildMessages,
@@ -17,33 +18,7 @@ const client = new Client({
 		GatewayIntentBits.GuildVoiceStates,
 	],
 });
-async function createDatabase() {
 
-	const sequelize = new Sequelize('database', 'user', 'password', {
-		host: 'localhost',
-		dialect: 'sqlite',
-		logging: false,
-		// SQLite only
-		storage: 'database.sqlite',
-	});
-
-	client.db = sequelize.define('musicGuilds', {
-		id: {
-			type: STRING,
-			unique: true,
-			primaryKey: true,
-		},
-		musicChannel: {
-			type: STRING,
-			allowNull: false,	
-		},
-		playingMessage: {
-			type: STRING,
-			allowNull: false,
-		}
-	})
-	await client.db.sync();
-};
 // i18n locale config
 i18n.configure({
 	locales: ['en', 'es', 'ko', 'fr', 'tr', 'pt_br', 'zh_cn', 'zh_tw'],
@@ -82,9 +57,9 @@ if (process.argv[2] === 'dev') {
 
 client.login(token);
 
-client.queue = new Map();
-// client.db = new Collection();
-client.commands = new Collection();
+// client.queue = new Map();
+// // client.db = new Collection();
+// client.commands = new Collection();
 
 const foldersPath = path.join(__dirname, 'commands');
 const commandFolders = fs.readdirSync(foldersPath);
@@ -113,7 +88,7 @@ client.on(Events.Error, (error) => console.error(error));
 
 client.once(Events.ClientReady, async (client) => {
 	console.log(`Logged in as ${client.user.username} (${client.user.id})`);
-	createDatabase();
+	await client.db.sync();
 
 	messageStartup(client);
 

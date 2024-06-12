@@ -96,6 +96,7 @@
 	},
 	"playlist": {
 		"description": "Play a playlist from Youtube or Spotify",
+		"option": "The URL to a playlist. Either Spotify or Youtube.",
 		"usageReply": "Usage: {prefix}playlist <YouTube Playlist URL | Playlist Name>",
 		"errorNotChannel": "You need to join a voice channel first!",
 		"errorNotInSameChannel": "You must be in the same channel as {user}",

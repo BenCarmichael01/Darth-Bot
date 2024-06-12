@@ -11,7 +11,7 @@ interface arguments {
 	client?: Discord.Client;
 	npSong?: any;
 	guildIdParam?: string;
-	interaction?: Discord.ButtonInteraction | Discord.CommandInteraction;
+	interaction?: Discord.ButtonInteraction | Discord.ChatInputCommandInteraction;
 	message?: Discord.Message;
 }
 interface output {

@@ -19,7 +19,7 @@
 		"baseUrl": "./",
 		"allowJs": true
 	},
-	"files": ["src/index.ts", "src/types/types.ts", "src/commands/music/play.ts"],
-	"include": ["./src/**/*.ts", "./src/**/*.js", "./src/include/upsert.ts"],
-	"exclude": ["node_modules", "dist", "src/commands/fun", "src/commands/help", "src/commands/music", "src/commands/testing", "src/include"]
+	"files": ["src/index.ts", "src/types/types.ts"],
+	"include": ["./src/**/*.ts", "./src/**/*.js"],
+	"exclude": ["node_modules", "dist", "src/commands/fun", "src/commands/help", "src/commands/testing", "src/commands/music/shuffle.ts"]
 }

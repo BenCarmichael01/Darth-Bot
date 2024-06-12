@@ -1,5 +1,5 @@
 import { LOCALE } from '../include/utils';
-import { ButtonBuilder, ButtonStyle, ActionRowBuilder, EmbedBuilder, ChannelType, ComponentType, Client, Message } from 'discord.js';
+import { ButtonBuilder, ButtonStyle, ActionRowBuilder, EmbedBuilder, ChannelType, ComponentType, Client, Message, CategoryChannel, BaseGuildTextChannel } from 'discord.js';
 import i18n from 'i18n';
 import '../types/types';
 
@@ -53,7 +53,7 @@ export default async function (client: Client) {
 
 			let channel = client.guilds.resolve(musicGuilds[i])?.channels.resolve(musicChannels[i]);
 			let playingMessage:Message<true>;
-			if (channel?.type == ChannelType.GuildText) {
+			if (channel && (channel instanceof BaseGuildTextChannel)) {
 				playingMessage = await channel.messages.edit(playingMessages[i], {
 					content: outputQueue,
 					embeds: [newEmbed],

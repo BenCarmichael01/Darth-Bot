@@ -174,33 +174,3 @@ module.exports = {
 
 	},
 }
-
-
-
-	// guildOnly: true,
-	// testOnly: TESTING,
-	// slash: true,
-	// ownerOnly: true,
-	// options: [
-	// 	{
-	// 		name: 'channel',
-	// 		description: i18n.__('moderation.setup.optionDescription'),
-	// 		type: 'CHANNEL',
-	// 		channelTypes: ['GUILD_TEXT'],
-	// 		required: true,
-	// 	},
-	// ],
-// 	async callback({
-// 		interaction,
-// 		args,
-// 		guild,
-// 		client,
-// 	}: {
-// 		interaction: CommandInteraction;
-// 		args: string[];
-// 		guild: Guild;
-// 		client: Client;
-// 	}) {
-		
-// 	},
-// } as ICommand;

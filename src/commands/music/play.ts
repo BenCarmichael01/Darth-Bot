@@ -18,6 +18,7 @@ import {
 	Message,
 	PermissionFlagsBits,
 	SlashCommandBuilder,
+	TextBasedChannel,
 	VoiceBasedChannel,
 } from 'discord.js';
 
@@ -301,25 +302,22 @@ module.exports = {
 	}
 
 	try {
-	const connection = voice.getVoiceConnection(guild.id!);
-	if (!connection) {
-		var newConnection = voice.joinVoiceChannel({
-			channelId: userVc.id,
-			guildId: userVc.guildId,
-			selfDeaf: true,
-			adapterCreator: userVc.guild.voiceAdapterCreator as voice.DiscordGatewayAdapterCreator,
-			// TODO this is a temp workaround. discord js github issue #7273:
-			// https://github.com/discordjs/discord.js/issues/7273
-			// will be fixed in v14 not v13
-		});
-	} else {
-		newConnection = connection;
-	}
+	const currentConnection = voice.getVoiceConnection(guild.id!);
+	
 	const queueConstruct: IQueue = {
-		textChannel: musicChannel,
+		textChannel: musicChannel as TextBasedChannel,
 		collector: null,
 		voiceChannel: userVc,
-		connection: newConnection,
+		connection: currentConnection ? currentConnection : 
+			voice.joinVoiceChannel({
+				channelId: userVc.id,
+				guildId: userVc.guildId,
+				selfDeaf: true,
+				adapterCreator: userVc.guild.voiceAdapterCreator as voice.DiscordGatewayAdapterCreator,
+				// TODO the type cast above is a temp workaround. discord js github issue #7273:
+				// https://github.com/discordjs/discord.js/issues/7273
+				// will be fixed in v14 not v13
+			}),
 		player: null,
 		timeout: null,
 		songs: [song],
@@ -335,7 +333,7 @@ module.exports = {
 	await interaction.editReply({
 		content: i18n.__('play.success'),
 	});
-
+	console.log(MSGTIMEOUT);
 	queueConstruct.textChannel
 		.send({
 			content: i18n.__mf('play.queueAdded', {
