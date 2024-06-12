@@ -1,44 +1,41 @@
-import { canModifyQueue, LOCALE, MSGTIMEOUT, TESTING } from '../../include/utils';
+import { canModifyQueue, LOCALE, MSGTIMEOUT } from '../../include/utils';
 import { npMessage } from '../../include/npmessage';
 import i18n from 'i18n';
 import { reply } from '../../include/responses';
-import { CommandInteraction, GuildMember, Message } from 'discord.js';
-import { ICommand } from 'wokcommands';
+import { ChatInputCommandInteraction, GuildMember, Message, SlashCommandBuilder } from 'discord.js';
+import { myClient } from '../../types/types';
 
 if (LOCALE) i18n.setLocale(LOCALE);
 
-export default {
-	name: 'shuffle',
-	category: 'music',
-	description: i18n.__('shuffle.description'),
-	guildOnly: true,
-	testOnly: TESTING,
-	slash: true,
+module.exports = {
+	data: new SlashCommandBuilder()
+		.setName('shuffle')
+		.setDescription(i18n.__('shuffle.description')),
 
-	async callback({ interaction }: { interaction: CommandInteraction }): Promise<Message | void> {
+	async execute(interaction:ChatInputCommandInteraction) {
 		try {
 			await interaction.deferReply({ ephemeral: true });
-			if (typeof interaction.guildId === 'string') {
-				var GUILDID = interaction.guildId as string;
-			} else {
-				return interaction.reply({ content: i18n.__('common.unknownError') });
-			}
 
-			const queue = interaction.client.queue.get(GUILDID);
+			let guildId = interaction.guildId;
+			if (!guildId) {
+				return interaction.editReply({ content: i18n.__('common.unknownError') });
+			}
+			const client = interaction.client as myClient;
+			const queue = client.queue.get(guildId);
+
 			if (!queue) {
 				return reply({ interaction, content: i18n.__('shuffle.errorNotQueue'), ephemeral: true });
 			}
-			if ('member' in interaction) {
+			if (interaction.member instanceof GuildMember) {
 				var guildMember = interaction.member as GuildMember;
 			} else {
-				return interaction.reply({ content: i18n.__('common.unknownError') });
+				interaction.editReply({ content: i18n.__('common.unknownError') });
+				return;
 			}
 
 			if (!canModifyQueue(guildMember)) {
-				return reply({
-					interaction,
+				 interaction.editReply({
 					content: i18n.__('common.errorNotChannel'),
-					ephemeral: true,
 				});
 			}
 			const { songs } = queue;
@@ -47,17 +44,14 @@ export default {
 				[songs[i], songs[j]] = [songs[j], songs[i]];
 			}
 			queue.songs = songs;
-			interaction.client.queue.set(GUILDID, queue);
+			interaction.client.queue.set(guildId, queue);
 			npMessage({ interaction, npSong: songs[0] });
-			reply({
-				interaction,
+			interaction.editReply({
 				content: i18n.__('shuffle.success'),
-				ephemeral: true,
 			});
 			queue.textChannel
 				.send({
 					content: i18n.__mf('shuffle.result', { author: guildMember.id }),
-					ephemeral: false,
 				})
 				.then((msg: Message) => {
 					setTimeout(() => {
@@ -69,5 +63,5 @@ export default {
 		} catch (error) {
 			console.error(error);
 		}
-	},
-} as ICommand;
+	}
+}
