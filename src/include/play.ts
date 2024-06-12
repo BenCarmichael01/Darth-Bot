@@ -6,20 +6,17 @@ import { followUp, reply } from './responses';
 import i18n from 'i18n';
 import * as voice from '@discordjs/voice';
 import {
-	ButtonBuilder,
 	ButtonInteraction,
 	ChatInputCommandInteraction,
-	CommandInteraction,
+	Guild,
 	GuildMember,
-	InteractionType,
 	Message,
-	MessageType,
 	PermissionFlagsBits,
-	Permissions,
 } from 'discord.js';
 import '../types/types';
 import { CustomConnection, CustomPlayer, IQueue, playArgs } from '../types/types';
 import makeButtons from './makebuttons';
+import { shuffle } from '../include/shuffle';
 
 if (LOCALE) i18n.setLocale(LOCALE);
 
@@ -156,13 +153,6 @@ export async function play({ song, interaction }: playArgs): Promise<any> {
 
 	collector.on('collect', async (interaction: ButtonInteraction) => {
 		if (!interaction) return;
-		if (!interaction.replied && !interaction.deferred) {
-			try {
-				await interaction.deferReply();
-			} catch (error) {
-				console.error(error);
-			}
-		}
 		const member = interaction.member;
 
 		if (!member || !(member instanceof GuildMember)) return; // TODO error handling
@@ -177,6 +167,7 @@ export async function play({ song, interaction }: playArgs): Promise<any> {
 		}
 		switch (interaction.customId) {
 			case 'playpause': {
+				interaction.deferReply();
 				if (!canModifyQueue(member)) {
 					return interaction
 						.editReply({ content: i18n.__('common.errorNotChannel') })
@@ -221,6 +212,7 @@ export async function play({ song, interaction }: playArgs): Promise<any> {
 				break;
 			}
 			case 'skip': {
+				interaction.deferReply({ephemeral: true})
 				if (!canModifyQueue(member)) {
 					return interaction
 						.editReply({ content: i18n.__('common.errorNotChannel') })
@@ -269,6 +261,7 @@ export async function play({ song, interaction }: playArgs): Promise<any> {
 				break;
 			}
 			case 'loop': {
+				interaction.deferReply();
 				if (!canModifyQueue(member)) {
 					return interaction
 						.editReply({ content: i18n.__('common.errorNotChannel') })
@@ -283,85 +276,30 @@ export async function play({ song, interaction }: playArgs): Promise<any> {
 				}
 				if (interaction.message.components !== null && interaction.message.components !== undefined) {
 					queue.loop = !queue.loop;
+					if (!(interaction.guild instanceof Guild)) return;
+					interaction.client.queue.set(interaction.guild.id, queue);
 					let content = interaction.message.content;
 					let embeds = interaction.message.embeds;
 
 					if (queue.loop) {
 						let buttons = makeButtons(true);
 						interaction.update({ content, embeds, components: [buttons]
-						})
-					} else if (!queue.loop) {
+						}).catch(console.error);
+					} else {
 						let buttons = makeButtons(false);
 						interaction.update({ content, embeds, components: [buttons]
-						})
+						}).catch(console.error);
 					}
 				}
-				interaction.editReply({
-					content: i18n.__mf('play.loopSong', {
-						author: name,
-						loop: queue.loop ? i18n.__('common.on') : i18n.__('common.off'),
-					}),
-				})
-					.then((reply) => {
-						setTimeout(() => {
-							if ('delete' in reply) {
-								reply.delete().catch(console.error);
-							}
-						}, MSGTIMEOUT as number);
-					})
-					.catch(console.error);
 				break;
 			}
 			case 'shuffle': {
-				if (!queue) {
-					return interaction
-						.editReply({ content: i18n.__('shuffle.errorNotQueue') })
-						.then((reply) => {
-							setTimeout(() => {
-								if ('delete' in reply) {
-									reply.delete().catch(console.error);
-								}
-							}, MSGTIMEOUT as number);
-						})
-						.catch(console.error);
-				}
-				if (!canModifyQueue(member)) {
-					return interaction
-						.editReply({ content: i18n.__('common.errorNotChannel') })
-						.then((reply) => {
-							setTimeout(() => {
-								if ('delete' in reply) {
-									reply.delete().catch(console.error);
-								}
-							}, MSGTIMEOUT as number);
-						})
-						.catch(console.error);
-				}
-				const { songs } = queue;
-				for (let i = songs.length - 1; i > 1; i--) {
-					let j = 1 + Math.floor(Math.random() * i);
-					[songs[i], songs[j]] = [songs[j], songs[i]];
-				}
-				queue.songs = songs;
-				if (!interaction.guildId) return;
-				interaction.client.queue.set(interaction.guildId, queue);
-				npMessage({ interaction: interaction, npSong: song });
-				interaction.editReply({
-					content: i18n.__mf('shuffle.result', {
-						author: name,
-					}),
-				})
-					.then((reply) => {
-						setTimeout(() => {
-							if ('delete' in reply) {
-								reply.delete().catch(console.error);
-							}
-						}, MSGTIMEOUT as number);
-					})
-					.catch(console.error);
+				await interaction.deferReply();
+				shuffle(interaction);
 				break;
 			}
 			case 'stop': {
+				interaction.deferReply();
 				let perms = member.permissions;
 				if (!perms.has(PermissionFlagsBits.Administrator) && !canModifyQueue(member)) {
 					return interaction
