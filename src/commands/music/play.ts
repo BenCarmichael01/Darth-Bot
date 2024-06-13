@@ -30,7 +30,7 @@ module.exports = {
 				.setName('play')
 				.setDescription(i18n.__('play.description'))
 				.addStringOption(option => 
-					option.setName('music')
+					option.setName('song')
 					.setDescription(i18n.__('play.description'))
 					.setRequired(true)
 				),
@@ -177,7 +177,7 @@ module.exports = {
 			clearTimeout(serverQueue.timeout);
 		}
 
-		const music = interaction.options.getString('music');
+		const music = interaction.options.getString('song');
 		if (!music) throw new Error('Unable to read requested song: getString() failed');
 
 		const isSpotify = playdl.sp_validate(music);
