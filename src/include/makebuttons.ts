@@ -1,9 +1,9 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
 
 export default function makeButtons<ActionRowBuilder>(loop:boolean) {
-    const buttons: ButtonBuilder[] = [];
-    if (loop) {
-		const buttons = [
+    var buttons: ButtonBuilder[];
+    if (loop === true) {
+		buttons = [
 			new ButtonBuilder().setCustomId('playpause').setEmoji('⏯').setStyle(ButtonStyle.Secondary),
 			new ButtonBuilder().setCustomId('skip').setEmoji('⏭').setStyle(ButtonStyle.Secondary),
 			new ButtonBuilder().setCustomId('loop').setEmoji('🔁').setStyle(ButtonStyle.Success),
@@ -11,7 +11,7 @@ export default function makeButtons<ActionRowBuilder>(loop:boolean) {
 			new ButtonBuilder().setCustomId('stop').setEmoji('⏹').setStyle(ButtonStyle.Secondary),
 		];
     } else {
-        const buttons = [
+        buttons = [
 			new ButtonBuilder().setCustomId('playpause').setEmoji('⏯').setStyle(ButtonStyle.Secondary),
 			new ButtonBuilder().setCustomId('skip').setEmoji('⏭').setStyle(ButtonStyle.Secondary),
 			new ButtonBuilder().setCustomId('loop').setEmoji('🔁').setStyle(ButtonStyle.Secondary),
