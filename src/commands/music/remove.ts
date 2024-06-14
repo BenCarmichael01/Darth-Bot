@@ -25,7 +25,8 @@ module.exports = {
 			option.setName('thirdsong')
 			.setDescription(i18n.__('remove.optionDescription'))
 			.setRequired(false)
-		),
+		)
+		.setDMPermission(false),
 
 		async execute(interaction: ChatInputCommandInteraction) {
 			await interaction.deferReply({ ephemeral: true });

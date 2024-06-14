@@ -134,7 +134,8 @@ module.exports = {
 			.setName('channel')
 			.setDescription(i18n.__('moderation.setup.optionDescription'))
 			.setRequired(true)
-	),
+	)
+	.setDMPermission(false),
 	
 	async execute(interaction: ChatInputCommandInteraction) {
 	  if (!interaction.isCommand()) return;

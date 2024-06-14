@@ -22,7 +22,9 @@ module.exports = {
 				options.setName('playlist')
 				.setDescription(i18n.__('playlist.option'))
 				.setRequired(true)
-			),
+			)
+			.setDMPermission(false),
+
 	async execute(interaction: ChatInputCommandInteraction) {
 		if (!interaction.deferred && !interaction.replied) {
 			await interaction.deferReply({ ephemeral: true });

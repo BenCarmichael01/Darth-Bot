@@ -28,7 +28,8 @@ module.exports = {
 				option.setName('url')
 				.setDescription(i18n.__('moderation.status.urlDesc'))
 				.setRequired(false)
-			),
+			)
+			.setDMPermission(false),
 
 			async execute(interaction: ChatInputCommandInteraction) {
 				await interaction.deferReply({ ephemeral: true });

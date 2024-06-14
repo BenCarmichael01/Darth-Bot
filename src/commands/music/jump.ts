@@ -14,7 +14,8 @@ module.exports = {
 			.setDescription('Queue number to skip to')
 			.setRequired(true)
 			.setMinValue(1)
-		),
+		)
+		.setDMPermission(false),
 
 		async execute(interaction: ChatInputCommandInteraction) {
 			await interaction.deferReply({ ephemeral: true });

@@ -33,7 +33,8 @@ module.exports = {
 					option.setName('song')
 					.setDescription(i18n.__('play.description'))
 					.setRequired(true)
-				),
+				)
+				.setDMPermission(false),
 	async execute(interaction: ChatInputCommandInteraction) {
 		await interaction.deferReply({ephemeral: true});
 		// if (interaction) {

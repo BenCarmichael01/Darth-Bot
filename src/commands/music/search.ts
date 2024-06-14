@@ -24,7 +24,8 @@ module.exports = {
 			option.setName('search')
 			.setDescription('The term to search for')
 			.setRequired(true)
-		),
+		)
+		.setDMPermission(false),
 
 	async execute(interaction: ChatInputCommandInteraction) {
 		await interaction.deferReply({ ephemeral: true });

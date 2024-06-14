@@ -8,7 +8,8 @@ if (LOCALE) i18n.setLocale(LOCALE);
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('shuffle')
-		.setDescription(i18n.__('shuffle.description')),
+		.setDescription(i18n.__('shuffle.description'))
+		.setDMPermission(false),
 
 	async execute(interaction:ChatInputCommandInteraction) {
 		try {

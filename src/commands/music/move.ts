@@ -25,7 +25,7 @@ module.exports = {
 				option.setName('to')
 				.setDescription(i18n.__('move.toDescription'))
 				.setRequired(true)
-			),
+			).setDMPermission(false),
 			
 	async execute(interaction: ChatInputCommandInteraction) {
 		try {
