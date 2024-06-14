@@ -78,7 +78,7 @@ export class myClient extends Client {
  */
 export type CommandName = string;
 
-export type Command = {data: SlashCommandBuilder, execute: (interaction:CommandInteraction) => null};
+export interface Command  {data: SlashCommandBuilder, execute(interaction:ChatInputCommandInteraction): Promise<void>};
 	
 export declare interface CustomConnection {
 	on(event: 'setup', listener: (name: string) => void): this;
