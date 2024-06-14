@@ -112,7 +112,8 @@ client.once(Events.ClientReady, async (client) => {
 client.on(Events.MessageCreate, async (message: Message) => {
 	if (message.author.bot) return;
 	const { guildId } = message;
-
+	
+	// TODO probably shouldn't query the db every time a message is sent in all servers
 	const db = await client.db.findOne({where: {id: guildId}});
 	
 	if (!db) return;
