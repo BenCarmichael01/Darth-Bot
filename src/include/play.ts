@@ -20,57 +20,6 @@ import { shuffle } from '../include/shuffle';
 
 if (LOCALE) i18n.setLocale(LOCALE);
 
-/**
- *
- * @param {IQueue} queue
- * @returns {AudioResource} DiscordAudioResource of the first song in the queue
- */
-async function getResource(queue: IQueue): Promise<voice.AudioResource> {
-	const song = queue.songs[0];
-	// Get stream from song Url //
-	let source: YouTubeStream;
-	if (playdl.yt_validate(song.url)) {
-		try {
-			source = await playdl.stream(song.url, {
-				discordPlayerCompatibility: false,
-			});
-			if (!source) throw new Error('No stream found');
-		} catch (error) {
-			console.error(error);
-			return Promise.reject('Failed to create audio resource');
-		}
-	} else return Promise.reject('\'Url\' is not a Youtube URL\nFailed to create audio resource');
-	const resource = voice.createAudioResource(source.stream, {
-		inputType: source.type,
-	});
-	return resource;
-}
-
-function queueEnd(interaction: ChatInputCommandInteraction | ButtonInteraction, npmessage: Message) {
-	let queue = interaction.client.queue.get(interaction.guildId!);
-	if (queue) {
-		queue.songs.length = 0;
-	}
-	npMessage({interaction});
-	// if (interaction.type === InteractionType.MessageComponent) {
-	// 	npMessage({interaction: interaction})
-	// } else if (interaction.type === MessageType.Default){
-	// 	npMessage({message: interaction});
-	// }
-	
-	// I dont think this is needed at the moment. 
-	// if (int.type === InteractionType.MessageComponent) {
-	// 	let content = int.message.content;
-	// 	let embeds = int.message.embeds;
-	// 	let buttons = makeButtons(false);
-	// 	npmessage.edit({content, embeds, components:[buttons]});
-	// } else if (int?.type === MessageType.Default) {
-	// 	let content = int.content;
-	// 	let embeds = int.embeds;
-	// 	let buttons = makeButtons(false);
-	// 	npmessage.edit({content, embeds, components:[buttons]})
-	// }
-}
 
 export async function play({ song, interaction }: playArgs): Promise<any> {
 	if (!interaction.deferred && !interaction.replied) {
@@ -299,7 +248,7 @@ export async function play({ song, interaction }: playArgs): Promise<any> {
 				break;
 			}
 			case 'stop': {
-				interaction.deferReply();
+				await interaction.deferReply();
 				let perms = member.permissions;
 				if (!perms.has(PermissionFlagsBits.Administrator) && !canModifyQueue(member)) {
 					return interaction
@@ -522,4 +471,57 @@ export async function play({ song, interaction }: playArgs): Promise<any> {
 			}, STAY_TIME * 1_000);
 		}
 	});
+}
+
+
+/**
+ *
+ * @param {IQueue} queue
+ * @returns {AudioResource} DiscordAudioResource of the first song in the queue
+ */
+async function getResource(queue: IQueue): Promise<voice.AudioResource> {
+	const song = queue.songs[0];
+	// Get stream from song Url //
+	let source: YouTubeStream;
+	if (playdl.yt_validate(song.url)) {
+		try {
+			source = await playdl.stream(song.url, {
+				discordPlayerCompatibility: false,
+			});
+			if (!source) throw new Error('No stream found');
+		} catch (error) {
+			console.error(error);
+			return Promise.reject('Failed to create audio resource');
+		}
+	} else return Promise.reject('\'Url\' is not a Youtube URL\nFailed to create audio resource');
+	const resource = voice.createAudioResource(source.stream, {
+		inputType: source.type,
+	});
+	return resource;
+}
+
+function queueEnd(interaction: ChatInputCommandInteraction | ButtonInteraction, npmessage: Message) {
+	let queue = interaction.client.queue.get(interaction.guildId!);
+	if (queue) {
+		queue.songs.length = 0;
+	}
+	npMessage({interaction});
+	// if (interaction.type === InteractionType.MessageComponent) {
+	// 	npMessage({interaction: interaction})
+	// } else if (interaction.type === MessageType.Default){
+	// 	npMessage({message: interaction});
+	// }
+	
+	// I dont think this is needed at the moment. 
+	// if (int.type === InteractionType.MessageComponent) {
+	// 	let content = int.message.content;
+	// 	let embeds = int.message.embeds;
+	// 	let buttons = makeButtons(false);
+	// 	npmessage.edit({content, embeds, components:[buttons]});
+	// } else if (int?.type === MessageType.Default) {
+	// 	let content = int.content;
+	// 	let embeds = int.embeds;
+	// 	let buttons = makeButtons(false);
+	// 	npmessage.edit({content, embeds, components:[buttons]})
+	// }
 }
