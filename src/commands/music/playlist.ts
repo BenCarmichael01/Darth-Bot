@@ -2,6 +2,7 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, GuildMember, PermissionFlagsBits, TextBasedChannel, Message } from 'discord.js';
 
 import playlist from '../../include/playlist';
+import i18n from 'i18n';
 
 module.exports = {
 	data: new SlashCommandBuilder()

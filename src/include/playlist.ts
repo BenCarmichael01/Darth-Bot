@@ -17,7 +17,7 @@ const youtube = new YouTubeAPI(process.env.YOUTUBE_API_KEY);
 
 export default async function playlist(interaction:ChatInputCommandInteraction): Promise<void> {
     if (!interaction.guild) {
-        interaction.reply({ content: i18n.__('common.unknownError'), ephemeral: true });
+        interaction.editReply({ content: i18n.__('common.unknownError')});
         return;
     }
     
@@ -39,7 +39,7 @@ export default async function playlist(interaction:ChatInputCommandInteraction):
     const musicChannel = await interaction.guild.channels.fetch(musicChannelId);
     const member = interaction.member as GuildMember;
     if (!member.voice.channel) {
-        interaction.reply({ content: i18n.__('play.errorNotChannel'), ephemeral: true });
+        interaction.editReply({ content: i18n.__('play.errorNotChannel')});
         return;
     }
     const userVc = member.voice.channel;
@@ -49,34 +49,32 @@ export default async function playlist(interaction:ChatInputCommandInteraction):
     if (me) {
         var permissions = userVc.permissionsFor(me);
     } else {
-        interaction.reply({ content: i18n.__('common.unknownError'), ephemeral: true });
+        interaction.editReply({ content: i18n.__('common.unknownError') });
         return;
     }
 
     if (!permissions.has(PermissionFlagsBits.Connect)) {
-        interaction.reply({
+        interaction.editReply({
             content: i18n.__('playlist.missingPermissionConnect'),
-            ephemeral: true,
         });
         return;
     }
     if (!permissions.has(PermissionFlagsBits.Speak)) {
-        interaction.reply({
+        interaction.editReply({
             content: i18n.__('missingPermissionSpeak'),
-            ephemeral: true,
         });
         return;
     }
 
     if (serverQueue && me.voice.channel && (userVc.id !== me.voice.channel.id)) {
-        interaction.reply({
+        interaction.editReply({
             content: i18n.__mf('play.errorNotInSameChannel', {
                 user: me.id,
             }),
-            ephemeral: true,
         });
         return;
     }
+    // isYt goes here
     if (
         process.env.SPOTIFY_CLIENT &&
         process.env.SPOTIFY_SECRET &&
@@ -92,16 +90,16 @@ export default async function playlist(interaction:ChatInputCommandInteraction):
             },
         });
     } else {
-        interaction.reply({ content: i18n.__('play.missingSpot'), ephemeral: true });
+        interaction.editReply({ content: i18n.__('play.missingSpot')});
     }
 
     if (playdl.is_expired()) {
         await playdl.refreshToken(); // This will check if access token has expired or not. If yes, then refresh the token.
     }
-
-    const url = interaction.options.getString('playlist');
+    const playlist = interaction.options.getString('playlist');
+    var url = playlist ? playlist : interaction.options.getString('song');
     if (!url) {
-        interaction.reply({ content: 'Cannot read supplied playlist. Please try again'});
+        interaction.editReply({ content: 'Cannot read supplied playlist. Please try again'});
         return;
     }
     const isSpotify = playdl.sp_validate(url);
@@ -150,7 +148,7 @@ export default async function playlist(interaction:ChatInputCommandInteraction):
             if ('page' in playlist) {
                 var tracks = playlist.page(1)!;
             } else {
-                interaction.reply({  content: i18n.__('common.unknownError'), ephemeral: true });
+                interaction.editReply({  content: i18n.__('common.unknownError')});
                 return;
             }
 

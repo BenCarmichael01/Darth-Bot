@@ -8,7 +8,6 @@ import he from 'he';
 
 import { npMessage } from '../../include/npmessage';
 import { YOUTUBE_API_KEY, LOCALE, MSGTIMEOUT, TESTING } from '../../include/utils';
-import { reply, followUp } from '../../include/responses';
 import { IQueue, Isong } from '../../types/types';
 import { 
 	ChannelType,
@@ -21,6 +20,7 @@ import {
 	TextBasedChannel,
 	VoiceBasedChannel,
 } from 'discord.js';
+import playlist from '../../include/playlist';
 
 if (LOCALE) i18n.setLocale(LOCALE);
 const youtube = new YouTubeAPI(YOUTUBE_API_KEY);
@@ -251,6 +251,10 @@ module.exports = {
 				});
 				return;
 			}
+		} else if (isSpotify === 'playlist' || isSpotify === 'album' || isYt === 'playlist') {
+			playlist(interaction);
+			return;
+
 		} else {
 			try {
 				const results = await youtube.searchVideos(music, 1, { part: 'snippet' });
