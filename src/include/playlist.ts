@@ -269,7 +269,7 @@ export default async function playlist(interaction:ChatInputCommandInteraction):
     } catch (error) {
         console.error(error);
         interaction.client.queue.delete(interaction.guild.id);
-        let pcon = voice.getVoiceConnection(interaction.guildId!);
+        let pcon = voice.getVoiceConnection(interaction.guild.id);
         pcon?.destroy();
         interaction.followUp({
             content: i18n.__mf('play.cantJoinChannel', { error }),
