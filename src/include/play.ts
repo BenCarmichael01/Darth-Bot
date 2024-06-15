@@ -32,8 +32,14 @@ export async function play({ song, interaction }: playArgs): Promise<any> {
 	const currentConnection = voice.getVoiceConnection(GUILDID) as CustomConnection & voice.VoiceConnection;
 	const { VoiceConnectionStatus, AudioPlayerStatus } = voice;
 
-	if (queue === undefined) return;
-	if (!currentConnection) return;
+	if (queue === undefined) {
+		interaction.editReply({content: 'Queue does not exist. Failure|'});
+		return;
+	}
+	if (!currentConnection) {
+		interaction.editReply({content: 'Can\'t get current connection'});
+		return;
+	}
 
 	let attempts = 0;
 	let resource:voice.AudioResource | void | undefined;
@@ -51,7 +57,7 @@ export async function play({ song, interaction }: playArgs): Promise<any> {
 			});
 			resource=undefined;
 		}
-	}
+	}	
 	if (resource === undefined) {
 		interaction.followUp({
 			content: i18n.__mf('play.queueFail'),
@@ -71,6 +77,8 @@ export async function play({ song, interaction }: playArgs): Promise<any> {
 	player.on('stateChange', (oldState, newState) => {
 		console.log(`Audio player transitioned from ${oldState.status} to ${newState.status}`);
 	});
+
+	player.on('debug', (message) => console.log(message));
 
 	currentConnection.on('stateChange', (oldState, newState) => {
 		console.log(`Connection transitioned from ${oldState.status} to ${newState.status}`);
