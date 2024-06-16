@@ -16,7 +16,6 @@ import {
 } from 'discord.js';
 import { EventEmitter } from 'events';
 import { Model, ModelStatic, STRING, Sequelize } from 'sequelize';
-import WOKCommands from 'wokcommands';
 import { YoutubeThumbnail } from 'youtube.ts';
 declare global {
 	var __base: string;
@@ -97,7 +96,7 @@ export interface IQueue {
 	collector: InteractionCollector<ButtonInteraction<"cached">> | null;
 	voiceChannel: VoiceBasedChannel;
 	connection: voice.VoiceConnection;
-	player: (CustomPlayer & voice.AudioPlayer) | null;
+	player: voice.AudioPlayer | null;
 	timeout: NodeJS.Timeout | null;
 	songs: Array<Isong>;
 	loop: boolean;
@@ -126,7 +125,6 @@ export type playCmdArgs = {
 	interaction?: CommandInteraction;
 	args: Array<string>;
 	prefix: string;
-	instance: WOKCommands;
 };
 
 export class musicGuilds extends Model {
