@@ -1,7 +1,6 @@
 /* global __base */
 const { MSGTIMEOUT } = require(`${__base}include/utils`);
 import { Message, CommandInteraction, ButtonInteraction } from 'discord.js';
-import { APIMessage } from 'discord-api-types/v9';
 /**
  * Either replies to a discord message or interaction depending on which is passed to it
  * @param {{message: Message, interaction: CommandInteraction, content: string, ephemeral: boolean}}

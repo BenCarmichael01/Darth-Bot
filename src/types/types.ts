@@ -1,5 +1,4 @@
 import * as voice from '@discordjs/voice';
-import { Snowflake } from 'discord-api-types/globals';
 import {
 	ButtonInteraction,
 	ChatInputCommandInteraction,
@@ -13,6 +12,7 @@ import {
 	SlashCommandBuilder,
 	TextBasedChannel,
 	VoiceBasedChannel,
+	Snowflake
 } from 'discord.js';
 import { EventEmitter } from 'events';
 import { Model, ModelStatic, STRING, Sequelize } from 'sequelize';
