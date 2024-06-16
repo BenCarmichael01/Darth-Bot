@@ -49,8 +49,9 @@ module.exports = {
 		// }
 		// if (!i) return;
 
-		// if (!i?.guildId) return;
-		const db = await interaction.client.db.findOne({where: {id: interaction.guildId!}});
+		if (!interaction.guild) throw new Error('interaction.guild does not exist');
+
+		const db = await interaction.client.db.findOne({where: {id: interaction.guild.id!}});
 		if (!db) {
 			await interaction.editReply({
 				content: i18n.__('common.noSetup'),
@@ -338,7 +339,6 @@ module.exports = {
 	await interaction.editReply({
 		content: i18n.__('play.success'),
 	});
-	console.log(MSGTIMEOUT);
 	queueConstruct.textChannel
 		.send({
 			content: i18n.__mf('play.queueAdded', {
