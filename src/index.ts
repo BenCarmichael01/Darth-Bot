@@ -1,9 +1,7 @@
 import path from 'path';
 import fs from 'fs';
 import i18n from 'i18n';
-import { ModelStatic, Sequelize, STRING} from 'sequelize';
-import { ApplicationCommand, Client, ClientOptions, Collection, Events, GatewayIntentBits, Message, REST, Routes, SlashCommandBuilder, Snowflake } from 'discord.js';
-// import WOKCommands from 'wokcommands';
+import { ApplicationCommand, Events, GatewayIntentBits, Message, REST, Routes, SlashCommandBuilder } from 'discord.js';
 import 'dotenv/config';
 import messageStartup from './features/message-startup'
 import { myClient } from './types/types';
