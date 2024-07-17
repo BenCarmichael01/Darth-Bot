@@ -4,6 +4,11 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  play-dl@1.9.7:
+    hash: t2aqajsekq5fzxtfr4fozcgd3y
+    path: patches/play-dl@1.9.7.patch
+
 importers:
 
   .:
