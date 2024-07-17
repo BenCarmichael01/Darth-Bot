@@ -124,7 +124,7 @@ export async function play({ song, interaction }: playArgs): Promise<any> {
 		}
 		switch (interaction.customId) {
 			case 'playpause': {
-				interaction.deferReply();
+				await interaction.deferReply();
 				if (!canModifyQueue(member)) {
 					return interaction
 						.editReply({ content: i18n.__('common.errorNotChannel') })
@@ -169,7 +169,7 @@ export async function play({ song, interaction }: playArgs): Promise<any> {
 				break;
 			}
 			case 'skip': {
-				interaction.deferReply({ephemeral: true})
+				await interaction.deferReply({ephemeral: true})
 				if (!canModifyQueue(member)) {
 					return interaction
 						.editReply({ content: i18n.__('common.errorNotChannel') })
@@ -218,7 +218,7 @@ export async function play({ song, interaction }: playArgs): Promise<any> {
 				break;
 			}
 			case 'loop': {
-				interaction.deferReply();
+				await interaction.deferReply();
 				if (!canModifyQueue(member)) {
 					return interaction
 						.editReply({ content: i18n.__('common.errorNotChannel') })
