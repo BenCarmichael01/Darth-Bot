@@ -350,6 +350,8 @@ healthchecksdb
 # Typescript output files
 dist/*
 
+# Nix direnv cache
+.direnv/
 
 # .eslintrc.json 
 # .prettierrc.json

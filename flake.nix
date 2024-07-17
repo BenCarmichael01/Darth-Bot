@@ -7,25 +7,22 @@
 
   };
 
-  outputs = { self, nixpkgs, flake-utils }:
-    flake-utils.lib.eachDefaultSystem (system:
-      let
-        pkgs = import nixpkgs {
-          inherit system;
-        };
-      in rec {
-        flakedPkgs = pkgs;
-
-        # enables use of `nix shell`
-        devShell = pkgs.mkShell {
-          # add things you want in your shell here
-          buildInputs = with pkgs; [
-            pkgs.nodejs_22
-            pnpm
-            cmake
-            ffmpeg_7-headless
-          ];
-        };
-      }
-    );
+  outputs = {self, nixpkgs, flake-utils}: 
+    flake-utils.lib.eachDefaultSystem
+      (system:
+        let
+          system = "x86_64-linux";
+          pkgs = nixpkgs.legacyPackages.${system};
+      in
+      with pkgs; { 
+          devShells.default = mkShell {
+            buildInputs = [
+              nodejs_22
+              pnpm
+              cmake
+              ffmpeg_7-headless
+            ];
+          };
+        }
+      );
 }
